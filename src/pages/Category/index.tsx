@@ -121,7 +121,6 @@ const CategoryList: React.FC = () => {
       dataIndex: 'parent_id',
       hideInSearch: true,
       width: 120,
-      render: (_, record) => record.parent?.name || '-',
     },
     {
       title: '创建时间',

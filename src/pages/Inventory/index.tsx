@@ -48,7 +48,7 @@ const handleAdd = async (fields: API.CreateInventoryDTO) => {
 };
 
 /**
- * 更新库存
+ * 调整库存（盘点纠偏）
  */
 const handleUpdate = async (fields: FormValueType) => {
   const hide = message.loading('正在更新');
@@ -57,7 +57,6 @@ const handleUpdate = async (fields: FormValueType) => {
       { id: fields.id || 0 },
       {
         quantity: fields.quantity,
-        reserved: fields.reserved,
         threshold: fields.threshold,
       },
     );
@@ -241,20 +240,15 @@ const InventoryList: React.FC = () => {
       <CreateForm
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
-      >
-        <ProTable<API.Inventory, API.CreateInventoryDTO>
-          onSubmit={async (value) => {
-            const success = await handleAdd(value);
-            if (success) {
-              handleModalVisible(false);
-              actionRef.current?.reload();
-            }
-          }}
-          rowKey="id"
-          type="form"
-          columns={columns}
-        />
-      </CreateForm>
+        onSubmit={async (value) => {
+          const success = await handleAdd(value);
+          if (success) {
+            handleModalVisible(false);
+            actionRef.current?.reload();
+          }
+          return success;
+        }}
+      />
 
       {/* 编辑弹窗 */}
       {stepFormValues && Object.keys(stepFormValues).length ? (

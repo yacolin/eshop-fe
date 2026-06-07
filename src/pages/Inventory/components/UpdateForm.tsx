@@ -1,10 +1,16 @@
-import { ProForm, ProFormDigit, ProFormText } from '@ant-design/pro-components';
+import {
+  ProForm,
+  ProFormDigit,
+  ProFormSelect,
+  ProFormText,
+} from '@ant-design/pro-components';
 import { Modal } from 'antd';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+import { getProducts } from '@/services/api/products';
 
 export type FormValueType = {
   quantity?: number;
-  reserved?: number;
   threshold?: number;
 } & Partial<API.Inventory>;
 
@@ -15,56 +21,129 @@ export interface UpdateFormProps {
   values: Partial<API.Inventory>;
 }
 
+const statusMap: Record<string, string> = {
+  instock: '有货',
+  lowstock: '低库存',
+  outofstock: '缺货',
+};
+
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const { values } = props;
+  const [products, setProducts] = useState<{ label: string; value: number }[]>(
+    [],
+  );
+
+  useEffect(() => {
+    if (!props.updateModalVisible) return;
+
+    const fetchProducts = async () => {
+      try {
+        const res = await getProducts({ page: 1, size: 100 });
+        const data = (res as any).data || {};
+        const list = data.list || [];
+        setProducts(
+          list.map((p: API.Product) => ({
+            label: `[${p.sku}] ${p.name}`,
+            value: p.id || 0,
+          })),
+        );
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, [props.updateModalVisible]);
+
+  const available = (values.quantity || 0) - (values.reserved || 0);
+
   return (
     <Modal
-      width={480}
-      destroyOnClose
+      width={600}
+      destroyOnHidden
       title="编辑库存"
       open={props.updateModalVisible}
       onCancel={() => props.onCancel()}
       footer={null}
     >
+      <div></div>
       <ProForm
+        layout="horizontal"
+        labelCol={{ span: 6 }}
+        wrapperCol={{ span: 18 }}
+        style={{ width: '90%', margin: '0 auto' }}
         onFinish={props.onSubmit}
         initialValues={{
+          product_id: values.product_id,
           quantity: values.quantity,
-          reserved: values.reserved,
           threshold: values.threshold,
         }}
+        submitter={{
+          render: (_, dom) => (
+            <div
+              style={{
+                width: '90%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 8,
+              }}
+            >
+              {dom}
+            </div>
+          ),
+        }}
       >
-        <ProFormText
-          width="md"
+        <ProFormSelect
           name="product_id"
-          label="产品 ID"
+          label="关联产品"
+          width="md"
           disabled
-          tooltip="产品 ID 创建后不可修改"
-          initialValue={values.product_id}
+          showSearch
+          options={products}
+          tooltip="当前库存关联的产品，不可修改"
         />
         <ProFormDigit
-          width="md"
           name="quantity"
-          label="库存数量"
+          label="调整库存数量"
+          width="md"
           min={0}
-          rules={[{ required: true, message: '请输入库存数量' }]}
+          rules={[{ required: true, message: '请输入调整后的库存数量' }]}
           fieldProps={{ precision: 0 }}
+          tooltip="手动修正物理库存。正常由订单系统自动扣减，此处用于盘点纠偏"
         />
         <ProFormDigit
+          name="threshold"
+          label="低库存预警阈值"
           width="md"
+          min={0}
+          fieldProps={{ precision: 0 }}
+          tooltip="库存数量低于此值时自动标记为低库存"
+        />
+        <ProFormText
           name="reserved"
           label="已预订数量"
-          min={0}
-          tooltip="谨慎调整，通常由系统自动管理"
-          fieldProps={{ precision: 0 }}
-        />
-        <ProFormDigit
           width="md"
-          name="threshold"
-          label="预警阈值"
-          min={0}
-          tooltip="低于此值时自动标记为低库存"
-          fieldProps={{ precision: 0 }}
+          disabled
+          initialValue={values.reserved ?? 0}
+          tooltip="已预订数量由订单系统自动管理，不可手动修改"
+        />
+        <ProFormText
+          name="status"
+          label="库存状态"
+          width="md"
+          disabled
+          initialValue={
+            values.status ? statusMap[values.status] || values.status : '-'
+          }
+          tooltip="库存状态由系统根据数量与阈值自动计算"
+        />
+        <ProFormText
+          name="available"
+          label="可用库存"
+          width="md"
+          disabled
+          initialValue={available}
+          tooltip="可用库存 = 库存数量 - 已预订数量"
         />
       </ProForm>
     </Modal>
