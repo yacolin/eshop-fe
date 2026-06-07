@@ -4,9 +4,9 @@ import {
   ProFormSelect,
 } from '@ant-design/pro-components';
 import { Modal } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-import { getProducts } from '@/services/api/products';
+import useProductOptions from '../hooks/useProductOptions';
 
 interface CreateFormProps {
   modalVisible: boolean;
@@ -16,32 +16,7 @@ interface CreateFormProps {
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
   const { modalVisible, onCancel, onSubmit } = props;
-  const [products, setProducts] = useState<{ label: string; value: number }[]>(
-    [],
-  );
-
-  useEffect(() => {
-    if (!modalVisible) return;
-
-    const fetchProducts = async () => {
-      try {
-        const res = await getProducts({ page: 1, size: 100 });
-        const data = (res as any).data || {};
-        const list = data.list || [];
-        setProducts(
-          // 拼接 SKU 和名称作为选项标签，并使用产品 ID 作为选项值
-          list.map((p: API.Product) => ({
-            label: `[${p.sku}] ${p.name}`,
-            value: p.id || 0,
-          })),
-        );
-      } catch (error) {
-        console.error('Failed to fetch products:', error);
-      }
-    };
-
-    fetchProducts();
-  }, [modalVisible]);
+  const products = useProductOptions(modalVisible);
 
   return (
     <Modal

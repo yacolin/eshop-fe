@@ -5,9 +5,9 @@ import {
   ProFormText,
 } from '@ant-design/pro-components';
 import { Modal } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-import { getProducts } from '@/services/api/products';
+import useProductOptions from '../hooks/useProductOptions';
 
 export type FormValueType = {
   quantity?: number;
@@ -29,31 +29,7 @@ const statusMap: Record<string, string> = {
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const { values } = props;
-  const [products, setProducts] = useState<{ label: string; value: number }[]>(
-    [],
-  );
-
-  useEffect(() => {
-    if (!props.updateModalVisible) return;
-
-    const fetchProducts = async () => {
-      try {
-        const res = await getProducts({ page: 1, size: 100 });
-        const data = (res as any).data || {};
-        const list = data.list || [];
-        setProducts(
-          list.map((p: API.Product) => ({
-            label: `[${p.sku}] ${p.name}`,
-            value: p.id || 0,
-          })),
-        );
-      } catch (error) {
-        console.error('Failed to fetch products:', error);
-      }
-    };
-
-    fetchProducts();
-  }, [props.updateModalVisible]);
+  const products = useProductOptions(props.updateModalVisible);
 
   const available = (values.quantity || 0) - (values.reserved || 0);
 
