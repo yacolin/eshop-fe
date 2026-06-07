@@ -29,15 +29,20 @@ export default defineConfig({
       path: '/table',
       component: './Table',
     },
+    {
+      name: '商品管理',
+      path: '/product',
+      component: './Product',
+    },
   ],
   npmClient: 'pnpm',
   utoopack: {},
 
   proxy: {
     '/api': {
-      target: 'https://localhost:8080',
+      target: 'http://localhost:8080',
       changeOrigin: true,
-      pathRewrite: { '^/api': '' },
+      // pathRewrite: { '^/api': '' },
     },
   },
 });
