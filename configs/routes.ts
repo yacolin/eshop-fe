@@ -33,22 +33,22 @@ export default [
     icon: 'UserOutlined',
     path: '/inventory',
     routes: [
-      // {
-      //   name: '库存',
-      //   path: '/inventory/inventory',
-      //   component: './Inventory',
-      // },
+      {
+        name: '库存',
+        path: '/inventory/inventory',
+        component: './Inventory',
+      },
       {
         name: '产品',
         path: '/inventory/product',
         icon: 'ProductOutlined',
         component: './Product',
       },
-      // {
-      //   name: '分类',
-      //   path: '/inventory/category',
-      //   component: './Category',
-      // },
+      {
+        name: '分类',
+        path: '/inventory/category',
+        component: './Category',
+      },
     ],
   },
   // {
