@@ -304,7 +304,23 @@ declare namespace API {
     size?: number;
   };
 
+  type getProductsEnrichedParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+    /** 产品名称模糊搜索 */
+    name?: string;
+    /** SKU精确搜索 */
+    sku?: string;
+  };
+
   type getProductsIdDetailParams = {
+    /** 产品ID */
+    id: number;
+  };
+
+  type getProductsIdEnrichedParams = {
     /** 产品ID */
     id: number;
   };
@@ -544,6 +560,8 @@ declare namespace API {
   };
 
   type ProductDetailDTO = {
+    category_id?: number;
+    category_name?: string;
     created_at?: string;
     description?: string;
     id?: number;
@@ -558,6 +576,23 @@ declare namespace API {
   };
 
   type ProductListResult = true;
+
+  type ProductWithCategoryDTO = {
+    category_id?: number;
+    category_name?: string;
+    created_at?: string;
+    description?: string;
+    id?: number;
+    name?: string;
+    price?: number;
+    sku?: string;
+    updated_at?: string;
+  };
+
+  type ProductWithCategoryListResult = {
+    list?: ProductWithCategoryDTO[];
+    total?: number;
+  };
 
   type putCartsItemsItemIdParams = {
     /** 用户ID */

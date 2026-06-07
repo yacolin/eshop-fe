@@ -113,6 +113,23 @@ export async function getProductsIdDetail(
   );
 }
 
+/** 获取产品详情（含分类） 根据产品ID获取产品详情，包含产品信息和首个分类信息 GET /api/v1/products/${param0}/enriched */
+export async function getProductsIdEnriched(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getProductsIdEnrichedParams,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.ProductWithCategoryDTO }>(
+    `/api/v1/products/${param0}/enriched`,
+    {
+      method: 'GET',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
+}
+
 /** 从缓存获取产品列表 从 Redis 缓存中读取产品列表，支持分页和排序 GET /api/v1/products/cache */
 export async function getProductsCache(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -185,6 +202,29 @@ export async function getProductsCategoryCategoryId(
         // size has a default value: 10
         size: '10',
         ...queryParams,
+      },
+      ...(options || {}),
+    },
+  );
+}
+
+/** 列出所有产品（含分类） 获取所有产品的列表，每个产品附带其首个分类信息，通过一次批量查询补全 GET /api/v1/products/enriched */
+export async function getProductsEnriched(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getProductsEnrichedParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.ProductWithCategoryListResult }>(
+    '/api/v1/products/enriched',
+    {
+      method: 'GET',
+      params: {
+        // page has a default value: 1
+        page: '1',
+        // size has a default value: 10
+        size: '10',
+
+        ...params,
       },
       ...(options || {}),
     },

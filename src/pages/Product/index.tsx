@@ -10,13 +10,14 @@ import React, { useRef, useState } from 'react';
 
 import {
   deleteProductsId,
-  getProducts,
+  getProductsEnriched,
   postProducts,
   putProductsId,
 } from '@/services/api/products';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
+import useCategoryOptions from '../Category/hooks/useCategoryOptions';
 import type { FormValueType } from './components/UpdateForm';
 
 /**
@@ -60,6 +61,7 @@ const handleUpdate = async (fields: FormValueType) => {
         name: fields.name,
         description: fields.description,
         price: fields.price ? Math.round(fields.price * 100) : undefined,
+        category_ids: fields.category_ids,
       },
     );
     hide();
@@ -99,10 +101,14 @@ const ProductList: React.FC = () => {
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<API.Product>();
-  const [selectedRowsState, setSelectedRows] = useState<API.Product[]>([]);
+  const [row, setRow] = useState<API.ProductWithCategoryDTO>();
+  const [selectedRowsState, setSelectedRows] = useState<
+    API.ProductWithCategoryDTO[]
+  >([]);
 
-  const columns: ProColumns<API.Product>[] = [
+  const categories = useCategoryOptions(true);
+
+  const columns: ProColumns<API.ProductWithCategoryDTO>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -133,10 +139,25 @@ const ProductList: React.FC = () => {
       render: (_, record) => formatPrice(record.price),
     },
     {
+      title: '分类',
+      dataIndex: 'category_name',
+      hideInSearch: true,
+    },
+    {
+      title: '分类',
+      dataIndex: 'category_id',
+      valueType: 'select',
+      valueEnum: categories.reduce((acc, category) => {
+        acc[category.value] = category.label;
+        return acc;
+      }, {} as Record<number, string>),
+      hideInTable: true,
+    },
+    {
       title: '描述',
       dataIndex: 'description',
-      hideInSearch: true,
       ellipsis: true,
+      hideInSearch: true,
     },
     {
       title: '创建时间',
@@ -165,7 +186,11 @@ const ProductList: React.FC = () => {
           <Divider type="vertical" />
           <a
             onClick={() => {
-              setStepFormValues(record as FormValueType);
+              setStepFormValues({
+                ...record,
+                category_ids:
+                  record.category_id !== undefined ? [record.category_id] : [],
+              });
               handleUpdateModalVisible(true);
             }}
           >
@@ -199,7 +224,7 @@ const ProductList: React.FC = () => {
         },
       }}
     >
-      <ProTable<API.Product>
+      <ProTable<API.ProductWithCategoryDTO>
         headerTitle="商品列表"
         actionRef={actionRef}
         rowKey="id"
@@ -218,7 +243,7 @@ const ProductList: React.FC = () => {
         ]}
         request={async (params) => {
           const { current, pageSize, name, sku, ...rest } = params;
-          const res = await getProducts({
+          const res = await getProductsEnriched({
             page: current || 1,
             size: pageSize || 10,
             name,
@@ -275,20 +300,15 @@ const ProductList: React.FC = () => {
       <CreateForm
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
-      >
-        <ProTable<API.Product, API.CreateProductDTO>
-          onSubmit={async (value) => {
-            const success = await handleAdd(value);
-            if (success) {
-              handleModalVisible(false);
-              actionRef.current?.reload();
-            }
-          }}
-          rowKey="id"
-          type="form"
-          columns={columns}
-        />
-      </CreateForm>
+        onSubmit={async (value) => {
+          const success = await handleAdd(value);
+          if (success) {
+            handleModalVisible(false);
+            actionRef.current?.reload();
+          }
+          return success;
+        }}
+      />
 
       {/* 编辑弹窗 */}
       {stepFormValues && Object.keys(stepFormValues).length ? (
@@ -309,7 +329,7 @@ const ProductList: React.FC = () => {
             setStepFormValues({});
           }}
           updateModalVisible={updateModalVisible}
-          values={stepFormValues as API.Product}
+          values={stepFormValues as API.ProductWithCategoryDTO}
         />
       ) : null}
 
@@ -322,7 +342,7 @@ const ProductList: React.FC = () => {
         title={row?.name || '商品详情'}
       >
         {row?.name && (
-          <ProDescriptions<API.Product>
+          <ProDescriptions<API.ProductWithCategoryDTO>
             column={2}
             title={row?.name}
             request={async () => ({ data: row || {} })}
