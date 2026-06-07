@@ -258,20 +258,15 @@ const CategoryList: React.FC = () => {
       <CreateForm
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
-      >
-        <ProTable<API.Category, API.CreateCategoryDTO>
-          onSubmit={async (value) => {
-            const success = await handleAdd(value);
-            if (success) {
-              handleModalVisible(false);
-              actionRef.current?.reload();
-            }
-          }}
-          rowKey="id"
-          type="form"
-          columns={columns}
-        />
-      </CreateForm>
+        onSubmit={async (value) => {
+          const success = await handleAdd(value);
+          if (success) {
+            handleModalVisible(false);
+            actionRef.current?.reload();
+          }
+          return success;
+        }}
+      />
 
       {/* 编辑弹窗 */}
       {stepFormValues && Object.keys(stepFormValues).length ? (
