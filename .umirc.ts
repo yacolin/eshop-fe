@@ -32,4 +32,12 @@ export default defineConfig({
   ],
   npmClient: 'pnpm',
   utoopack: {},
+
+  proxy: {
+    '/api': {
+      target: 'https://localhost:8080',
+      changeOrigin: true,
+      pathRewrite: { '^/api': '' },
+    },
+  },
 });
