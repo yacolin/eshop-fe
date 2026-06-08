@@ -1,4 +1,5 @@
 // 运行时配置
+import RightContent from '@/components/RightContent';
 import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import { postAuthLogout } from '@/services/api/auths';
 import type { RequestConfig } from '@umijs/max';
@@ -19,29 +20,29 @@ export async function getInitialState(): Promise<{ name: string }> {
 }
 
 export const layout = () => {
+  const handleLogout = async () => {
+    window.dispatchEvent(new Event('app:logout'));
+    try {
+      await postAuthLogout();
+      message.success('登出成功');
+    } catch (error) {
+      console.error('登出失败:', error);
+    } finally {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      history.push('/login');
+    }
+  };
+
   return {
     logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
     title: 'Eshop Admin',
     layout: 'mix',
-    menu: {
-      locale: false,
-    },
+    menu: { locale: false },
     siderWidth: 260,
-    logout: async () => {
-      window.dispatchEvent(new Event('app:logout'));
-      try {
-        await postAuthLogout();
-        message.success('登出成功');
-      } catch (error) {
-        console.error('登出失败:', error);
-      } finally {
-        // 清除本地存储的 token
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        // 跳转到登录页
-        history.push('/login');
-      }
-    },
+    rightContentRender: () =>
+      React.createElement(RightContent, { onLogout: handleLogout }),
+    logout: handleLogout,
   };
 };
 
