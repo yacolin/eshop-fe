@@ -62,6 +62,7 @@ export default () => {
         localStorage.removeItem('autoLogin');
       }
 
+      window.dispatchEvent(new Event('app:login'));
       window.location.href = '/home';
     } else {
       message.error(response.message);

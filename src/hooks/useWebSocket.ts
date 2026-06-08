@@ -211,7 +211,10 @@ export const useWebSocket = (
     connect();
 
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'access_token' && !e.newValue) {
+      if (e.key !== 'access_token') return;
+      if (e.newValue && !e.oldValue) {
+        connect();
+      } else if (!e.newValue) {
         disconnect();
       }
     };
@@ -220,10 +223,14 @@ export const useWebSocket = (
     const onLogout = () => disconnect();
     window.addEventListener('app:logout', onLogout);
 
+    const onLogin = () => connect();
+    window.addEventListener('app:login', onLogin);
+
     return () => {
       disconnect();
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('app:logout', onLogout);
+      window.removeEventListener('app:login', onLogin);
     };
   }, [connect, disconnect]);
 
