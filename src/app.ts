@@ -19,8 +19,8 @@ export const layout = () => {
       locale: false,
     },
     siderWidth: 260,
-
     logout: async () => {
+      window.dispatchEvent(new Event('app:logout'));
       try {
         await postAuthLogout();
         message.success('登出成功');

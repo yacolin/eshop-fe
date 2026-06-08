@@ -14,6 +14,7 @@ import * as products from './products';
 import * as refunds from './refunds';
 import * as roles from './roles';
 import * as users from './users';
+import * as websocket from './websocket';
 export default {
   auths,
   carts,
@@ -27,4 +28,5 @@ export default {
   refunds,
   roles,
   users,
+  websocket,
 };

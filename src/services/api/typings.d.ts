@@ -398,6 +398,13 @@ declare namespace API {
     user_id: string;
   };
 
+  type getWsParams = {
+    /** JWT Token */
+    token: string;
+    /** 最后收到的消息序列号（重连时使用） */
+    last_seq?: number;
+  };
+
   type Inventory = {
     created_at?: string;
     id?: number;
@@ -438,6 +445,13 @@ declare namespace API {
     token_type?: string;
     user_id?: number;
     username?: string;
+  };
+
+  type OnlineStatsResponse = {
+    /** 连接数 */
+    connections?: number;
+    /** 在线用户数 */
+    online_users?: number;
   };
 
   type OrderListResult = true;
@@ -633,6 +647,34 @@ declare namespace API {
     id: string;
   };
 
+  type ReconnectRequest = {
+    /** 客户端最后收到的消息序列号 */
+    last_seq: number;
+  };
+
+  type ReconnectResponse = {
+    /** 缓存最大序列号 */
+    cached_max_seq?: number;
+    /** 缓存最小序列号 */
+    cached_min_seq?: number;
+    /** 服务端当前序列号 */
+    current_seq?: number;
+    /** 客户端上报的序列号 */
+    last_seq?: number;
+    /** 提示信息 */
+    message?: string;
+    /** 补发消息数量 */
+    message_count?: number;
+    /** 需要补发的消息列表 */
+    messages?: any[];
+    /** 是否需要全量同步 */
+    need_full_sync?: boolean;
+    /** 是否需要增量同步 */
+    need_incremental?: boolean;
+    /** 状态：ok, sync_required */
+    status?: string;
+  };
+
   type RefreshTokenRequest = {
     refresh_token: string;
   };
@@ -689,6 +731,21 @@ declare namespace API {
     sort?: number;
     status?: number;
     updated_at?: string;
+  };
+
+  type SessionResponse = {
+    /** 首次连接时间 */
+    connected_at?: string;
+    /** 会话是否存在 */
+    exists?: boolean;
+    /** 最后活跃时间 */
+    last_active_at?: string;
+    /** 最后收到的消息序列号 */
+    last_seq?: number;
+    /** 重连次数 */
+    reconnect_count?: number;
+    /** 用户ID */
+    user_id?: number;
   };
 
   type UpdateCartItemDTO = {
