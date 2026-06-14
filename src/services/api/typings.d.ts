@@ -38,7 +38,10 @@ declare namespace API {
     updated_at?: string;
   };
 
-  type CategoryListResult = true;
+  type CategoryListResult = {
+    list?: Category[];
+    total?: number;
+  };
 
   type CreateCategoryDTO = {
     description?: string;
@@ -207,9 +210,31 @@ declare namespace API {
     productId: number;
   };
 
+  type getOrdersIdItemsParams = {
+    /** 订单ID */
+    id: number;
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+  };
+
   type getOrdersIdParams = {
     /** 订单ID */
     id: number;
+  };
+
+  type getOrdersItemsParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+    /** 订单ID筛选 */
+    order_id?: number;
+    /** 排序字段 (id, order_id, amount) */
+    sort_by?: string;
+    /** 排序方向 (asc/desc) */
+    order?: string;
   };
 
   type getOrdersParams = {
@@ -420,7 +445,10 @@ declare namespace API {
     updated_at?: string;
   };
 
-  type InventoryListResult = true;
+  type InventoryListResult = {
+    list?: Inventory[];
+    total?: number;
+  };
 
   type ListPermissionsResponse = {
     page?: number;
@@ -454,7 +482,38 @@ declare namespace API {
     online_users?: number;
   };
 
-  type OrderListResult = true;
+  type OrderItemListResult = {
+    list?: OrderItemResponse[];
+    total?: number;
+  };
+
+  type OrderItemResponse = {
+    /** 单项小计，单位：分 */
+    amount?: number;
+    id?: number;
+    order_id?: number;
+    product_id?: string;
+    quantity?: number;
+    /** 单价，单位：分 */
+    unit_price?: number;
+  };
+
+  type OrderListResult = {
+    list?: OrderResponse[];
+    total?: number;
+  };
+
+  type OrderResponse = {
+    created_at?: string;
+    currency?: string;
+    customer_id?: string;
+    id?: number;
+    items?: OrderItemResponse[];
+    status?: string;
+    /** 订单总金额，单位：分 */
+    total_amount?: number;
+    updated_at?: string;
+  };
 
   type PasswordLoginRequest = {
     password: string;
@@ -593,7 +652,10 @@ declare namespace API {
     updated_at?: string;
   };
 
-  type ProductListResult = true;
+  type ProductListResult = {
+    list?: Product[];
+    total?: number;
+  };
 
   type ProductWithCategoryDTO = {
     categories?: ProductCategoryBrief[];
@@ -682,7 +744,10 @@ declare namespace API {
     refresh_token: string;
   };
 
-  type RefundListResult = true;
+  type RefundListResult = {
+    list?: RefundResponse[];
+    total?: number;
+  };
 
   type RefundResponse = {
     created_at?: string;

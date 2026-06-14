@@ -107,6 +107,29 @@ export async function postOrdersIdCancel(
   );
 }
 
+/** 获取订单项列表 根据订单ID分页获取订单项 GET /api/v1/orders/${param0}/items */
+export async function getOrdersIdItems(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getOrdersIdItemsParams,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.OrderItemListResult }>(
+    `/api/v1/orders/${param0}/items`,
+    {
+      method: 'GET',
+      params: {
+        // page has a default value: 1
+        page: '1',
+        // size has a default value: 10
+        size: '10',
+        ...queryParams,
+      },
+      ...(options || {}),
+    },
+  );
+}
+
 /** 更新订单状态 更新指定订单的状态 PATCH /api/v1/orders/${param0}/status */
 export async function patchOrdersIdStatus(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -124,6 +147,31 @@ export async function patchOrdersIdStatus(
       },
       params: { ...queryParams },
       data: body,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 查询所有订单项 分页查询所有订单项，支持按订单ID筛选 GET /api/v1/orders/items */
+export async function getOrdersItems(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getOrdersItemsParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.OrderItemListResult }>(
+    '/api/v1/orders/items',
+    {
+      method: 'GET',
+      params: {
+        // page has a default value: 1
+        page: '1',
+        // size has a default value: 10
+        size: '10',
+
+        // order has a default value: asc
+        order: 'asc',
+        ...params,
+      },
       ...(options || {}),
     },
   );

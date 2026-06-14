@@ -51,10 +51,21 @@ export default [
       },
     ],
   },
-  // {
-  //   name: 'ORDER',
-  //   path: '/order',
-  //   icon: 'ProductOutlined',
-  //   component: './Order',
-  // },
+  {
+    name: 'SALES',
+    icon: 'ShoppingCartOutlined',
+    path: '/sales',
+    routes: [
+      {
+        name: '订单',
+        path: '/sales/order',
+        component: './Order',
+      },
+      {
+        name: '订单项',
+        path: '/sales/orderitem',
+        component: './OrderItem',
+      },
+    ],
+  },
 ];
