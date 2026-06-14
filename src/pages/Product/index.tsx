@@ -20,11 +20,13 @@ import {
   deleteProductsId,
   getProductsEnriched,
   postProducts,
+  postProductsCacheWarmup,
   putProductsId,
 } from '@/services/api/products';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
+import CacheWarmup from '@/components/CacheWarmup';
 import useCategoryOptions from '../Category/hooks/useCategoryOptions';
 import type { FormValueType } from './components/UpdateForm';
 
@@ -283,6 +285,11 @@ const ProductList: React.FC = () => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => [
+          <CacheWarmup
+            key="warmup"
+            label="预热商品"
+            request={postProductsCacheWarmup}
+          />,
           <Button
             key="create"
             type="primary"
