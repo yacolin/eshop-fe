@@ -230,7 +230,7 @@ const ProductList: React.FC = () => {
       width: 160,
       fixed: 'right',
       render: (_, record) => (
-        <>
+        <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
           <Divider type="vertical" />
           <a
@@ -261,7 +261,7 @@ const ProductList: React.FC = () => {
           >
             <a style={{ color: '#ff4d4f' }}>删除</a>
           </Popconfirm>
-        </>
+        </div>
       ),
     },
   ];

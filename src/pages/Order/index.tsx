@@ -29,9 +29,6 @@ import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
 
-/**
- * 格式化金额：分 → 元
- */
 const formatPrice = (price?: number) => {
   if (price === undefined || price === null) return '-';
   return `¥${(price / 100).toFixed(2)}`;
@@ -39,9 +36,6 @@ const formatPrice = (price?: number) => {
 
 const orderStatusMap = ORDER_STATUS_MAP;
 
-/**
- * 新增订单
- */
 const handleAdd = async (fields: API.CreateOrderDTO) => {
   const hide = message.loading('正在创建');
   try {
@@ -56,9 +50,6 @@ const handleAdd = async (fields: API.CreateOrderDTO) => {
   }
 };
 
-/**
- * 更新订单
- */
 const handleUpdate = async (fields: FormValueType) => {
   const hide = message.loading('正在更新');
   try {
@@ -73,9 +64,6 @@ const handleUpdate = async (fields: FormValueType) => {
   }
 };
 
-/**
- * 删除订单
- */
 const handleRemove = async (selectedRows: API.OrderResponse[]) => {
   const hide = message.loading('正在删除');
   if (!selectedRows.length) return true;
@@ -109,7 +97,7 @@ const OrderList: React.FC = () => {
     {
       title: '订单号',
       dataIndex: 'order_no',
-      width: 160,
+      width: 200,
       fixed: 'left',
       render: (_, record) => (
         <Typography.Text
@@ -189,7 +177,7 @@ const OrderList: React.FC = () => {
       width: 160,
       fixed: 'right',
       render: (_, record) => (
-        <>
+        <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
           <Divider type="vertical" />
           <a
@@ -218,7 +206,7 @@ const OrderList: React.FC = () => {
           >
             <a style={{ color: '#ff4d4f' }}>删除</a>
           </Popconfirm>
-        </>
+        </div>
       ),
     },
   ];

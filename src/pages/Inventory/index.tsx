@@ -4,7 +4,7 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Drawer, message } from 'antd';
+import { Button, Divider, Drawer, message, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import {
@@ -18,18 +18,12 @@ import UpdateForm from './components/UpdateForm';
 import type { FormValueType } from './components/UpdateForm';
 import useProductOptions from './hooks/useProductOptions';
 
-/**
- * 库存状态映射
- */
 const statusMap: Record<string, { text: string; color: string }> = {
   instock: { text: '有货', color: '#52c41a' },
   lowstock: { text: '低库存', color: '#faad14' },
   outofstock: { text: '缺货', color: '#ff4d4f' },
 };
 
-/**
- * 新增库存
- */
 const handleAdd = async (fields: API.CreateInventoryDTO) => {
   const hide = message.loading('正在创建');
   try {
@@ -48,9 +42,6 @@ const handleAdd = async (fields: API.CreateInventoryDTO) => {
   }
 };
 
-/**
- * 调整库存（盘点纠偏）
- */
 const handleUpdate = async (fields: FormValueType) => {
   const hide = message.loading('正在更新');
   try {
@@ -87,6 +78,7 @@ const InventoryList: React.FC = () => {
       hideInForm: true,
       hideInSearch: true,
       width: 60,
+      fixed: 'left',
     },
     {
       title: '产品',
@@ -143,11 +135,7 @@ const InventoryList: React.FC = () => {
       width: 100,
       render: (_, record) => {
         const status = statusMap[record.status || ''];
-        return status ? (
-          <span style={{ color: status.color }}>{status.text}</span>
-        ) : (
-          '-'
-        );
+        return status ? <Tag color={status.color}>{status.text}</Tag> : '-';
       },
     },
     {
@@ -171,10 +159,11 @@ const InventoryList: React.FC = () => {
       dataIndex: 'option',
       valueType: 'option',
       width: 120,
+      fixed: 'right',
       render: (_, record) => (
-        <>
+        <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
-          <span style={{ padding: '0 8px' }}>|</span>
+          <Divider type="vertical" />
           <a
             onClick={() => {
               setStepFormValues(record as FormValueType);
@@ -183,7 +172,7 @@ const InventoryList: React.FC = () => {
           >
             编辑
           </a>
-        </>
+        </div>
       ),
     },
   ];
@@ -201,6 +190,7 @@ const InventoryList: React.FC = () => {
         headerTitle="库存列表"
         actionRef={actionRef}
         rowKey="id"
+        scroll={{ x: 1200 }}
         search={{
           labelWidth: 100,
           defaultCollapsed: false,
@@ -240,7 +230,6 @@ const InventoryList: React.FC = () => {
         }}
       />
 
-      {/* 新建弹窗 */}
       <CreateForm
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
@@ -254,7 +243,6 @@ const InventoryList: React.FC = () => {
         }}
       />
 
-      {/* 编辑弹窗 */}
       {stepFormValues && Object.keys(stepFormValues).length ? (
         <UpdateForm
           onSubmit={async (value) => {
@@ -277,7 +265,6 @@ const InventoryList: React.FC = () => {
         />
       ) : null}
 
-      {/* 查看详情抽屉 */}
       <Drawer
         width={600}
         open={!!row}
