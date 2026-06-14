@@ -573,9 +573,13 @@ declare namespace API {
     updated_at?: string;
   };
 
+  type ProductCategoryBrief = {
+    id?: number;
+    name?: string;
+  };
+
   type ProductDetailDTO = {
-    category_id?: number;
-    category_name?: string;
+    categories?: ProductCategoryBrief[];
     created_at?: string;
     description?: string;
     id?: number;
@@ -592,8 +596,7 @@ declare namespace API {
   type ProductListResult = true;
 
   type ProductWithCategoryDTO = {
-    category_id?: number;
-    category_name?: string;
+    categories?: ProductCategoryBrief[];
     created_at?: string;
     description?: string;
     id?: number;
@@ -746,6 +749,17 @@ declare namespace API {
     reconnect_count?: number;
     /** 用户ID */
     user_id?: number;
+  };
+
+  type TestPushRequest = {
+    /** 级别: info/warning/error */
+    level?: string;
+    /** 通知内容 */
+    message: string;
+    /** 目标: all(默认) 或 user_id */
+    target?: string;
+    /** 通知标题 */
+    title: string;
   };
 
   type UpdateCartItemDTO = {

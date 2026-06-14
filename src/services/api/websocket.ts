@@ -56,3 +56,18 @@ export async function getWsStats(options?: { [key: string]: any }) {
     },
   );
 }
+
+/** 推送WebSocket测试消息 向WebSocket客户端推送一条测试消息，用于调试 POST /api/v1/ws/test/push */
+export async function postWsTestPush(
+  body: API.TestPushRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response>('/api/v1/ws/test/push', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

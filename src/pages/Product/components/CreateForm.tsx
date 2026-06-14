@@ -27,6 +27,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       open={modalVisible}
       onCancel={() => onCancel()}
       footer={null}
+      destroyOnHidden={true}
     >
       <ProForm<API.CreateProductDTO>
         layout="horizontal"

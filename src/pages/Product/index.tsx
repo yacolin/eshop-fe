@@ -5,7 +5,15 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Popconfirm } from 'antd';
+import {
+  Button,
+  Divider,
+  Drawer,
+  message,
+  Popconfirm,
+  Tag,
+  Tooltip,
+} from 'antd';
 import React, { useRef, useState } from 'react';
 
 import {
@@ -115,6 +123,7 @@ const ProductList: React.FC = () => {
       hideInForm: true,
       hideInSearch: true,
       width: 60,
+      fixed: 'left',
     },
     {
       title: '商品名称',
@@ -128,6 +137,7 @@ const ProductList: React.FC = () => {
       title: 'SKU',
       dataIndex: 'sku',
       copyable: true,
+      width: 150,
       formItemProps: {
         rules: [{ required: true, message: 'SKU 为必填项' }],
       },
@@ -136,12 +146,48 @@ const ProductList: React.FC = () => {
       title: '价格',
       dataIndex: 'price',
       hideInSearch: true,
+      width: 120,
       render: (_, record) => formatPrice(record.price),
     },
     {
       title: '分类',
-      dataIndex: 'category_name',
+      dataIndex: 'categories',
       hideInSearch: true,
+      width: 300,
+      render: (_, record) => {
+        if (!record.categories || record.categories.length === 0) {
+          return <Tag color="default">未分类</Tag>;
+        }
+        const COLORS = [
+          'blue',
+          'gold',
+          'green',
+          'purple',
+          'red',
+          'cyan',
+          'magenta',
+        ];
+        const isSingle = record.categories.length === 1;
+        return record.categories.map((cat, index) => (
+          <Tooltip key={cat.id} title={cat.name}>
+            <Tag
+              color={COLORS[index % COLORS.length]}
+              style={
+                isSingle
+                  ? undefined
+                  : {
+                      maxWidth: 80,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }
+              }
+            >
+              {cat.name}
+            </Tag>
+          </Tooltip>
+        ));
+      },
     },
     {
       title: '分类',
@@ -179,7 +225,8 @@ const ProductList: React.FC = () => {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
-      width: 200,
+      width: 160,
+      fixed: 'right',
       render: (_, record) => (
         <>
           <a onClick={() => setRow(record)}>查看</a>
@@ -189,7 +236,9 @@ const ProductList: React.FC = () => {
               setStepFormValues({
                 ...record,
                 category_ids:
-                  record.category_id !== undefined ? [record.category_id] : [],
+                  record.categories
+                    ?.map((c) => c.id)
+                    .filter((id): id is number => id !== undefined) ?? [],
               });
               handleUpdateModalVisible(true);
             }}
@@ -228,6 +277,7 @@ const ProductList: React.FC = () => {
         headerTitle="商品列表"
         actionRef={actionRef}
         rowKey="id"
+        scroll={{ x: 1300 }}
         search={{
           labelWidth: 100,
           defaultCollapsed: false,
