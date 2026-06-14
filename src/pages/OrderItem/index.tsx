@@ -5,7 +5,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useLocation } from '@umijs/max';
-import { Button, Divider, Drawer, message, Popconfirm } from 'antd';
+import { Button, Divider, Drawer, message, Popconfirm, Typography } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { getOrdersItems } from '@/services/api/orders';
@@ -25,33 +25,31 @@ const OrderItemList: React.FC = () => {
   const [row, setRow] = useState<API.OrderItemResponse>();
   const formRef = useRef<any>(null);
 
-  // 从路由state读取初始order_id
+  // 从路由state读取初始订单号
   const location = useLocation() as any;
-  const initialOrderId: number | undefined = location.state?.order_id;
+  const initialOrderNo: string | undefined = location.state?.order_no;
 
   // 在首次请求时直接应用初始筛选，避免闪烁
   const initialAppliedRef = useRef(false);
 
   // 延迟回填搜索框（仅视觉反馈，不触发额外请求）
   useEffect(() => {
-    if (!initialOrderId) return;
+    if (!initialOrderNo) return;
     const timer = setTimeout(() => {
-      formRef.current?.setFieldsValue({ order_id: initialOrderId });
+      formRef.current?.setFieldsValue({ order_no: initialOrderNo });
     }, 100);
     return () => clearTimeout(timer);
   }, []);
 
   const columns: ProColumns<API.OrderItemResponse>[] = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      hideInSearch: true,
-      width: 60,
-    },
-    {
-      title: '订单ID',
-      dataIndex: 'order_id',
-      width: 100,
+      title: '订单号',
+      dataIndex: 'order_no',
+      width: 200,
+      fixed: 'left',
+      render: (_, record) => (
+        <Typography.Text copyable>{record.order_no}</Typography.Text>
+      ),
     },
     {
       title: '商品ID',
@@ -132,20 +130,20 @@ const OrderItemList: React.FC = () => {
           </Button>,
         ]}
         request={async (params) => {
-          const { current, pageSize, order_id: formOrderId, ...rest } = params;
-          // 首次加载时用路由传入的order_id，后续以表单值为准
-          let orderId: number | undefined;
-          if (!initialAppliedRef.current && initialOrderId && !formOrderId) {
-            orderId = initialOrderId;
-          } else if (formOrderId) {
-            orderId = Number(formOrderId);
+          const { current, pageSize, order_no: formOrderNo, ...rest } = params;
+          // 首次加载时用路由传入的订单号，后续以表单值为准
+          let orderNo: string | undefined;
+          if (!initialAppliedRef.current && initialOrderNo && !formOrderNo) {
+            orderNo = initialOrderNo;
+          } else if (formOrderNo) {
+            orderNo = formOrderNo;
           }
           initialAppliedRef.current = true;
 
           const res = await getOrdersItems({
             page: current || 1,
             size: pageSize || 10,
-            order_id: orderId,
+            order_no: orderNo,
             ...rest,
           });
           const data = (res as any).data || {};

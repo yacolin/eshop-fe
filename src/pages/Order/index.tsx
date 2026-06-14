@@ -6,7 +6,15 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { history } from '@umijs/max';
-import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
+import {
+  Button,
+  Divider,
+  Drawer,
+  message,
+  Popconfirm,
+  Tag,
+  Typography,
+} from 'antd';
 import React, { useRef, useState } from 'react';
 
 import { ORDER_STATUS_MAP } from '@/constants';
@@ -99,20 +107,20 @@ const OrderList: React.FC = () => {
 
   const columns: ProColumns<API.OrderResponse>[] = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      hideInForm: true,
-      hideInSearch: true,
-      width: 60,
+      title: '订单号',
+      dataIndex: 'order_no',
+      width: 160,
       fixed: 'left',
       render: (_, record) => (
-        <a
+        <Typography.Text
+          copyable
+          style={{ color: '#1677ff', cursor: 'pointer' }}
           onClick={() =>
-            history.push('/sales/orderitem', { order_id: record.id })
+            history.push('/sales/orderitem', { order_no: record.order_no })
           }
         >
-          {record.id}
-        </a>
+          {record.order_no}
+        </Typography.Text>
       ),
     },
     {

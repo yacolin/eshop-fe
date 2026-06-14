@@ -229,8 +229,8 @@ declare namespace API {
     page?: number;
     /** 每页条数 */
     size?: number;
-    /** 订单ID筛选 */
-    order_id?: number;
+    /** 订单号筛选 */
+    order_no?: string;
     /** 排序字段 (id, order_id, amount) */
     sort_by?: string;
     /** 排序方向 (asc/desc) */
@@ -244,6 +244,8 @@ declare namespace API {
     size?: number;
     /** 用户ID过滤 */
     customer_id?: number;
+    /** 订单号搜索 */
+    order_no?: string;
     /** 订单状态过滤 */
     status?: string;
   };
@@ -492,6 +494,7 @@ declare namespace API {
     amount?: number;
     id?: number;
     order_id?: number;
+    order_no?: string;
     product_id?: string;
     quantity?: number;
     /** 单价，单位：分 */
@@ -509,6 +512,7 @@ declare namespace API {
     customer_id?: string;
     id?: number;
     items?: OrderItemResponse[];
+    order_no?: string;
     status?: string;
     /** 订单总金额，单位：分 */
     total_amount?: number;
