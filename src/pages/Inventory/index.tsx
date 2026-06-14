@@ -16,6 +16,7 @@ import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
+import useProductOptions from './hooks/useProductOptions';
 
 /**
  * 库存状态映射
@@ -77,6 +78,7 @@ const InventoryList: React.FC = () => {
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
   const [row, setRow] = useState<API.Inventory>();
+  const products = useProductOptions(true);
 
   const columns: ProColumns<API.Inventory>[] = [
     {
@@ -87,11 +89,13 @@ const InventoryList: React.FC = () => {
       width: 60,
     },
     {
-      title: '产品 ID',
+      title: '产品',
       dataIndex: 'product_id',
-      width: 100,
-      formItemProps: {
-        rules: [{ required: true, message: '产品 ID 为必填项' }],
+      width: 240,
+      ellipsis: true,
+      render: (_, record) => {
+        const product = products.find((p) => p.value === record.product_id);
+        return product ? product.label : record.product_id;
       },
     },
     {
@@ -108,19 +112,19 @@ const InventoryList: React.FC = () => {
       title: '库存数量',
       dataIndex: 'quantity',
       hideInSearch: true,
-      width: 100,
+      width: 60,
     },
     {
       title: '已预订',
       dataIndex: 'reserved',
       hideInSearch: true,
-      width: 100,
+      width: 60,
     },
     {
       title: '可用库存',
       dataIndex: 'quantity',
       hideInSearch: true,
-      width: 100,
+      width: 60,
       render: (_, record) => {
         const available = (record.quantity || 0) - (record.reserved || 0);
         return available;
@@ -130,7 +134,7 @@ const InventoryList: React.FC = () => {
       title: '预警阈值',
       dataIndex: 'threshold',
       hideInSearch: true,
-      width: 100,
+      width: 60,
     },
     {
       title: '库存状态',

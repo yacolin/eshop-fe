@@ -1,4 +1,4 @@
-import { getProducts } from '@/services/api/products';
+import { getProductsCache } from '@/services/api/products';
 import { useEffect, useState } from 'react';
 
 /**
@@ -15,7 +15,7 @@ export default function useProductOptions(visible: boolean) {
 
     const fetchProducts = async () => {
       try {
-        const res = await getProducts({ page: 1, size: 100 });
+        const res = await getProductsCache({ page: 1, size: 100 });
         const data = (res as any).data || {};
         const list = data.list || [];
         setProducts(
