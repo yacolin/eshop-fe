@@ -6,10 +6,14 @@ import {
 import { Modal } from 'antd';
 import React from 'react';
 
+import { ORDER_STATUS_MAP } from '@/constants';
+
 export type FormValueType = {
   id?: number;
+  order_no?: string;
   status?: string;
   customer_id?: string;
+  total_amount?: number;
 };
 
 export interface UpdateFormProps {
@@ -19,15 +23,12 @@ export interface UpdateFormProps {
   values: FormValueType;
 }
 
-const orderStatusOptions = [
-  { label: '待处理', value: 'pending' },
-  { label: '已确认', value: 'confirmed' },
-  { label: '处理中', value: 'processing' },
-  { label: '已发货', value: 'shipped' },
-  { label: '已送达', value: 'delivered' },
-  { label: '已取消', value: 'cancelled' },
-  { label: '已退款', value: 'refunded' },
-];
+const orderStatusOptions = Object.entries(ORDER_STATUS_MAP).map(
+  ([key, val]) => ({
+    label: val.text,
+    value: key,
+  }),
+);
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const { values } = props;
@@ -45,17 +46,22 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
-        style={{ width: '90%', margin: '0 auto' }}
+        style={{ width: '90%', margin: '0 auto', paddingTop: 24 }}
         onFinish={props.onSubmit}
         initialValues={{
-          status: values.status,
+          order_no: values.order_no,
           customer_id: values.customer_id,
+          total_amount:
+            values.total_amount !== undefined && values.total_amount !== null
+              ? (values.total_amount / 100).toFixed(2)
+              : '-',
+          status: values.status,
         }}
         submitter={{
           render: (_, dom) => (
             <div
               style={{
-                width: '90%',
+                width: '100%',
                 display: 'flex',
                 justifyContent: 'flex-end',
                 gap: 8,
@@ -66,12 +72,14 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           ),
         }}
       >
+        <ProFormText name="order_no" label="订单号" width="md" disabled />
+        <ProFormText name="customer_id" label="客户ID" width="md" disabled />
         <ProFormText
-          name="customer_id"
-          label="客户ID"
+          name="total_amount"
+          label="总金额"
           width="md"
           disabled
-          tooltip="客户ID不可修改"
+          fieldProps={{ prefix: '¥' }}
         />
         <ProFormSelect
           name="status"

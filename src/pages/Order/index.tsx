@@ -1,29 +1,15 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
-  FooterToolbar,
   PageContainer,
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
 import { history } from '@umijs/max';
-import {
-  Button,
-  Divider,
-  Drawer,
-  message,
-  Popconfirm,
-  Tag,
-  Typography,
-} from 'antd';
+import { Button, Divider, Drawer, message, Tag, Typography } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import { ORDER_STATUS_MAP } from '@/constants';
-import {
-  deleteOrdersId,
-  getOrders,
-  postOrders,
-  putOrdersId,
-} from '@/services/api/orders';
+import { getOrders, postOrders, putOrdersId } from '@/services/api/orders';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
@@ -64,24 +50,6 @@ const handleUpdate = async (fields: FormValueType) => {
   }
 };
 
-const handleRemove = async (selectedRows: API.OrderResponse[]) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows.length) return true;
-
-  try {
-    await Promise.all(
-      selectedRows.map((row) => deleteOrdersId({ id: row.id || 0 })),
-    );
-    hide();
-    message.success('删除成功');
-    return true;
-  } catch {
-    hide();
-    message.error('删除失败，请重试');
-    return false;
-  }
-};
-
 const OrderList: React.FC = () => {
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
@@ -89,9 +57,6 @@ const OrderList: React.FC = () => {
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
   const [row, setRow] = useState<API.OrderResponse>();
-  const [selectedRowsState, setSelectedRows] = useState<API.OrderResponse[]>(
-    [],
-  );
 
   const columns: ProColumns<API.OrderResponse>[] = [
     {
@@ -174,7 +139,7 @@ const OrderList: React.FC = () => {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
-      width: 160,
+      width: 120,
       fixed: 'right',
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
@@ -184,28 +149,16 @@ const OrderList: React.FC = () => {
             onClick={() => {
               setStepFormValues({
                 id: record.id,
+                order_no: record.order_no,
                 status: record.status,
                 customer_id: record.customer_id,
+                total_amount: record.total_amount,
               });
               handleUpdateModalVisible(true);
             }}
           >
             编辑
           </a>
-          <Divider type="vertical" />
-          <Popconfirm
-            title="确认删除"
-            description={`确定要删除订单 #${record.id} 吗？`}
-            onConfirm={async () => {
-              const success = await handleRemove([record]);
-              if (success) {
-                actionRef.current?.reloadAndRest?.();
-                setSelectedRows([]);
-              }
-            }}
-          >
-            <a style={{ color: '#ff4d4f' }}>删除</a>
-          </Popconfirm>
         </div>
       ),
     },
@@ -243,6 +196,8 @@ const OrderList: React.FC = () => {
           const res = await getOrders({
             page: current || 1,
             size: pageSize || 10,
+            sort_by: 'created_at',
+            order: 'desc',
             status,
             ...rest,
           });
@@ -254,9 +209,6 @@ const OrderList: React.FC = () => {
           };
         }}
         columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-        }}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
@@ -265,32 +217,6 @@ const OrderList: React.FC = () => {
           showTotal: (total) => `共 ${total} 条`,
         }}
       />
-
-      {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              已选择{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              项&nbsp;&nbsp;
-            </div>
-          }
-        >
-          <Popconfirm
-            title="确认批量删除"
-            description={`确定要删除选中的 ${selectedRowsState.length} 个订单吗？`}
-            onConfirm={async () => {
-              const success = await handleRemove(selectedRowsState);
-              if (success) {
-                setSelectedRows([]);
-                actionRef.current?.reloadAndRest?.();
-              }
-            }}
-          >
-            <Button danger>批量删除</Button>
-          </Popconfirm>
-        </FooterToolbar>
-      )}
 
       <CreateForm
         onCancel={() => handleModalVisible(false)}
