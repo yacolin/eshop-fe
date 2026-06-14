@@ -18,6 +18,8 @@ export async function getOrders(
         // size has a default value: 10
         size: '10',
 
+        // order has a default value: asc
+        order: 'asc',
         ...params,
       },
       ...(options || {}),

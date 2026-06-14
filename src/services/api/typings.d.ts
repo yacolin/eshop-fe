@@ -248,6 +248,10 @@ declare namespace API {
     order_no?: string;
     /** 订单状态过滤 */
     status?: string;
+    /** 排序字段 (total_price, created_at) */
+    sort_by?: string;
+    /** 排序方向 (asc/desc) */
+    order?: string;
   };
 
   type getOrdersPaymentOrderIdParams = {

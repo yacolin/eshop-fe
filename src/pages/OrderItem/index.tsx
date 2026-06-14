@@ -144,6 +144,8 @@ const OrderItemList: React.FC = () => {
             page: current || 1,
             size: pageSize || 10,
             order_no: orderNo,
+            sort_by: 'created_at',
+            order: 'desc',
             ...rest,
           });
           const data = (res as any).data || {};

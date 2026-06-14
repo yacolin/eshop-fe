@@ -5,15 +5,24 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { history } from '@umijs/max';
-import { Button, Divider, Drawer, message, Tag, Typography } from 'antd';
+import {
+  Button,
+  Divider,
+  Drawer,
+  Dropdown,
+  message,
+  Tag,
+  Typography,
+} from 'antd';
 import React, { useRef, useState } from 'react';
 
 import { ORDER_STATUS_MAP } from '@/constants';
-import { getOrders, postOrders, putOrdersId } from '@/services/api/orders';
+import {
+  getOrders,
+  patchOrdersIdStatus,
+  postOrders,
+} from '@/services/api/orders';
 import CreateForm from './components/CreateForm';
-import UpdateForm from './components/UpdateForm';
-
-import type { FormValueType } from './components/UpdateForm';
 
 const formatPrice = (price?: number) => {
   if (price === undefined || price === null) return '-';
@@ -36,25 +45,19 @@ const handleAdd = async (fields: API.CreateOrderDTO) => {
   }
 };
 
-const handleUpdate = async (fields: FormValueType) => {
-  const hide = message.loading('正在更新');
+const handleStatusChange = async (id: number, status: string) => {
   try {
-    await putOrdersId({ id: fields.id || 0 }, { status: fields.status });
-    hide();
-    message.success('更新成功');
+    await patchOrdersIdStatus({ id }, { status });
+    message.success('状态更新成功');
     return true;
   } catch {
-    hide();
-    message.error('更新失败，请重试');
+    message.error('状态更新失败');
     return false;
   }
 };
 
 const OrderList: React.FC = () => {
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  const [updateModalVisible, handleUpdateModalVisible] =
-    useState<boolean>(false);
-  const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
   const [row, setRow] = useState<API.OrderResponse>();
 
@@ -145,20 +148,21 @@ const OrderList: React.FC = () => {
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
           <Divider type="vertical" />
-          <a
-            onClick={() => {
-              setStepFormValues({
-                id: record.id,
-                order_no: record.order_no,
-                status: record.status,
-                customer_id: record.customer_id,
-                total_amount: record.total_amount,
-              });
-              handleUpdateModalVisible(true);
+          <Dropdown
+            menu={{
+              onClick: ({ key }) => {
+                handleStatusChange(record.id!, key).then((ok) => {
+                  if (ok) actionRef.current?.reload();
+                });
+              },
+              items: Object.entries(orderStatusMap).map(([key, val]) => ({
+                key,
+                label: val.text,
+              })),
             }}
           >
-            编辑
-          </a>
+            <a onClick={(e) => e.preventDefault()}>改状态</a>
+          </Dropdown>
         </div>
       ),
     },
@@ -230,28 +234,6 @@ const OrderList: React.FC = () => {
           return success;
         }}
       />
-
-      {stepFormValues && Object.keys(stepFormValues).length ? (
-        <UpdateForm
-          onSubmit={async (value) => {
-            const success = await handleUpdate({
-              ...value,
-              id: stepFormValues.id,
-            });
-            if (success) {
-              handleUpdateModalVisible(false);
-              setStepFormValues({});
-              actionRef.current?.reload();
-            }
-          }}
-          onCancel={() => {
-            handleUpdateModalVisible(false);
-            setStepFormValues({});
-          }}
-          updateModalVisible={updateModalVisible}
-          values={stepFormValues}
-        />
-      ) : null}
 
       <Drawer
         width={600}
