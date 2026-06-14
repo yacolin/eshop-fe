@@ -114,7 +114,7 @@ export async function getCategoriesIdChildren(
 
 /** 列出根分类 获取所有根分类的列表 GET /api/v1/categories/root */
 export async function getCategoriesRoot(options?: { [key: string]: any }) {
-  return request<API.Response & { data?: API.Category[] }>(
+  return request<API.Response & { data?: API.CategoryListResult }>(
     '/api/v1/categories/root',
     {
       method: 'GET',

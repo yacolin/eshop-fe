@@ -18,6 +18,7 @@ import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
+import useRootCategory from './hooks/useRootCategories';
 
 /**
  * 新增分类
@@ -94,6 +95,8 @@ const CategoryList: React.FC = () => {
   const [row, setRow] = useState<API.Category>();
   const [selectedRowsState, setSelectedRows] = useState<API.Category[]>([]);
 
+  const rootCategories = useRootCategory(true);
+
   const columns: ProColumns<API.Category>[] = [
     {
       title: 'ID',
@@ -101,11 +104,13 @@ const CategoryList: React.FC = () => {
       hideInForm: true,
       hideInSearch: true,
       width: 60,
+      fixed: 'left',
     },
     {
       title: '分类名称',
       dataIndex: 'name',
       ellipsis: true,
+      width: 200,
       formItemProps: {
         rules: [{ required: true, message: '分类名称为必填项' }],
       },
@@ -119,8 +124,16 @@ const CategoryList: React.FC = () => {
     {
       title: '父分类',
       dataIndex: 'parent_id',
-      hideInSearch: true,
       width: 120,
+      render: (_, record) => {
+        const parent = rootCategories.find((c) => c.value === record.parent_id);
+        return parent ? parent.label : '-';
+      },
+      valueType: 'select',
+      valueEnum: rootCategories.reduce((acc, cat) => {
+        acc[cat.value] = cat.label;
+        return acc;
+      }, {} as Record<number, string>),
     },
     {
       title: '创建时间',
@@ -142,7 +155,8 @@ const CategoryList: React.FC = () => {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
-      width: 200,
+      width: 160,
+      fixed: 'right',
       render: (_, record) => (
         <>
           <a onClick={() => setRow(record)}>查看</a>
@@ -187,6 +201,7 @@ const CategoryList: React.FC = () => {
         headerTitle="分类列表"
         actionRef={actionRef}
         rowKey="id"
+        scroll={{ x: 1300 }}
         search={{
           labelWidth: 100,
           defaultCollapsed: false,
@@ -201,13 +216,14 @@ const CategoryList: React.FC = () => {
           </Button>,
         ]}
         request={async (params) => {
-          const { current, pageSize, name, ...rest } = params;
+          const { current, pageSize, name, parent_id, ...rest } = params;
           const res = await getCategories({
             page: current || 1,
             size: pageSize || 10,
             name,
+            parent_id,
             ...rest,
-          });
+          } as API.getCategoriesParams & { parent_id?: number });
           const data = (res as any).data || {};
           return {
             data: data.list || [],
@@ -216,9 +232,9 @@ const CategoryList: React.FC = () => {
           };
         }}
         columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-        }}
+        // rowSelection={{
+        //   onChange: (_, selectedRows) => setSelectedRows(selectedRows),
+        // }}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
