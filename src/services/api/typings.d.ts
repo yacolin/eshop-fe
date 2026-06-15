@@ -335,6 +335,19 @@ declare namespace API {
     size?: number;
   };
 
+  type getProductsCursorParams = {
+    /** 游标（上一页最后一条的 ID，首次查询传 0） */
+    cursor?: number;
+    /** 每页条数 */
+    size?: number;
+    /** 产品名称模糊搜索 */
+    name?: string;
+    /** SKU精确搜索 */
+    sku?: string;
+    /** 分类ID筛选 */
+    category_id?: number;
+  };
+
   type getProductsEnrichedParams = {
     /** 页码 */
     page?: number;
@@ -643,6 +656,14 @@ declare namespace API {
   type ProductCategoryBrief = {
     id?: number;
     name?: string;
+  };
+
+  type ProductCursorResult = {
+    /** 是否还有更多数据 */
+    has_more?: boolean;
+    list?: Product[];
+    /** 下一页游标值（无更多数据时为 0） */
+    next_cursor?: number;
   };
 
   type ProductDetailDTO = {

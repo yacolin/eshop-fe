@@ -45,6 +45,11 @@ export default [
         component: './Product',
       },
       {
+        name: '产品(游标)',
+        path: '/inventory/product-cursor',
+        component: './ProductCursor',
+      },
+      {
         name: '分类',
         path: '/inventory/category',
         component: './Category',
