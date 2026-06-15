@@ -4,10 +4,11 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { useLocation } from '@umijs/max';
-import { Button, Divider, Drawer, message, Popconfirm, Typography } from 'antd';
-import React, { useEffect, useRef, useState } from 'react';
+import { Button, Divider, Drawer, message, Popconfirm } from 'antd';
+import React, { useRef, useState } from 'react';
 
+import LinkText from '@/components/LinkText';
+import { useRouteFilter } from '@/hooks/useRouteFilter';
 import { getOrdersItems } from '@/services/api/orders';
 import CreateForm from './components/CreateForm';
 
@@ -25,21 +26,10 @@ const OrderItemList: React.FC = () => {
   const [row, setRow] = useState<API.OrderItemResponse>();
   const formRef = useRef<any>(null);
 
-  // 从路由state读取初始订单号
-  const location = useLocation() as any;
-  const initialOrderNo: string | undefined = location.state?.order_no;
-
-  // 在首次请求时直接应用初始筛选，避免闪烁
-  const initialAppliedRef = useRef(false);
-
-  // 延迟回填搜索框（仅视觉反馈，不触发额外请求）
-  useEffect(() => {
-    if (!initialOrderNo) return;
-    const timer = setTimeout(() => {
-      formRef.current?.setFieldsValue({ order_no: initialOrderNo });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+  const { getFilter, markApplied } = useRouteFilter<{ order_no: string }>(
+    formRef,
+    ['order_no'],
+  );
 
   const columns: ProColumns<API.OrderItemResponse>[] = [
     {
@@ -47,9 +37,7 @@ const OrderItemList: React.FC = () => {
       dataIndex: 'order_no',
       width: 200,
       fixed: 'left',
-      render: (_, record) => (
-        <Typography.Text copyable>{record.order_no}</Typography.Text>
-      ),
+      render: (_, record) => <LinkText value={record.order_no} />,
     },
     {
       title: '商品ID',
@@ -131,14 +119,8 @@ const OrderItemList: React.FC = () => {
         ]}
         request={async (params) => {
           const { current, pageSize, order_no: formOrderNo, ...rest } = params;
-          // 首次加载时用路由传入的订单号，后续以表单值为准
-          let orderNo: string | undefined;
-          if (!initialAppliedRef.current && initialOrderNo && !formOrderNo) {
-            orderNo = initialOrderNo;
-          } else if (formOrderNo) {
-            orderNo = formOrderNo;
-          }
-          initialAppliedRef.current = true;
+          const orderNo = getFilter('order_no', formOrderNo);
+          markApplied();
 
           const res = await getOrdersItems({
             page: current || 1,

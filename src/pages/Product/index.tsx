@@ -16,6 +16,8 @@ import {
 } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import LinkText from '@/components/LinkText';
+
 import {
   deleteProductsId,
   getProductsEnriched,
@@ -130,7 +132,15 @@ const ProductList: React.FC = () => {
     {
       title: '商品名称',
       dataIndex: 'name',
+      width: 200,
       ellipsis: true,
+      render: (_, record) => (
+        <LinkText
+          value={record.name}
+          path="/inventory/inventory"
+          state={{ product_name: record.name }}
+        />
+      ),
       formItemProps: {
         rules: [{ required: true, message: '商品名称为必填项' }],
       },
@@ -138,8 +148,14 @@ const ProductList: React.FC = () => {
     {
       title: 'SKU',
       dataIndex: 'sku',
-      copyable: true,
       width: 150,
+      render: (_, record) => (
+        <LinkText
+          value={record.sku}
+          path="/inventory/inventory"
+          state={{ sku: record.sku }}
+        />
+      ),
       formItemProps: {
         rules: [{ required: true, message: 'SKU 为必填项' }],
       },

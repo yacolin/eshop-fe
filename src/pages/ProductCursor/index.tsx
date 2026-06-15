@@ -19,6 +19,8 @@ import {
 } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import LinkText from '@/components/LinkText';
+
 import {
   deleteProductsId,
   getProductsCursor,
@@ -240,6 +242,14 @@ const ProductCursorList: React.FC = () => {
       title: '商品名称',
       dataIndex: 'name',
       ellipsis: true,
+      width: 180,
+      render: (_, record) => (
+        <LinkText
+          value={record.name}
+          path="/inventory/inventory"
+          state={{ product_name: record.name }}
+        />
+      ),
       formItemProps: {
         rules: [{ required: true, message: '商品名称为必填项' }],
       },
@@ -247,8 +257,14 @@ const ProductCursorList: React.FC = () => {
     {
       title: 'SKU',
       dataIndex: 'sku',
-      copyable: true,
       width: 150,
+      render: (_, record) => (
+        <LinkText
+          value={record.sku}
+          path="/inventory/inventory"
+          state={{ sku: record.sku }}
+        />
+      ),
       formItemProps: {
         rules: [{ required: true, message: 'SKU 为必填项' }],
       },
@@ -256,13 +272,13 @@ const ProductCursorList: React.FC = () => {
     {
       title: '价格',
       dataIndex: 'price',
-      width: 120,
+      width: 100,
       render: (_, record) => formatPrice(record.price),
     },
     {
       title: '分类',
       dataIndex: 'categories',
-      width: 300,
+      width: 170,
       render: (_, record) => {
         const cats = (record as any).categories as
           | API.ProductCategoryBrief[]
@@ -288,7 +304,7 @@ const ProductCursorList: React.FC = () => {
                 isSingle
                   ? undefined
                   : {
-                      maxWidth: 80,
+                      maxWidth: 72,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -304,25 +320,26 @@ const ProductCursorList: React.FC = () => {
     {
       title: '描述',
       dataIndex: 'description',
+      width: 150,
       ellipsis: true,
     },
     {
       title: '创建时间',
       dataIndex: 'created_at',
       valueType: 'dateTime',
-      width: 160,
+      width: 180,
     },
     {
       title: '更新时间',
       dataIndex: 'updated_at',
       valueType: 'dateTime',
-      width: 160,
+      width: 180,
     },
     {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
-      width: 160,
+      width: 140,
       fixed: 'right',
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
@@ -396,7 +413,7 @@ const ProductCursorList: React.FC = () => {
           dataSource={dataSource}
           loading={loading}
           virtual
-          scroll={{ x: 1300, y: 500 }}
+          scroll={{ x: 1500, y: 500 }}
           search={false}
           options={false}
           toolBarRender={() => [
@@ -415,6 +432,7 @@ const ProductCursorList: React.FC = () => {
           ]}
           columns={columns}
           rowSelection={{
+            columnWidth: 48,
             onChange: (_, selectedRows) => setSelectedRows(selectedRows),
           }}
           pagination={false}

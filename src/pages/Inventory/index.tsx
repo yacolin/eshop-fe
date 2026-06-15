@@ -7,6 +7,8 @@ import {
 import { Button, Divider, Drawer, message, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import { useRouteFilter } from '@/hooks/useRouteFilter';
+
 import {
   getInventories,
   postInventories,
@@ -71,29 +73,30 @@ const InventoryList: React.FC = () => {
   const [row, setRow] = useState<API.Inventory>();
   const products = useProductOptions(true);
 
+  const formRef = useRef<any>(null);
+  const { getFilter, markApplied } = useRouteFilter<{
+    product_name: string;
+    sku: string;
+  }>(formRef, ['product_name', 'sku']);
+
   const columns: ProColumns<API.Inventory>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
       hideInForm: true,
       hideInSearch: true,
-      width: 60,
+      width: 80,
       fixed: 'left',
     },
     {
       title: '产品',
-      dataIndex: 'product_id',
+      dataIndex: 'product_name',
       width: 240,
       ellipsis: true,
       render: (_, record) => {
         const product = products.find((p) => p.value === record.product_id);
         return product ? product.label : record.product_id;
       },
-    },
-    {
-      title: '产品名称',
-      dataIndex: 'product_name',
-      hideInTable: true,
     },
     {
       title: 'SKU',
@@ -104,19 +107,19 @@ const InventoryList: React.FC = () => {
       title: '库存数量',
       dataIndex: 'quantity',
       hideInSearch: true,
-      width: 60,
+      width: 80,
     },
     {
       title: '已预订',
       dataIndex: 'reserved',
       hideInSearch: true,
-      width: 60,
+      width: 80,
     },
     {
       title: '可用库存',
       dataIndex: 'quantity',
       hideInSearch: true,
-      width: 60,
+      width: 80,
       render: (_, record) => {
         const available = (record.quantity || 0) - (record.reserved || 0);
         return available;
@@ -126,12 +129,17 @@ const InventoryList: React.FC = () => {
       title: '预警阈值',
       dataIndex: 'threshold',
       hideInSearch: true,
-      width: 60,
+      width: 80,
     },
     {
       title: '库存状态',
       dataIndex: 'status',
-      hideInSearch: true,
+      valueEnum: {
+        instock: { text: '有货', status: 'Success' },
+        lowstock: { text: '低库存', status: 'Warning' },
+        outofstock: { text: '缺货', status: 'Error' },
+      },
+      valueType: 'select',
       width: 100,
       render: (_, record) => {
         const status = statusMap[record.status || ''];
@@ -189,6 +197,7 @@ const InventoryList: React.FC = () => {
       <ProTable<API.Inventory>
         headerTitle="库存列表"
         actionRef={actionRef}
+        formRef={formRef}
         rowKey="id"
         scroll={{ x: 1200 }}
         search={{
@@ -205,11 +214,21 @@ const InventoryList: React.FC = () => {
           </Button>,
         ]}
         request={async (params) => {
-          const { current, pageSize, product_name, sku, ...rest } = params;
+          const {
+            current,
+            pageSize,
+            product_name: formProductName,
+            sku: formSku,
+            ...rest
+          } = params;
+          const productName = getFilter('product_name', formProductName);
+          const sku = getFilter('sku', formSku);
+          markApplied();
+
           const res = await getInventories({
             page: current || 1,
             size: pageSize || 10,
-            product_name,
+            product_name: productName,
             sku,
             ...rest,
           });

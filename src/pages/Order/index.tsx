@@ -4,17 +4,10 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { history } from '@umijs/max';
-import {
-  Button,
-  Divider,
-  Drawer,
-  Dropdown,
-  message,
-  Tag,
-  Typography,
-} from 'antd';
+import { Button, Divider, Drawer, Dropdown, message, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
+
+import LinkText from '@/components/LinkText';
 
 import { ORDER_STATUS_MAP } from '@/constants';
 import {
@@ -68,15 +61,11 @@ const OrderList: React.FC = () => {
       width: 200,
       fixed: 'left',
       render: (_, record) => (
-        <Typography.Text
-          copyable
-          style={{ color: '#1677ff', cursor: 'pointer' }}
-          onClick={() =>
-            history.push('/sales/orderitem', { order_no: record.order_no })
-          }
-        >
-          {record.order_no}
-        </Typography.Text>
+        <LinkText
+          value={record.order_no}
+          path="/sales/orderitem"
+          state={{ order_no: record.order_no }}
+        />
       ),
     },
     {
