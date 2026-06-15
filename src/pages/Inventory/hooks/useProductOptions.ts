@@ -15,7 +15,7 @@ export default function useProductOptions(visible: boolean) {
 
     const fetchProducts = async () => {
       try {
-        const res = await getProductsCache({ page: 1, size: 100 });
+        const res = await getProductsCache({ page: 1, size: 1000 });
         const data = (res as any).data || {};
         const list = data.list || [];
         setProducts(
