@@ -73,4 +73,26 @@ export default [
       },
     ],
   },
+  {
+    name: 'USER',
+    icon: 'TeamOutlined',
+    path: '/user',
+    routes: [
+      {
+        name: '用户信息',
+        path: '/user/user-info',
+        component: './UserInfo',
+      },
+      {
+        name: '角色管理',
+        path: '/user/role',
+        component: './Role',
+      },
+      {
+        name: '权限管理',
+        path: '/user/permission',
+        component: './Permission',
+      },
+    ],
+  },
 ];
