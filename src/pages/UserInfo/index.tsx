@@ -10,11 +10,21 @@ import { Button, Descriptions, message, Modal, Spin, Tag } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { getUsersProfile, putUsersInfo } from '@/services/api/users';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const genderMap: Record<number, string> = {
   0: '未知',
   1: '男',
   2: '女',
+};
+
+const formatDateTime = (val?: string) => {
+  if (!val) return '-';
+  const d = dayjs.utc(val).local();
+  return d.isValid() ? d.format('YYYY-MM-DD HH:mm:ss') : val;
 };
 
 const UserInfoPage: React.FC = () => {
@@ -124,10 +134,10 @@ const UserInfoPage: React.FC = () => {
               {userInfo?.timezone || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="创建时间">
-              {user?.created_at || '-'}
+              {formatDateTime(user?.created_at)}
             </Descriptions.Item>
             <Descriptions.Item label="更新时间">
-              {userInfo?.updated_at || '-'}
+              {formatDateTime(userInfo?.updated_at)}
             </Descriptions.Item>
           </Descriptions>
         </div>
