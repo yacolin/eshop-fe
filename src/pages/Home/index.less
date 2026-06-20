@@ -1,3 +1,169 @@
 .container {
-  padding-top: 80px;
+  padding-bottom: 24px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.statRow {
+  margin-bottom: 0;
+}
+
+.statCard {
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 6%);
+  transition: box-shadow 0.25s, transform 0.25s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 10%);
+    transform: translateY(-2px);
+  }
+}
+
+.chartRow {
+  margin-top: 16px;
+}
+
+.chartCard {
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 6%);
+}
+
+.inventoryBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inventoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.inventoryItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.invName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #333;
+}
+
+.invQty {
+  width: 40px;
+  text-align: right;
+  color: #999;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── 等高校对行（支付方式 + 库存状态） ───────── */
+
+.chartEqualRow {
+  margin-top: 16px;
+
+  .chartCard {
+    height: 100%;
+
+    :global(.ant-card-body) {
+      height: calc(100% - 56px);
+    }
+  }
+}
+
+.equalChartBody {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ─── 实时数据 ─────────────────────────────── */
+
+.realtimeRow {
+  margin-top: 16px;
+
+  .chartCard {
+    height: 100%;
+
+    :global(.ant-card-body) {
+      height: calc(100% - 56px); /* 扣除卡片标题栏高度 */
+    }
+  }
+}
+
+.realtimeBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.realtimeStats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.realtimeStatItem {
+  flex: 1;
+  min-width: 120px;
+}
+
+.onlineUsers {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+  margin-top: auto;
+}
+
+.eventCardBody {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.eventItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.eventTitle {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #333;
 }
