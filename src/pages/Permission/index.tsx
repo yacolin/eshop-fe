@@ -6,7 +6,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useModel } from '@umijs/max';
-import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
+import { Button, Divider, Drawer, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
@@ -19,23 +19,6 @@ import {
 import CreateForm from './components/CreateForm';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-
-const categoryColor: Record<string, string> = {
-  商品管理: 'blue',
-  分类管理: 'cyan',
-  库存管理: 'gold',
-  订单管理: 'green',
-  购物车管理: 'lime',
-  支付管理: 'purple',
-  退款管理: 'volcano',
-  秒杀管理: 'red',
-  优惠券管理: 'pink',
-  促销管理: 'yellow',
-  评论管理: 'orange',
-  通知管理: 'geekblue',
-  用户管理: 'magenta',
-  权限管理: 'purple',
-};
 
 const PermissionList: React.FC = () => {
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
@@ -118,6 +101,7 @@ const PermissionList: React.FC = () => {
       title: '权限名称',
       dataIndex: 'name',
       width: 180,
+      copyable: true,
       ellipsis: true,
     },
     {
@@ -139,31 +123,7 @@ const PermissionList: React.FC = () => {
       title: '分类',
       dataIndex: 'category',
       width: 100,
-      valueType: 'select',
-      valueEnum: {
-        商品管理: { text: '商品管理' },
-        分类管理: { text: '分类管理' },
-        库存管理: { text: '库存管理' },
-        订单管理: { text: '订单管理' },
-        购物车管理: { text: '购物车管理' },
-        支付管理: { text: '支付管理' },
-        退款管理: { text: '退款管理' },
-        秒杀管理: { text: '秒杀管理' },
-        优惠券管理: { text: '优惠券管理' },
-        促销管理: { text: '促销管理' },
-        评论管理: { text: '评论管理' },
-        通知管理: { text: '通知管理' },
-        用户管理: { text: '用户管理' },
-        权限管理: { text: '权限管理' },
-      },
-      render: (_, record) =>
-        record.category ? (
-          <Tag color={categoryColor[record.category] || 'default'}>
-            {record.category}
-          </Tag>
-        ) : (
-          '-'
-        ),
+      copyable: true,
     },
     {
       title: '状态',
