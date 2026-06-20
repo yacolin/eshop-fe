@@ -61,9 +61,14 @@ export default [
         component: './Order',
       },
       {
-        name: '订单项',
-        path: '/sales/orderitem',
-        component: './OrderItem',
+        name: '优惠券管理',
+        path: '/sales/coupon',
+        component: './Coupon',
+      },
+      {
+        name: '促销管理',
+        path: '/sales/promotion',
+        component: './Promotion',
       },
     ],
   },

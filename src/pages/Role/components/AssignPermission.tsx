@@ -16,18 +16,20 @@ interface AssignPermissionProps {
 }
 
 const categoryColor: Record<string, string> = {
-  '商品管理': 'blue',
-  '分类管理': 'cyan',
-  '库存管理': 'gold',
-  '订单管理': 'green',
-  '购物车管理': 'lime',
-  '支付管理': 'purple',
-  '退款管理': 'volcano',
-  '秒杀管理': 'red',
-  '评论管理': 'orange',
-  '通知管理': 'geekblue',
-  '用户管理': 'magenta',
-  '权限管理': 'purple',
+  商品管理: 'blue',
+  分类管理: 'cyan',
+  库存管理: 'gold',
+  订单管理: 'green',
+  购物车管理: 'lime',
+  支付管理: 'purple',
+  退款管理: 'volcano',
+  秒杀管理: 'red',
+  评论管理: 'orange',
+  通知管理: 'geekblue',
+  用户管理: 'magenta',
+  权限管理: 'purple',
+  优惠券管理: 'pink',
+  促销管理: 'yellow',
 };
 
 const AssignPermission: React.FC<AssignPermissionProps> = (props) => {

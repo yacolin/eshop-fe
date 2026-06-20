@@ -50,10 +50,56 @@ declare namespace API {
     total?: number;
   };
 
+  type ClaimCouponReq = {
+    coupon_id: number;
+  };
+
+  type CouponListResult = {
+    list?: CouponResponse[];
+    total?: number;
+  };
+
+  type CouponResponse = {
+    coupon_type?: string;
+    created_at?: string;
+    description?: string;
+    end_time?: string;
+    id?: number;
+    max_discount?: number;
+    min_amount?: number;
+    name?: string;
+    remain_stock?: number;
+    scope?: string;
+    scope_value?: string;
+    start_time?: string;
+    status?: string;
+    total_stock?: number;
+    updated_at?: string;
+    user_limit?: number;
+    valid_days?: number;
+    value?: number;
+  };
+
   type CreateCategoryDTO = {
     description?: string;
     name: string;
     parent_id?: number;
+  };
+
+  type CreateCouponReq = {
+    coupon_type: 'fixed' | 'percentage' | 'voucher';
+    description?: string;
+    end_time: string;
+    max_discount?: number;
+    min_amount?: number;
+    name: string;
+    scope: 'global' | 'category' | 'product';
+    scope_value?: string;
+    start_time: string;
+    total_stock: number;
+    user_limit?: number;
+    valid_days?: number;
+    value: number;
   };
 
   type CreateInventoryDTO = {
@@ -69,6 +115,8 @@ declare namespace API {
     currency?: string;
     customer_id: string;
     items: CreateOrderItemDTO[];
+    /** 可选，使用的用户优惠券ID */
+    user_coupon_id?: number;
   };
 
   type CreateOrderItemDTO = {
@@ -104,6 +152,18 @@ declare namespace API {
     name: string;
     price: number;
     sku: string;
+  };
+
+  type CreatePromotionReq = {
+    description?: string;
+    end_time: string;
+    name: string;
+    promo_type: 'time_discount' | 'full_reduce';
+    rule: string;
+    scope: 'all' | 'category' | 'product';
+    scope_value?: string;
+    sort_order?: number;
+    start_time: string;
   };
 
   type CreateRefundRequest = {
@@ -234,6 +294,27 @@ declare namespace API {
     size?: number;
     /** 分类名称模糊搜索 */
     name?: string;
+  };
+
+  type getCouponsIdParams = {
+    /** 优惠券模板ID */
+    id: number;
+  };
+
+  type getCouponsMineParams = {
+    /** 状态过滤：unused/used/expired */
+    status?: string;
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    page_size?: number;
+  };
+
+  type getCouponsParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    page_size?: number;
   };
 
   type getInventoriesParams = {
@@ -441,6 +522,23 @@ declare namespace API {
     sku?: string;
   };
 
+  type getPromotionsIdParams = {
+    /** 促销活动ID */
+    id: number;
+  };
+
+  type getPromotionsIdProductsParams = {
+    /** 促销活动ID */
+    id: number;
+  };
+
+  type getPromotionsParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    page_size?: number;
+  };
+
   type getRefundsParams = {
     /** 支付ID */
     payment_id?: number;
@@ -532,6 +630,11 @@ declare namespace API {
     total?: number;
   };
 
+  type LinkProductsReq = {
+    discount: number;
+    product_ids: number[];
+  };
+
   type ListPermissionsResponse = {
     page?: number;
     page_size?: number;
@@ -604,14 +707,18 @@ declare namespace API {
   };
 
   type OrderResponse = {
+    /** 使用的优惠券模板ID */
+    coupon_id?: number;
     created_at?: string;
     currency?: string;
     customer_id?: string;
+    /** 优惠金额，单位：分 */
+    discount_amount?: number;
     id?: number;
     items?: OrderItemResponse[];
     order_no?: string;
     status?: string;
-    /** 订单总金额，单位：分 */
+    /** 订单总金额（已扣优惠），单位：分 */
     total_amount?: number;
     updated_at?: string;
   };
@@ -714,6 +821,11 @@ declare namespace API {
     verify_code: string;
   };
 
+  type postAdminPromotionsIdProductsParams = {
+    /** 促销活动ID */
+    id: number;
+  };
+
   type postAdminReviewsIdReplyParams = {
     /** 评论ID */
     id: number;
@@ -810,6 +922,42 @@ declare namespace API {
   type ProductWithCategoryListResult = {
     list?: ProductWithCategoryDTO[];
     total?: number;
+  };
+
+  type PromotionListResult = {
+    list?: PromotionResponse[];
+    total?: number;
+  };
+
+  type PromotionResponse = {
+    created_at?: string;
+    description?: string;
+    end_time?: string;
+    id?: number;
+    name?: string;
+    promo_type?: string;
+    rule?: string;
+    scope?: string;
+    scope_value?: string;
+    sort_order?: number;
+    start_time?: string;
+    status?: string;
+    updated_at?: string;
+  };
+
+  type putAdminCouponsIdParams = {
+    /** 优惠券模板ID */
+    id: number;
+  };
+
+  type putAdminPromotionsIdParams = {
+    /** 促销活动ID */
+    id: number;
+  };
+
+  type putAdminPromotionsIdStatusParams = {
+    /** 促销活动ID */
+    id: number;
   };
 
   type putCartsItemsItemIdParams = {
@@ -1049,6 +1197,21 @@ declare namespace API {
     parent_id?: number;
   };
 
+  type UpdateCouponReq = {
+    description?: string;
+    end_time?: string;
+    max_discount?: number;
+    min_amount?: number;
+    name?: string;
+    scope?: 'global' | 'category' | 'product';
+    scope_value?: string;
+    start_time?: string;
+    status?: 'active' | 'inactive';
+    user_limit?: number;
+    valid_days?: number;
+    value?: number;
+  };
+
   type UpdateInventoryDTO = {
     /** 调整后物理库存 */
     quantity?: number;
@@ -1091,6 +1254,18 @@ declare namespace API {
     price?: number;
   };
 
+  type UpdatePromotionReq = {
+    description?: string;
+    end_time?: string;
+    name?: string;
+    rule?: string;
+    scope?: 'all' | 'category' | 'product';
+    scope_value?: string;
+    sort_order?: number;
+    start_time?: string;
+    status?: 'pending' | 'active' | 'cancelled';
+  };
+
   type UpdateRoleRequest = {
     description?: string;
     display_name?: string;
@@ -1113,12 +1288,41 @@ declare namespace API {
     zip_code?: string;
   };
 
+  type UseCouponReq = {
+    order_amount: number;
+    order_no: string;
+    user_coupon_id: number;
+  };
+
   type User = {
     created_at?: string;
     id?: number;
     status?: number;
     updated_at?: string;
     user_info?: UserInfo;
+  };
+
+  type UserCouponListResult = {
+    list?: UserCouponResponse[];
+    total?: number;
+  };
+
+  type UserCouponResponse = {
+    coupon_code?: string;
+    coupon_description?: string;
+    coupon_id?: number;
+    coupon_min_amount?: number;
+    /** 冗余展示优惠券信息 */
+    coupon_name?: string;
+    coupon_type?: string;
+    coupon_value?: number;
+    created_at?: string;
+    expire_at?: string;
+    id?: number;
+    order_no?: string;
+    status?: string;
+    used_at?: string;
+    user_id?: number;
   };
 
   type UserInfo = {

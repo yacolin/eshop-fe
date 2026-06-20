@@ -43,15 +43,33 @@ export default (initialState: {
     canUpdateOrder: permissions.includes('order:update'),
     canDeleteOrder: permissions.includes('order:delete'),
 
-    // ── Role ──
-    canCreateRole: permissions.includes('role:create'),
-    canUpdateRole: permissions.includes('role:update'),
-    canDeleteRole: permissions.includes('role:delete'),
+    // ── Role（admin 角色自动拥有所有角色管理能力）──
+    canCreateRole:
+      roles.includes('admin') || permissions.includes('role:create'),
+    canUpdateRole:
+      roles.includes('admin') || permissions.includes('role:update'),
+    canDeleteRole:
+      roles.includes('admin') || permissions.includes('role:delete'),
 
-    // ── Permission ──
-    canCreatePermission: permissions.includes('permission:create'),
-    canUpdatePermission: permissions.includes('permission:update'),
-    canDeletePermission: permissions.includes('permission:delete'),
+    // ── Permission（admin 角色自动拥有所有权限管理能力）──
+    canCreatePermission:
+      roles.includes('admin') || permissions.includes('permission:create'),
+    canUpdatePermission:
+      roles.includes('admin') || permissions.includes('permission:update'),
+    canDeletePermission:
+      roles.includes('admin') || permissions.includes('permission:delete'),
+
+    // ── Coupon ──
+    canCreateCoupon:
+      roles.includes('admin') || permissions.includes('coupon:create'),
+    canUpdateCoupon:
+      roles.includes('admin') || permissions.includes('coupon:update'),
+
+    // ── Promotion ──
+    canCreatePromotion:
+      roles.includes('admin') || permissions.includes('promotion:create'),
+    canUpdatePromotion:
+      roles.includes('admin') || permissions.includes('promotion:update'),
 
     // ── Review ──
     // 审核/回复统一使用 review:moderate（数据库权限定义）

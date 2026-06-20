@@ -4,11 +4,10 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, Dropdown, message, Tag } from 'antd';
+import { Button, Divider, Drawer, Dropdown, message, Table, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
-import LinkText from '@/components/LinkText';
 
 import { ORDER_STATUS_MAP } from '@/constants';
 import {
@@ -60,14 +59,8 @@ const OrderList: React.FC = () => {
       title: '订单号',
       dataIndex: 'order_no',
       width: 200,
+      copyable: true,
       fixed: 'left',
-      render: (_, record) => (
-        <LinkText
-          value={record.order_no}
-          path="/sales/orderitem"
-          state={{ order_no: record.order_no }}
-        />
-      ),
     },
     {
       title: '客户ID',
@@ -180,10 +173,7 @@ const OrderList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Auth key="create" permission="canCreateOrder">
-            <Button
-              type="primary"
-              onClick={() => handleModalVisible(true)}
-            >
+            <Button type="primary" onClick={() => handleModalVisible(true)}>
               新建订单
             </Button>
           </Auth>,
@@ -229,20 +219,48 @@ const OrderList: React.FC = () => {
       />
 
       <Drawer
-        width={600}
+        width={640}
         open={!!row}
         onClose={() => setRow(undefined)}
         closable
         title={row ? `订单 #${row.id}` : '订单详情'}
       >
         {row?.id && (
-          <ProDescriptions<API.OrderResponse>
-            column={2}
-            title={`订单 #${row.id}`}
-            request={async () => ({ data: row || {} })}
-            params={{ id: row?.id }}
-            columns={columns as any}
-          />
+          <>
+            <ProDescriptions<API.OrderResponse>
+              column={2}
+              title={`订单 #${row.id}`}
+              request={async () => ({ data: row || {} })}
+              params={{ id: row?.id }}
+              columns={columns as any}
+            />
+            <Divider />
+            <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 15 }}>
+              订单商品
+            </div>
+            <Table<API.OrderItemResponse>
+              rowKey="id"
+              dataSource={row.items || []}
+              pagination={false}
+              size="small"
+              columns={[
+                { title: '商品ID', dataIndex: 'product_id', width: 100 },
+                { title: '数量', dataIndex: 'quantity', width: 60 },
+                {
+                  title: '单价',
+                  dataIndex: 'unit_price',
+                  width: 100,
+                  render: (v) => formatPrice(v),
+                },
+                {
+                  title: '小计',
+                  dataIndex: 'amount',
+                  width: 100,
+                  render: (v) => formatPrice(v),
+                },
+              ]}
+            />
+          </>
         )}
       </Drawer>
     </PageContainer>
