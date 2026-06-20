@@ -22,6 +22,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
     <Modal
       title="新建角色"
       width={600}
+      destroyOnHidden
       open={modalVisible}
       onCancel={() => onCancel()}
       footer={null}
