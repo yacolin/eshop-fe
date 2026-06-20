@@ -16,13 +16,6 @@ export default [
     path: '/home',
     component: './Home',
   },
-  {
-    name: '权限演示',
-    path: '/access',
-    icon: 'LockOutlined',
-    component: './Access',
-    access: 'canAdmin',
-  },
   // {
   //   name: ' CRUD 示例',
   //   path: '/table',
