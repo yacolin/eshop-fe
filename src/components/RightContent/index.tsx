@@ -1,7 +1,9 @@
 import NotifyBell from '@/components/NotifyBell';
-import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { UserOutlined, LogoutOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Avatar, Dropdown } from 'antd';
 import React from 'react';
+
+import { history } from '@umijs/max';
 
 interface RightContentProps {
   onLogout: () => void;
@@ -24,6 +26,13 @@ const RightContent: React.FC<RightContentProps> = ({ onLogout }) => {
       <Dropdown
         menu={{
           items: [
+            {
+              key: 'profile',
+              icon: <ProfileOutlined />,
+              label: '个人资料',
+              onClick: () => history.push('/user/user-info'),
+            },
+            { type: 'divider' },
             {
               key: 'logout',
               icon: <LogoutOutlined />,
