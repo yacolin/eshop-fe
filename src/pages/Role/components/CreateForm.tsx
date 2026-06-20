@@ -2,6 +2,7 @@ import {
   ProForm,
   ProFormDigit,
   ProFormSelect,
+  ProFormSwitch,
   ProFormText,
   ProFormTextArea,
 } from '@ant-design/pro-components';
@@ -81,6 +82,13 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
             { label: '启用', value: 1 },
             { label: '禁用', value: 2 },
           ]}
+        />
+        <ProFormSwitch
+          name="is_system"
+          label="系统内置"
+          width="md"
+          initialValue={false}
+          fieldProps={{ checkedChildren: '是', unCheckedChildren: '否' }}
         />
         <ProFormTextArea
           name="description"

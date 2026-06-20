@@ -9,11 +9,12 @@ import { Modal } from 'antd';
 import React from 'react';
 
 export type FormValueType = {
+  id?: number;
   display_name?: string;
   description?: string;
   sort?: number;
   status?: number;
-} & Partial<API.Role>;
+};
 
 export interface UpdateFormProps {
   onCancel: () => void;
@@ -61,6 +62,13 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           ),
         }}
       >
+        <ProFormText
+          name="name"
+          label="角色名称"
+          width="md"
+          initialValue={values.name}
+          disabled
+        />
         <ProFormText
           name="display_name"
           label="显示名称"
