@@ -5,6 +5,7 @@
 import * as auths from './auths';
 import * as carts from './carts';
 import * as categories from './categories';
+import * as dashboard from './dashboard';
 import * as inventories from './inventories';
 import * as orders from './orders';
 import * as paymentMethods from './paymentMethods';
@@ -21,6 +22,7 @@ export default {
   auths,
   carts,
   categories,
+  dashboard,
   inventories,
   orders,
   payments,

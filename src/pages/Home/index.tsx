@@ -1,11 +1,11 @@
 import { Column, Line, Pie } from '@ant-design/charts';
 import { PageContainer } from '@ant-design/pro-components';
-import { useRequest } from '@umijs/max';
 import {
   Avatar,
   Badge,
   Card,
   Col,
+  message,
   Row,
   Spin,
   Statistic,
@@ -16,7 +16,7 @@ import {
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './index.less';
 
 import {
@@ -32,10 +32,7 @@ import {
 } from '@ant-design/icons';
 
 import { useWebSocketContext } from '@/contexts/WebSocketContext';
-import { getInventories } from '@/services/api/inventories';
-import { getOrders } from '@/services/api/orders';
-import { getPayments } from '@/services/api/payments';
-import { getProductsEnriched } from '@/services/api/products';
+import { getDashboardStats } from '@/services/api/dashboard';
 
 dayjs.extend(relativeTime);
 dayjs.locale('zh-cn');
@@ -49,18 +46,17 @@ const COLOR_PALETTE = [
   '#FF9845',
 ];
 
-const statusLabel: Record<string, string> = {
-  pending: '待付款',
-  paid: '已付款',
-  shipped: '已发货',
-  delivered: '已送达',
-  cancelled: '已取消',
-  refunded: '已退款',
-};
+interface DashboardData {
+  summary: Record<string, any>;
+  order_trend: any[];
+  order_status_dist: any[];
+  payment_method_dist: any[];
+  category_dist: any[];
+  inventory_status_dist: any[];
+  top_products: any[];
+}
 
 const HomePage: React.FC = () => {
-  const [now] = useState(() => dayjs());
-
   // ─── WebSocket 实时数据 ──────────────────────────────────
   const {
     isConnected,
@@ -74,205 +70,72 @@ const HomePage: React.FC = () => {
   >([]);
   const eventSeq = useRef(0);
 
-  // 订阅通知消息，形成实时事件流
   useEffect(() => {
     const unsub = subscribe('notification', (msg) => {
       eventSeq.current++;
-      const item = {
-        id: eventSeq.current,
-        type: msg.payload?.level || 'info',
-        title: msg.payload?.title || msg.payload?.message || '',
-        time: new Date(msg.timestamp || Date.now()),
-      };
-      setEvents((prev) => [item, ...prev].slice(0, 20));
+      setEvents((prev) =>
+        [
+          {
+            id: eventSeq.current,
+            type: msg.payload?.level || 'info',
+            title: msg.payload?.title || msg.payload?.message || '',
+            time: new Date(msg.timestamp || Date.now()),
+          },
+          ...prev,
+        ].slice(0, 20),
+      );
     });
     return unsub;
   }, [subscribe]);
 
-  // ─── 订单数据 ───────────────────────────────────────────
-  const { data: ordersRes, loading: ordersLoading } = useRequest(
-    () =>
-      getOrders({
-        page: 1,
-        size: 100,
-        sort_by: 'created_at',
-        order: 'desc',
-      }),
-    { refreshDeps: [] },
-  );
-  // 取最近 30 天的订单
-  const orders = useMemo(() => {
-    const list = ordersRes?.data?.list ?? [];
-    const total = ordersRes?.data?.total ?? 0;
-    return { list, total };
-  }, [ordersRes]);
+  // ─── 仪表盘数据 ─────────────────────────────────────────
+  const [loading, setLoading] = useState(true);
+  const [dashData, setDashData] = useState<DashboardData>({
+    summary: {},
+    order_trend: [],
+    order_status_dist: [],
+    payment_method_dist: [],
+    category_dist: [],
+    inventory_status_dist: [],
+    top_products: [],
+  });
 
-  // ─── 支付数据 ───────────────────────────────────────────
-  const { data: paymentsRes, loading: paymentsLoading } = useRequest(
-    () =>
-      getPayments({
-        page: 1,
-        page_size: 100,
-      }),
-    { refreshDeps: [] },
-  );
-  const payments = useMemo(() => {
-    return paymentsRes?.data?.payments ?? [];
-  }, [paymentsRes]);
-
-  // ─── 产品数据 ───────────────────────────────────────────
-  const { data: productsRes, loading: productsLoading } = useRequest(
-    () =>
-      getProductsEnriched({
-        page: 1,
-        size: 100,
-      }),
-    { refreshDeps: [] },
-  );
-  const products = useMemo(() => {
-    const list = productsRes?.data?.list ?? [];
-    const total = productsRes?.data?.total ?? 0;
-    return { list, total };
-  }, [productsRes]);
-
-  // ─── 库存数据 ───────────────────────────────────────────
-  const { data: inventoryRes, loading: inventoryLoading } = useRequest(
-    () =>
-      getInventories({
-        page: 1,
-        size: 100,
-      }),
-    { refreshDeps: [] },
-  );
-  const inventories = useMemo(() => {
-    return inventoryRes?.data?.list ?? [];
-  }, [inventoryRes]);
-
-  const loading =
-    ordersLoading || paymentsLoading || productsLoading || inventoryLoading;
-
-  // ─── 核心指标 ───────────────────────────────────────────
-  const stats = useMemo(() => {
-    const totalRevenue = (payments as API.PaymentResponse[])
-      .filter((p) => p.status === 'completed' || p.status === 'paid')
-      .reduce((sum, p) => sum + (p.amount ?? 0), 0);
-
-    const lowStockCount = (inventories as API.Inventory[]).filter(
-      (i) => i.status === 'lowstock' || i.status === 'outofstock',
-    ).length;
-
-    const totalOrders = orders.total;
-    const totalProducts = products.total;
-
-    return { totalOrders, totalRevenue, totalProducts, lowStockCount };
-  }, [payments, inventories, orders.total, products.total]);
-
-  // ─── 订单趋势（按天聚合，近7天） ──────────────────────
-  const orderTrend = useMemo(() => {
-    const sevenDaysAgo = now.subtract(7, 'day');
-    const dayMap: Record<
-      string,
-      { date: string; count: number; amount: number }
-    > = {};
-
-    for (let i = 0; i < 7; i++) {
-      const d = now.subtract(i, 'day').format('MM-DD');
-      dayMap[d] = { date: d, count: 0, amount: 0 };
-    }
-
-    (orders.list as API.OrderResponse[]).forEach((o) => {
-      if (!o.created_at) return;
-      const d = dayjs(o.created_at);
-      if (d.isBefore(sevenDaysAgo)) return;
-      const key = d.format('MM-DD');
-      if (dayMap[key]) {
-        dayMap[key].count += 1;
-        dayMap[key].amount += (o.total_amount ?? 0) / 100;
+  const fetchDashboard = async () => {
+    setLoading(true);
+    try {
+      const res = await getDashboardStats();
+      const raw = (res as any)?.data;
+      if (raw) {
+        setDashData({
+          summary: raw.summary ?? {},
+          order_trend: raw.order_trend ?? [],
+          order_status_dist: raw.order_status_dist ?? [],
+          payment_method_dist: raw.payment_method_dist ?? [],
+          category_dist: raw.category_dist ?? [],
+          inventory_status_dist: raw.inventory_status_dist ?? [],
+          top_products: raw.top_products ?? [],
+        });
       }
-    });
+    } catch {
+      message.error('获取仪表盘数据失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date));
-  }, [orders.list, now]);
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
-  // ─── 订单状态分布 ─────────────────────────────────────
-  const orderStatusDist = useMemo(() => {
-    const map: Record<string, number> = {};
-    (orders.list as API.OrderResponse[]).forEach((o) => {
-      const s = o.status ?? 'unknown';
-      map[s] = (map[s] ?? 0) + 1;
-    });
-    return Object.entries(map)
-      .filter(([k]) => k !== 'unknown')
-      .map(([status, value]) => ({
-        status,
-        label: statusLabel[status] ?? status,
-        value,
-      }));
-  }, [orders.list]);
-
-  // ─── 支付方式分布 ─────────────────────────────────────
-  const paymentMethodDist = useMemo(() => {
-    const map: Record<string, number> = {};
-    (payments as API.PaymentResponse[]).forEach((p) => {
-      const m = p.payment_method ?? 'unknown';
-      map[m] = (map[m] ?? 0) + 1;
-    });
-    return Object.entries(map)
-      .filter(([k]) => k !== 'unknown')
-      .map(([method, value]) => ({ method, label: method, value }));
-  }, [payments]);
-
-  // ─── 分类分布 ─────────────────────────────────────────
-  const categoryDist = useMemo(() => {
-    const map: Record<string, number> = {};
-    (products.list as API.ProductWithCategoryDTO[]).forEach((p) => {
-      (p.categories ?? []).forEach((c) => {
-        const name = c.name ?? '未分类';
-        map[name] = (map[name] ?? 0) + 1;
-      });
-    });
-    return Object.entries(map)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([category, value]) => ({ category, value }));
-  }, [products.list]);
-
-  // ─── 库存状态分布 ─────────────────────────────────────
-  const inventoryStatusDist = useMemo(() => {
-    const map: Record<string, number> = {};
-    (inventories as API.Inventory[]).forEach((i) => {
-      const s = i.status ?? 'unknown';
-      map[s] = (map[s] ?? 0) + 1;
-    });
-    const labelMap: Record<string, string> = {
-      instock: '库存充足',
-      lowstock: '库存偏低',
-      outofstock: '缺货',
-    };
-    return Object.entries(map).map(([status, value]) => ({
-      status,
-      label: labelMap[status] ?? status,
-      value,
-    }));
-  }, [inventories]);
-
-  // ─── 热销商品（按订单项频次估算） ─────────────────────
-  const topProducts = useMemo(() => {
-    const map: Record<string, { name: string; count: number; amount: number }> =
-      {};
-    (orders.list as API.OrderResponse[]).forEach((o) => {
-      (o.items ?? []).forEach((item) => {
-        const id = String(item.product_id ?? '');
-        if (!id) return;
-        if (!map[id]) map[id] = { name: `商品#${id}`, count: 0, amount: 0 };
-        map[id].count += item.quantity ?? 1;
-        map[id].amount += ((item.unit_price ?? 0) * (item.quantity ?? 1)) / 100;
-      });
-    });
-    return Object.values(map)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-  }, [orders.list]);
+  const {
+    summary,
+    order_trend: orderTrend,
+    order_status_dist: orderStatusDist,
+    payment_method_dist: paymentMethodDist,
+    category_dist: categoryDist,
+    inventory_status_dist: inventoryStatusDist,
+    top_products: topProducts,
+  } = dashData;
 
   if (loading) {
     return (
@@ -293,7 +156,7 @@ const HomePage: React.FC = () => {
             <Card className={styles.statCard} hoverable>
               <Statistic
                 title="总订单数"
-                value={stats.totalOrders}
+                value={summary.total_orders}
                 prefix={<ShoppingCartOutlined style={{ color: '#5B8FF9' }} />}
                 valueStyle={{ color: '#5B8FF9' }}
               />
@@ -303,7 +166,7 @@ const HomePage: React.FC = () => {
             <Card className={styles.statCard} hoverable>
               <Statistic
                 title="总营收 (元)"
-                value={Math.round(stats.totalRevenue / 100)}
+                value={Math.round((summary.total_revenue ?? 0) / 100)}
                 prefix={<DollarOutlined style={{ color: '#F6BD16' }} />}
                 suffix={
                   <span style={{ fontSize: 14, color: '#52c41a' }}>
@@ -318,7 +181,7 @@ const HomePage: React.FC = () => {
             <Card className={styles.statCard} hoverable>
               <Statistic
                 title="商品总数"
-                value={stats.totalProducts}
+                value={summary.total_products}
                 prefix={<AppstoreOutlined style={{ color: '#13C2C2' }} />}
                 valueStyle={{ color: '#13C2C2' }}
               />
@@ -328,10 +191,11 @@ const HomePage: React.FC = () => {
             <Card className={styles.statCard} hoverable>
               <Statistic
                 title="库存告警"
-                value={stats.lowStockCount}
+                value={summary.low_stock_count}
                 prefix={<WarningOutlined style={{ color: '#F46649' }} />}
                 valueStyle={{
-                  color: stats.lowStockCount > 0 ? '#F46649' : '#52c41a',
+                  color:
+                    (summary.low_stock_count ?? 0) > 0 ? '#F46649' : '#52c41a',
                 }}
                 suffix={
                   <span style={{ fontSize: 14, color: '#F46649' }}>
@@ -605,46 +469,19 @@ const HomePage: React.FC = () => {
           <Col xs={24} lg={12}>
             <Card title="库存状态" className={styles.chartCard}>
               <div className={styles.equalChartBody}>
-                <div className={styles.inventoryBody}>
-                  <Pie
-                    data={inventoryStatusDist}
-                    angleField="value"
-                    colorField="label"
-                    color={['#52c41a', '#F6BD16', '#F46649']}
-                    label={{
-                      text: (d: any) => `${d.label}\n${d.value}`,
-                      style: { fontSize: 11 },
-                    }}
-                    legend={{ color: { title: false, position: 'bottom' } }}
-                    height={200}
-                    innerRadius={0.6}
-                  />
-                  <div className={styles.inventoryList}>
-                    {(inventories as API.Inventory[]).slice(0, 8).map((inv) => (
-                      <div key={inv.id} className={styles.inventoryItem}>
-                        <span className={styles.invName}>
-                          商品 #{inv.product_id}
-                        </span>
-                        <Tag
-                          color={
-                            inv.status === 'instock'
-                              ? 'success'
-                              : inv.status === 'lowstock'
-                              ? 'warning'
-                              : 'error'
-                          }
-                        >
-                          {inv.status === 'instock'
-                            ? '充足'
-                            : inv.status === 'lowstock'
-                            ? '偏低'
-                            : '缺货'}
-                        </Tag>
-                        <span className={styles.invQty}>{inv.quantity}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <Pie
+                  data={inventoryStatusDist}
+                  angleField="value"
+                  colorField="label"
+                  color={['#52c41a', '#F6BD16', '#F46649']}
+                  label={{
+                    text: (d: any) => `${d.label}\n${d.value}`,
+                    style: { fontSize: 11 },
+                  }}
+                  legend={{ color: { title: false, position: 'bottom' } }}
+                  height={260}
+                  innerRadius={0.6}
+                />
               </div>
             </Card>
           </Col>

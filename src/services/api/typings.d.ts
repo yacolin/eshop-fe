@@ -38,6 +38,13 @@ declare namespace API {
     updated_at?: string;
   };
 
+  type CategoryDistDTO = {
+    /** 分类名称 */
+    category?: string;
+    /** 商品数量 */
+    value?: number;
+  };
+
   type CategoryListResult = {
     list?: Category[];
     total?: number;
@@ -121,6 +128,16 @@ declare namespace API {
     name: string;
     sort?: number;
     status?: number;
+  };
+
+  type DashboardResponse = {
+    category_dist?: CategoryDistDTO[];
+    inventory_status_dist?: StatusDistDTO[];
+    order_status_dist?: StatusDistDTO[];
+    order_trend?: OrderTrendDTO[];
+    payment_method_dist?: MethodDistDTO[];
+    summary?: SummaryDTO;
+    top_products?: TopProductDTO[];
   };
 
   type deleteAdminReviewsIdParams = {
@@ -542,6 +559,15 @@ declare namespace API {
 
   type MediaType = 'image' | 'video';
 
+  type MethodDistDTO = {
+    /** 显示标签 */
+    label?: string;
+    /** 支付方式编码 */
+    method?: string;
+    /** 数量 */
+    value?: number;
+  };
+
   type ModerateReviewReq = {
     /** 拒绝/隐藏原因（可选，记录用） */
     reason?: string;
@@ -588,6 +614,15 @@ declare namespace API {
     /** 订单总金额，单位：分 */
     total_amount?: number;
     updated_at?: string;
+  };
+
+  type OrderTrendDTO = {
+    /** 金额（分） */
+    amount?: number;
+    /** 订单数 */
+    count?: number;
+    /** 日期 (MM-DD) */
+    date?: string;
   };
 
   type PasswordLoginRequest = {
@@ -964,6 +999,26 @@ declare namespace API {
     user_id?: number;
   };
 
+  type StatusDistDTO = {
+    /** 显示标签 */
+    label?: string;
+    /** 状态编码 */
+    status?: string;
+    /** 数量 */
+    value?: number;
+  };
+
+  type SummaryDTO = {
+    /** 库存告警数 */
+    low_stock_count?: number;
+    /** 总订单数 */
+    total_orders?: number;
+    /** 商品总数 */
+    total_products?: number;
+    /** 总营收（分） */
+    total_revenue?: number;
+  };
+
   type TestPushRequest = {
     /** 级别: info/warning/error */
     level?: string;
@@ -973,6 +1028,15 @@ declare namespace API {
     target?: string;
     /** 通知标题 */
     title: string;
+  };
+
+  type TopProductDTO = {
+    /** 销售额（分） */
+    amount?: number;
+    /** 销量 */
+    count?: number;
+    /** 商品名称 */
+    name?: string;
   };
 
   type UpdateCartItemDTO = {
