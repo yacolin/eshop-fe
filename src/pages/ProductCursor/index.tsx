@@ -14,8 +14,6 @@ import {
   Popconfirm,
   Select,
   Space,
-  Tag,
-  Tooltip,
 } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -275,48 +273,48 @@ const ProductCursorList: React.FC = () => {
       width: 100,
       render: (_, record) => formatPrice(record.price),
     },
-    {
-      title: '分类',
-      dataIndex: 'categories',
-      width: 170,
-      render: (_, record) => {
-        const cats = (record as any).categories as
-          | API.ProductCategoryBrief[]
-          | undefined;
-        if (!cats || cats.length === 0) {
-          return <Tag color="default">未分类</Tag>;
-        }
-        const COLORS = [
-          'blue',
-          'gold',
-          'green',
-          'purple',
-          'red',
-          'cyan',
-          'magenta',
-        ];
-        const isSingle = cats.length === 1;
-        return cats.map((cat, index) => (
-          <Tooltip key={cat.id} title={cat.name}>
-            <Tag
-              color={COLORS[index % COLORS.length]}
-              style={
-                isSingle
-                  ? undefined
-                  : {
-                      maxWidth: 72,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }
-              }
-            >
-              {cat.name}
-            </Tag>
-          </Tooltip>
-        ));
-      },
-    },
+    // {
+    //   title: '分类',
+    //   dataIndex: 'categories',
+    //   width: 170,
+    //   render: (_, record) => {
+    //     const cats = (record as any).categories as
+    //       | API.ProductCategoryBrief[]
+    //       | undefined;
+    //     if (!cats || cats.length === 0) {
+    //       return <Tag color="default">未分类</Tag>;
+    //     }
+    //     const COLORS = [
+    //       'blue',
+    //       'gold',
+    //       'green',
+    //       'purple',
+    //       'red',
+    //       'cyan',
+    //       'magenta',
+    //     ];
+    //     const isSingle = cats.length === 1;
+    //     return cats.map((cat, index) => (
+    //       <Tooltip key={cat.id} title={cat.name}>
+    //         <Tag
+    //           color={COLORS[index % COLORS.length]}
+    //           style={
+    //             isSingle
+    //               ? undefined
+    //               : {
+    //                   maxWidth: 72,
+    //                   overflow: 'hidden',
+    //                   textOverflow: 'ellipsis',
+    //                   whiteSpace: 'nowrap',
+    //                 }
+    //           }
+    //         >
+    //           {cat.name}
+    //         </Tag>
+    //       </Tooltip>
+    //     ));
+    //   },
+    // },
     {
       title: '描述',
       dataIndex: 'description',

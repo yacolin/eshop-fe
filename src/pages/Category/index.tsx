@@ -120,11 +120,12 @@ const CategoryList: React.FC = () => {
       dataIndex: 'description',
       hideInSearch: true,
       ellipsis: true,
+      width: 300,
     },
     {
       title: '父分类',
       dataIndex: 'parent_id',
-      width: 120,
+      width: 150,
       render: (_, record) => {
         const parent = rootCategories.find((c) => c.value === record.parent_id);
         return parent ? parent.label : '-';
