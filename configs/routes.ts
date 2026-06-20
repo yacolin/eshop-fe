@@ -74,6 +74,18 @@ export default [
     ],
   },
   {
+    name: 'REVIEW',
+    icon: 'StarOutlined',
+    path: '/review',
+    routes: [
+      {
+        name: '评论审核',
+        path: '/review/manage',
+        component: './Review',
+      },
+    ],
+  },
+  {
     name: 'USER',
     icon: 'TeamOutlined',
     path: '/user',
@@ -82,6 +94,11 @@ export default [
         name: '用户信息',
         path: '/user/user-info',
         component: './UserInfo',
+      },
+      {
+        name: '我的评论',
+        path: '/user/my-reviews',
+        component: './MyReviews',
       },
       {
         name: '角色管理',

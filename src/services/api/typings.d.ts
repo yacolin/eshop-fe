@@ -106,6 +106,14 @@ declare namespace API {
     refund_reason: string;
   };
 
+  type CreateReviewReq = {
+    content?: string;
+    media?: ReviewMedia[];
+    order_item_id: number;
+    product_id: number;
+    rating: number;
+  };
+
   type CreateRoleRequest = {
     description?: string;
     display_name: string;
@@ -113,6 +121,11 @@ declare namespace API {
     name: string;
     sort?: number;
     status?: number;
+  };
+
+  type deleteAdminReviewsIdParams = {
+    /** 评论ID */
+    id: number;
   };
 
   type deleteCartsItemsItemIdParams = {
@@ -151,6 +164,11 @@ declare namespace API {
     id: number;
   };
 
+  type deleteReviewsIdParams = {
+    /** 评论ID */
+    id: number;
+  };
+
   type deleteRolesIdParams = {
     /** 角色ID */
     id: string;
@@ -166,6 +184,13 @@ declare namespace API {
     user_id: string;
     /** 角色ID */
     role_id: string;
+  };
+
+  type getAdminReviewsPendingParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
   };
 
   type getCartsParams = {
@@ -374,6 +399,20 @@ declare namespace API {
     id: number;
   };
 
+  type getProductsIdRatingParams = {
+    /** 产品ID */
+    id: number;
+  };
+
+  type getProductsIdReviewsParams = {
+    /** 产品ID */
+    id: number;
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+  };
+
   type getProductsParams = {
     /** 页码 */
     page?: number;
@@ -404,6 +443,13 @@ declare namespace API {
     sort_by?: string;
     /** 排序方向，默认desc */
     order?: string;
+  };
+
+  type getReviewsMeParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
   };
 
   type getRolesIdParams = {
@@ -494,6 +540,14 @@ declare namespace API {
     username?: string;
   };
 
+  type MediaType = 'image' | 'video';
+
+  type ModerateReviewReq = {
+    /** 拒绝/隐藏原因（可选，记录用） */
+    reason?: string;
+    status: 'approved' | 'rejected' | 'hidden';
+  };
+
   type OnlineStatsResponse = {
     /** 连接数 */
     connections?: number;
@@ -539,6 +593,11 @@ declare namespace API {
   type PasswordLoginRequest = {
     password: string;
     username: string;
+  };
+
+  type patchAdminReviewsIdModerateParams = {
+    /** 评论ID */
+    id: number;
   };
 
   type patchOrdersIdStatusParams = {
@@ -620,6 +679,11 @@ declare namespace API {
     verify_code: string;
   };
 
+  type postAdminReviewsIdReplyParams = {
+    /** 评论ID */
+    id: number;
+  };
+
   type postCartsItemsParams = {
     /** 用户ID */
     user_id?: number;
@@ -684,6 +748,17 @@ declare namespace API {
   type ProductListResult = {
     list?: Product[];
     total?: number;
+  };
+
+  type ProductRatingResp = {
+    average_rating?: number;
+    product_id?: number;
+    rating_1_count?: number;
+    rating_2_count?: number;
+    rating_3_count?: number;
+    rating_4_count?: number;
+    rating_5_count?: number;
+    review_count?: number;
   };
 
   type ProductWithCategoryDTO = {
@@ -804,6 +879,10 @@ declare namespace API {
     quantity: number;
   };
 
+  type ReplyReviewReq = {
+    reply: string;
+  };
+
   type ReserveInventoryDTO = {
     product_id: number;
     /** 预占数量 */
@@ -816,6 +895,46 @@ declare namespace API {
     message?: string;
     trace_id?: string;
   };
+
+  type ReviewListResp = {
+    list?: ReviewResp[];
+    total?: number;
+  };
+
+  type ReviewMedia = {
+    /** 缩略图地址（视频封面/图片缩略） */
+    thumbnail?: string;
+    /** 媒体类型 */
+    type?: MediaType;
+    /** 资源地址 */
+    url?: string;
+  };
+
+  type ReviewMediaDTO = {
+    thumbnail?: string;
+    type?: MediaType;
+    url?: string;
+  };
+
+  type ReviewResp = {
+    content?: string;
+    created_at?: string;
+    id?: number;
+    media?: ReviewMediaDTO[];
+    order_item_id?: number;
+    order_no?: string;
+    product_id?: number;
+    rating?: number;
+    reply?: string;
+    reply_at?: string;
+    status?: ReviewStatus;
+    updated_at?: string;
+    user_avatar?: string;
+    user_id?: number;
+    user_name?: string;
+  };
+
+  type ReviewStatus = 'pending' | 'approved' | 'rejected' | 'hidden';
 
   type Role = {
     created_at?: string;

@@ -12,10 +12,12 @@ import * as payments from './payments';
 import * as permissions from './permissions';
 import * as products from './products';
 import * as refunds from './refunds';
+import * as reviews from './reviews';
 import * as roles from './roles';
 import * as users from './users';
 import * as websocket from './websocket';
 export default {
+  reviews,
   auths,
   carts,
   categories,
