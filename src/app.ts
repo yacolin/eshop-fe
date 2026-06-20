@@ -2,6 +2,7 @@
 import RightContent from '@/components/RightContent';
 import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import { postAuthLogout } from '@/services/api/auths';
+import { parseToken } from '@/utils/auth';
 import type { RequestConfig } from '@umijs/max';
 import { history, request as umiRequest } from '@umijs/max';
 import { message } from 'antd';
@@ -14,9 +15,20 @@ export function rootContainer(container: React.ReactNode) {
 
 // 全局初始化数据配置，用于 Layout 用户信息和权限初始化
 // 更多信息见文档：https://umijs.org/docs/api/runtime-config#getinitialstate
-export async function getInitialState(): Promise<{ name: string }> {
+export async function getInitialState(): Promise<{
+  name: string;
+  roles: string[];
+  userId?: number;
+}> {
   const savedUsername = localStorage.getItem('savedUsername');
-  return { name: savedUsername || '未登录' };
+  const claims = parseToken();
+  const roles: string[] = claims?.roles || [];
+  const userId: number | undefined = claims?.user_id || undefined;
+  return {
+    name: savedUsername || '未登录',
+    roles,
+    userId,
+  };
 }
 
 export const layout = () => {

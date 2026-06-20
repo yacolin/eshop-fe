@@ -21,6 +21,7 @@ export default [
     path: '/access',
     icon: 'LockOutlined',
     component: './Access',
+    access: 'canAdmin',
   },
   // {
   //   name: ' CRUD 示例',
@@ -77,6 +78,7 @@ export default [
     name: 'REVIEW',
     icon: 'StarOutlined',
     path: '/review',
+    access: 'canManageReviews',
     routes: [
       {
         name: '评论审核',
@@ -94,21 +96,25 @@ export default [
         name: '用户信息',
         path: '/user/user-info',
         component: './UserInfo',
+        access: 'isLoggedIn',
       },
       {
         name: '我的评论',
         path: '/user/my-reviews',
         component: './MyReviews',
+        access: 'isLoggedIn',
       },
       {
         name: '角色管理',
         path: '/user/role',
         component: './Role',
+        access: 'canManageRoles',
       },
       {
         name: '权限管理',
         path: '/user/permission',
         component: './Permission',
+        access: 'canManagePermissions',
       },
     ],
   },

@@ -1,10 +1,22 @@
-export default (initialState: API.UserInfo) => {
-  // 在这里按照初始化数据定义项目中的权限，统一管理
-  // 参考文档 https://umijs.org/docs/max/access
-  const canSeeAdmin = !!(
-    initialState && initialState.name !== 'dontHaveAccess'
-  );
+export default (initialState: {
+  name: string;
+  roles: string[];
+  userId?: number;
+}) => {
+  const roles = initialState?.roles || [];
+  const isLoggedIn = !!initialState?.name && initialState.name !== '未登录';
+
   return {
-    canSeeAdmin,
+    isLoggedIn,
+    /** admin 角色 — 全部管理功能 */
+    canAdmin: roles.includes('admin'),
+    /** merchant 或 admin — 商家级管理 */
+    canMerchant: roles.includes('admin') || roles.includes('merchant'),
+    /** 评论审核管理 */
+    canManageReviews: roles.includes('admin') || roles.includes('merchant'),
+    /** 角色管理 */
+    canManageRoles: roles.includes('admin'),
+    /** 权限管理 */
+    canManagePermissions: roles.includes('admin'),
   };
 };
