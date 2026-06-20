@@ -15,16 +15,19 @@ interface AssignPermissionProps {
   onSuccess: () => void;
 }
 
-const categoryLabel: Record<string, string> = {
-  business: '业务',
-  system: '系统',
-  admin: '管理',
-};
-
 const categoryColor: Record<string, string> = {
-  business: 'blue',
-  system: 'red',
-  admin: 'purple',
+  '商品管理': 'blue',
+  '分类管理': 'cyan',
+  '库存管理': 'gold',
+  '订单管理': 'green',
+  '购物车管理': 'lime',
+  '支付管理': 'purple',
+  '退款管理': 'volcano',
+  '秒杀管理': 'red',
+  '评论管理': 'orange',
+  '通知管理': 'geekblue',
+  '用户管理': 'magenta',
+  '权限管理': 'purple',
 };
 
 const AssignPermission: React.FC<AssignPermissionProps> = (props) => {
@@ -39,7 +42,7 @@ const AssignPermission: React.FC<AssignPermissionProps> = (props) => {
     setLoading(true);
     try {
       const [permRes, roleRes] = await Promise.all([
-        getPermissions({ page: 1, size: 1000 }),
+        getPermissions({ page: 1, size: 100 }),
         getRolesId({ id: String(roleId) }),
       ]);
       const perms = (permRes as any).data?.permissions || [];
@@ -98,7 +101,7 @@ const AssignPermission: React.FC<AssignPermissionProps> = (props) => {
   >((acc, perm) => {
     const cat = perm.category || 'other';
     if (!acc[cat]) {
-      acc[cat] = { label: categoryLabel[cat] || cat, perms: [] };
+      acc[cat] = { label: cat, perms: [] };
     }
     acc[cat].perms.push(perm);
     return acc;

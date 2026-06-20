@@ -8,13 +8,14 @@ import {
 import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import Auth from '@/components/Auth';
+import { history } from '@umijs/max';
 import {
   deleteRolesId,
   getRoles,
   postRoles,
   putRolesId,
 } from '@/services/api/roles';
-import AssignPermission from './components/AssignPermission';
 import CreateForm from './components/CreateForm';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
@@ -81,7 +82,6 @@ const RoleList: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [row, setRow] = useState<API.Role>();
   const [selectedRowsState, setSelectedRows] = useState<API.Role[]>([]);
-  const [assignRoleId, setAssignRoleId] = useState<number>(0);
 
   const columns: ProColumns<API.Role>[] = [
     {
@@ -154,37 +154,51 @@ const RoleList: React.FC = () => {
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
-          <Divider type="vertical" />
-          <a
-            onClick={() => {
-              setStepFormValues(record);
-              handleUpdateModalVisible(true);
-            }}
-          >
-            编辑
-          </a>
-          <Divider type="vertical" />
-          <a onClick={() => setAssignRoleId(record.id || 0)}>分配权限</a>
-          <Divider type="vertical" />
-          {record.is_system ? (
-            <a style={{ color: '#ccc', cursor: 'not-allowed' }}>删除</a>
-          ) : (
-            <Popconfirm
-              title="确认删除"
-              description={`确定要删除角色「${
-                record.display_name || record.name
-              }」吗？`}
-              onConfirm={async () => {
-                const success = await handleRemove([record]);
-                if (success) {
-                  actionRef.current?.reloadAndRest?.();
-                  setSelectedRows([]);
-                }
+          <Auth permission="canUpdateRole">
+            <Divider type="vertical" />
+            <a
+              onClick={() => {
+                setStepFormValues(record);
+                handleUpdateModalVisible(true);
               }}
             >
-              <a style={{ color: '#ff4d4f' }}>删除</a>
-            </Popconfirm>
-          )}
+              编辑
+            </a>
+          </Auth>
+          <Auth permission="canUpdateRole">
+            <Divider type="vertical" />
+            <a
+              onClick={() =>
+                history.push(
+                  `/user/role/assign-permission?roleId=${record.id}&roleName=${encodeURIComponent(record.display_name || record.name || '')}`,
+                )
+              }
+            >
+              分配权限
+            </a>
+          </Auth>
+          <Auth permission="canDeleteRole">
+            <Divider type="vertical" />
+            {record.is_system ? (
+              <a style={{ color: '#ccc', cursor: 'not-allowed' }}>删除</a>
+            ) : (
+              <Popconfirm
+                title="确认删除"
+                description={`确定要删除角色「${
+                  record.display_name || record.name
+                }」吗？`}
+                onConfirm={async () => {
+                  const success = await handleRemove([record]);
+                  if (success) {
+                    actionRef.current?.reloadAndRest?.();
+                    setSelectedRows([]);
+                  }
+                }}
+              >
+                <a style={{ color: '#ff4d4f' }}>删除</a>
+              </Popconfirm>
+            )}
+          </Auth>
         </div>
       ),
     },
@@ -209,13 +223,14 @@ const RoleList: React.FC = () => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => [
-          <Button
-            key="create"
-            type="primary"
-            onClick={() => handleModalVisible(true)}
-          >
-            新建角色
-          </Button>,
+          <Auth key="create" permission="canCreateRole">
+            <Button
+              type="primary"
+              onClick={() => handleModalVisible(true)}
+            >
+              新建角色
+            </Button>
+          </Auth>,
         ]}
         request={async (params) => {
           const { current, pageSize, ...rest } = params;
@@ -245,6 +260,8 @@ const RoleList: React.FC = () => {
       />
 
       {selectedRowsState?.length > 0 && (
+        <Auth permission="canDeleteRole">
+
         <FooterToolbar
           extra={
             <div>
@@ -273,6 +290,7 @@ const RoleList: React.FC = () => {
             <Button danger>批量删除</Button>
           </Popconfirm>
         </FooterToolbar>
+      </Auth>
       )}
 
       <CreateForm
@@ -327,13 +345,6 @@ const RoleList: React.FC = () => {
           />
         )}
       </Drawer>
-
-      <AssignPermission
-        roleId={assignRoleId}
-        open={assignRoleId > 0}
-        onCancel={() => setAssignRoleId(0)}
-        onSuccess={() => actionRef.current?.reload()}
-      />
     </PageContainer>
   );
 };

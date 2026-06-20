@@ -16,6 +16,7 @@ import {
 } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import Auth from '@/components/Auth';
 import LinkText from '@/components/LinkText';
 
 import {
@@ -248,35 +249,39 @@ const ProductList: React.FC = () => {
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
-          <Divider type="vertical" />
-          <a
-            onClick={() => {
-              setStepFormValues({
-                ...record,
-                category_ids:
-                  record.categories
-                    ?.map((c) => c.id)
-                    .filter((id): id is number => id !== undefined) ?? [],
-              });
-              handleUpdateModalVisible(true);
-            }}
-          >
-            编辑
-          </a>
-          <Divider type="vertical" />
-          <Popconfirm
-            title="确认删除"
-            description={`确定要删除商品「${record.name}」吗？`}
-            onConfirm={async () => {
-              const success = await handleRemove([record]);
-              if (success) {
-                actionRef.current?.reloadAndRest?.();
-                setSelectedRows([]);
-              }
-            }}
-          >
-            <a style={{ color: '#ff4d4f' }}>删除</a>
-          </Popconfirm>
+          <Auth permission="canUpdateProduct">
+            <Divider type="vertical" />
+            <a
+              onClick={() => {
+                setStepFormValues({
+                  ...record,
+                  category_ids:
+                    record.categories
+                      ?.map((c) => c.id)
+                      .filter((id): id is number => id !== undefined) ?? [],
+                });
+                handleUpdateModalVisible(true);
+              }}
+            >
+              编辑
+            </a>
+          </Auth>
+          <Auth permission="canDeleteProduct">
+            <Divider type="vertical" />
+            <Popconfirm
+              title="确认删除"
+              description={`确定要删除商品「${record.name}」吗？`}
+              onConfirm={async () => {
+                const success = await handleRemove([record]);
+                if (success) {
+                  actionRef.current?.reloadAndRest?.();
+                  setSelectedRows([]);
+                }
+              }}
+            >
+              <a style={{ color: '#ff4d4f' }}>删除</a>
+            </Popconfirm>
+          </Auth>
         </div>
       ),
     },
@@ -306,13 +311,14 @@ const ProductList: React.FC = () => {
             label="预热商品"
             request={postProductsCacheWarmup}
           />,
-          <Button
-            key="create"
-            type="primary"
-            onClick={() => handleModalVisible(true)}
-          >
-            新建商品
-          </Button>,
+          <Auth key="create" permission="canCreateProduct">
+            <Button
+              type="primary"
+              onClick={() => handleModalVisible(true)}
+            >
+              新建商品
+            </Button>
+          </Auth>,
         ]}
         request={async (params) => {
           const { current, pageSize, name, sku, ...rest } = params;
@@ -344,6 +350,8 @@ const ProductList: React.FC = () => {
       />
 
       {selectedRowsState?.length > 0 && (
+        <Auth permission="canDeleteProduct">
+
         <FooterToolbar
           extra={
             <div>
@@ -367,6 +375,7 @@ const ProductList: React.FC = () => {
             <Button danger>批量删除</Button>
           </Popconfirm>
         </FooterToolbar>
+      </Auth>
       )}
 
       {/* 新建弹窗 */}

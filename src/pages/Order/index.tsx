@@ -7,6 +7,7 @@ import {
 import { Button, Divider, Drawer, Dropdown, message, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import Auth from '@/components/Auth';
 import LinkText from '@/components/LinkText';
 
 import { ORDER_STATUS_MAP } from '@/constants';
@@ -136,22 +137,24 @@ const OrderList: React.FC = () => {
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
-          <Divider type="vertical" />
-          <Dropdown
-            menu={{
-              onClick: ({ key }) => {
-                handleStatusChange(record.id!, key).then((ok) => {
-                  if (ok) actionRef.current?.reload();
-                });
-              },
-              items: Object.entries(orderStatusMap).map(([key, val]) => ({
-                key,
-                label: val.text,
-              })),
-            }}
-          >
-            <a onClick={(e) => e.preventDefault()}>改状态</a>
-          </Dropdown>
+          <Auth permission="canUpdateOrder">
+            <Divider type="vertical" />
+            <Dropdown
+              menu={{
+                onClick: ({ key }) => {
+                  handleStatusChange(record.id!, key).then((ok) => {
+                    if (ok) actionRef.current?.reload();
+                  });
+                },
+                items: Object.entries(orderStatusMap).map(([key, val]) => ({
+                  key,
+                  label: val.text,
+                })),
+              }}
+            >
+              <a onClick={(e) => e.preventDefault()}>改状态</a>
+            </Dropdown>
+          </Auth>
         </div>
       ),
     },
@@ -176,13 +179,14 @@ const OrderList: React.FC = () => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => [
-          <Button
-            key="create"
-            type="primary"
-            onClick={() => handleModalVisible(true)}
-          >
-            新建订单
-          </Button>,
+          <Auth key="create" permission="canCreateOrder">
+            <Button
+              type="primary"
+              onClick={() => handleModalVisible(true)}
+            >
+              新建订单
+            </Button>
+          </Auth>,
         ]}
         request={async (params) => {
           const { current, pageSize, status, ...rest } = params;

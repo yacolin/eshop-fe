@@ -8,6 +8,7 @@ import {
 import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import Auth from '@/components/Auth';
 import {
   deletePermissionsId,
   getPermissions,
@@ -74,9 +75,18 @@ const handleRemove = async (selectedRows: API.Permission[]) => {
 };
 
 const categoryColor: Record<string, string> = {
-  business: 'blue',
-  system: 'red',
-  admin: 'purple',
+  '商品管理': 'blue',
+  '分类管理': 'cyan',
+  '库存管理': 'gold',
+  '订单管理': 'green',
+  '购物车管理': 'lime',
+  '支付管理': 'purple',
+  '退款管理': 'volcano',
+  '秒杀管理': 'red',
+  '评论管理': 'orange',
+  '通知管理': 'geekblue',
+  '用户管理': 'magenta',
+  '权限管理': 'purple',
 };
 
 const PermissionList: React.FC = () => {
@@ -124,9 +134,18 @@ const PermissionList: React.FC = () => {
       width: 100,
       valueType: 'select',
       valueEnum: {
-        business: { text: '业务' },
-        system: { text: '系统' },
-        admin: { text: '管理' },
+        '商品管理': { text: '商品管理' },
+        '分类管理': { text: '分类管理' },
+        '库存管理': { text: '库存管理' },
+        '订单管理': { text: '订单管理' },
+        '购物车管理': { text: '购物车管理' },
+        '支付管理': { text: '支付管理' },
+        '退款管理': { text: '退款管理' },
+        '秒杀管理': { text: '秒杀管理' },
+        '评论管理': { text: '评论管理' },
+        '通知管理': { text: '通知管理' },
+        '用户管理': { text: '用户管理' },
+        '权限管理': { text: '权限管理' },
       },
       render: (_, record) =>
         record.category ? (
@@ -176,31 +195,35 @@ const PermissionList: React.FC = () => {
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
-          <Divider type="vertical" />
-          <a
-            onClick={() => {
-              setStepFormValues(record);
-              handleUpdateModalVisible(true);
-            }}
-          >
-            编辑
-          </a>
-          <Divider type="vertical" />
-          <Popconfirm
-            title="确认删除"
-            description={`确定要删除权限「${
-              record.display_name || record.name
-            }」吗？`}
-            onConfirm={async () => {
-              const success = await handleRemove([record]);
-              if (success) {
-                actionRef.current?.reloadAndRest?.();
-                setSelectedRows([]);
-              }
-            }}
-          >
-            <a style={{ color: '#ff4d4f' }}>删除</a>
-          </Popconfirm>
+          <Auth permission="canUpdatePermission">
+            <Divider type="vertical" />
+            <a
+              onClick={() => {
+                setStepFormValues(record);
+                handleUpdateModalVisible(true);
+              }}
+            >
+              编辑
+            </a>
+          </Auth>
+          <Auth permission="canDeletePermission">
+            <Divider type="vertical" />
+            <Popconfirm
+              title="确认删除"
+              description={`确定要删除权限「${
+                record.display_name || record.name
+              }」吗？`}
+              onConfirm={async () => {
+                const success = await handleRemove([record]);
+                if (success) {
+                  actionRef.current?.reloadAndRest?.();
+                  setSelectedRows([]);
+                }
+              }}
+            >
+              <a style={{ color: '#ff4d4f' }}>删除</a>
+            </Popconfirm>
+          </Auth>
         </div>
       ),
     },
@@ -225,13 +248,14 @@ const PermissionList: React.FC = () => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => [
-          <Button
-            key="create"
-            type="primary"
-            onClick={() => handleModalVisible(true)}
-          >
-            新建权限
-          </Button>,
+          <Auth key="create" permission="canCreatePermission">
+            <Button
+              type="primary"
+              onClick={() => handleModalVisible(true)}
+            >
+              新建权限
+            </Button>
+          </Auth>,
         ]}
         request={async (params) => {
           const { current, pageSize, ...rest } = params;
@@ -261,6 +285,8 @@ const PermissionList: React.FC = () => {
       />
 
       {selectedRowsState?.length > 0 && (
+        <Auth permission="canDeletePermission">
+
         <FooterToolbar
           extra={
             <div>
@@ -284,6 +310,7 @@ const PermissionList: React.FC = () => {
             <Button danger>批量删除</Button>
           </Popconfirm>
         </FooterToolbar>
+      </Auth>
       )}
 
       <CreateForm

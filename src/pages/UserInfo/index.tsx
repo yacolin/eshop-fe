@@ -13,6 +13,8 @@ import { getUsersProfile, putUsersInfo } from '@/services/api/users';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
+import Auth from '@/components/Auth';
+
 dayjs.extend(utc);
 
 const genderMap: Record<number, string> = {
@@ -83,9 +85,11 @@ const UserInfoPage: React.FC = () => {
             column={2}
             size="middle"
             extra={
-              <Button type="primary" onClick={() => setEditVisible(true)}>
-                编辑资料
-              </Button>
+              <Auth permission="canUpdateUser">
+                <Button type="primary" onClick={() => setEditVisible(true)}>
+                  编辑资料
+                </Button>
+              </Auth>
             }
           >
             <Descriptions.Item label="用户ID">

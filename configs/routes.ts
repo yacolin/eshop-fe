@@ -111,6 +111,11 @@ export default [
         access: 'canManageRoles',
       },
       {
+        path: '/user/role/assign-permission',
+        component: './Role/AssignPermission',
+        access: 'canManageRoles',
+      },
+      {
         name: '权限管理',
         path: '/user/permission',
         component: './Permission',

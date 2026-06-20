@@ -7,6 +7,7 @@ import {
 import { Button, Divider, Drawer, message, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import Auth from '@/components/Auth';
 import { useRouteFilter } from '@/hooks/useRouteFilter';
 
 import {
@@ -171,15 +172,17 @@ const InventoryList: React.FC = () => {
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
-          <Divider type="vertical" />
-          <a
-            onClick={() => {
-              setStepFormValues(record as FormValueType);
-              handleUpdateModalVisible(true);
-            }}
-          >
-            编辑
-          </a>
+          <Auth permission="canUpdateInventory">
+            <Divider type="vertical" />
+            <a
+              onClick={() => {
+                setStepFormValues(record as FormValueType);
+                handleUpdateModalVisible(true);
+              }}
+            >
+              编辑
+            </a>
+          </Auth>
         </div>
       ),
     },
@@ -205,13 +208,14 @@ const InventoryList: React.FC = () => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => [
-          <Button
-            key="create"
-            type="primary"
-            onClick={() => handleModalVisible(true)}
-          >
-            新建库存
-          </Button>,
+          <Auth key="create" permission="canCreateInventory">
+            <Button
+              type="primary"
+              onClick={() => handleModalVisible(true)}
+            >
+              新建库存
+            </Button>
+          </Auth>,
         ]}
         request={async (params) => {
           const {

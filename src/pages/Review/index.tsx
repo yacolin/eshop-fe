@@ -12,6 +12,7 @@ import {
 } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import Auth from '@/components/Auth';
 import {
   deleteAdminReviewsId,
   getAdminReviewsPending,
@@ -181,44 +182,52 @@ const ReviewManagePage: React.FC = () => {
       render: (_, record) => (
         <Space split={<Divider type="vertical" />}>
           {record.status === 'pending' && (
-            <a
-              onClick={() => {
-                setModerateReview(record);
-                setModerateStatus('approved');
-                setModerateVisible(true);
-              }}
-            >
-              审核
-            </a>
+            <Auth permission="canModerateReview">
+              <a
+                onClick={() => {
+                  setModerateReview(record);
+                  setModerateStatus('approved');
+                  setModerateVisible(true);
+                }}
+              >
+                审核
+              </a>
+            </Auth>
           )}
           {record.status === 'approved' && !record.reply && (
-            <a
-              onClick={() => {
-                setReplyReview(record);
-                setReplyContent('');
-                setReplyVisible(true);
-              }}
-            >
-              回复
-            </a>
+            <Auth permission="canModerateReview">
+              <a
+                onClick={() => {
+                  setReplyReview(record);
+                  setReplyContent('');
+                  setReplyVisible(true);
+                }}
+              >
+                回复
+              </a>
+            </Auth>
           )}
           {record.status === 'approved' && record.reply && (
-            <a
-              onClick={() => {
-                setReplyReview(record);
-                setReplyContent(record.reply || '');
-                setReplyVisible(true);
-              }}
-            >
-              编辑回复
-            </a>
+            <Auth permission="canModerateReview">
+              <a
+                onClick={() => {
+                  setReplyReview(record);
+                  setReplyContent(record.reply || '');
+                  setReplyVisible(true);
+                }}
+              >
+                编辑回复
+              </a>
+            </Auth>
           )}
-          <Popconfirm
-            title="确定删除该评论？"
-            onConfirm={() => handleDelete(record.id!)}
-          >
-            <a style={{ color: '#ff4d4f' }}>删除</a>
-          </Popconfirm>
+          <Auth permission="canDeleteReview">
+            <Popconfirm
+              title="确定删除该评论？"
+              onConfirm={() => handleDelete(record.id!)}
+            >
+              <a style={{ color: '#ff4d4f' }}>删除</a>
+            </Popconfirm>
+          </Auth>
         </Space>
       ),
     },
