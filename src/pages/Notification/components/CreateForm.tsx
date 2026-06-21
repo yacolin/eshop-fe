@@ -1,21 +1,18 @@
 import {
   ProForm,
-  ProFormSelect,
+  ProFormDigit,
   ProFormText,
   ProFormTextArea,
 } from '@ant-design/pro-components';
-import { Modal } from 'antd';
+import { message, Modal } from 'antd';
 import React from 'react';
+
+import { postNotificationsSystem } from '@/services/api/notifications';
 
 interface CreateFormProps {
   modalVisible: boolean;
   onCancel: () => void;
-  onSubmit: (values: {
-    title: string;
-    message: string;
-    level: string;
-    target?: string;
-  }) => Promise<boolean>;
+  onSubmit: () => Promise<boolean>;
 }
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
@@ -23,26 +20,35 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
 
   return (
     <Modal
-      title="发送通知"
+      title="发送系统通知"
       width={600}
       open={modalVisible}
       onCancel={() => onCancel()}
       footer={null}
       destroyOnClose
     >
-      <ProForm<{
-        title: string;
-        message: string;
-        level: string;
-        target?: string;
-      }>
+      <ProForm<{ title: string; content: string; user_id?: number }>
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
         style={{ width: '90%', margin: '0 auto' }}
         onFinish={async (values) => {
-          const success = await onSubmit(values);
-          if (success) onCancel();
+          const hide = message.loading('正在发送');
+          try {
+            await postNotificationsSystem({
+              title: values.title,
+              content: values.content,
+              user_id: values.user_id || 0,
+            });
+            hide();
+            message.success('发送成功');
+            onSubmit();
+            return true;
+          } catch {
+            hide();
+            message.error('发送失败，请重试');
+            return false;
+          }
         }}
         submitter={{
           render: (_, dom) => (
@@ -67,31 +73,20 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           placeholder="系统维护通知"
         />
         <ProFormTextArea
-          name="message"
+          name="content"
           label="通知内容"
           width="md"
           rules={[{ required: true, message: '请输入通知内容' }]}
           placeholder="请输入通知内容..."
         />
-        <ProFormSelect
-          name="level"
-          label="消息级别"
-          width="md"
-          rules={[{ required: true, message: '请选择消息级别' }]}
-          initialValue="info"
-          valueEnum={{
-            info: '信息',
-            success: '成功',
-            warning: '警告',
-            error: '错误',
-          }}
-        />
-        <ProFormText
-          name="target"
+        <ProFormDigit
+          name="user_id"
           label="目标用户"
           width="md"
-          tooltip="留空或填 all 表示全部用户，指定 user_id 推送给特定用户"
-          placeholder="all"
+          tooltip="留空或填 0 表示发送给全体用户"
+          placeholder="0 表示全体"
+          min={0}
+          fieldProps={{ precision: 0 }}
         />
       </ProForm>
     </Modal>

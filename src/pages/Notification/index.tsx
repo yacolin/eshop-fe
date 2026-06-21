@@ -1,66 +1,186 @@
-import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, List, message, Space, Tag, Typography } from 'antd';
-import dayjs from 'dayjs';
-import React, { useState } from 'react';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import {
+  PageContainer,
+  ProDescriptions,
+  ProTable,
+} from '@ant-design/pro-components';
+import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
+import React, { useRef, useState } from 'react';
 
-import { postWsTestPush } from '@/services/api/websocket';
+import Auth from '@/components/Auth';
+import {
+  deleteNotificationsId,
+  getNotifications,
+  getNotificationsUnread,
+  putNotificationsIdRead,
+  putNotificationsReadAll,
+} from '@/services/api/notifications';
 import CreateForm from './components/CreateForm';
 
-interface NotificationRecord {
-  id: number;
-  title: string;
-  message: string;
-  level: 'info' | 'success' | 'warning' | 'error';
-  target?: string;
-  timestamp: number;
-}
+const notificationTypeMap: Record<string, { text: string; color: string }> = {
+  system: { text: '系统', color: 'blue' },
+  order: { text: '订单', color: 'cyan' },
+  payment: { text: '支付', color: 'green' },
+  flash: { text: '秒杀', color: 'volcano' },
+  admin: { text: '管理员', color: 'purple' },
+};
 
-const levelMap: Record<string, { text: string; color: string }> = {
-  info: { text: '信息', color: 'blue' },
-  success: { text: '成功', color: 'green' },
-  warning: { text: '警告', color: 'orange' },
-  error: { text: '错误', color: 'red' },
+const formatTime = (t?: string) => {
+  if (!t) return '-';
+  return t.slice(0, 16).replace('T', ' ');
 };
 
 const NotificationList: React.FC = () => {
-  const [records, setRecords] = useState<NotificationRecord[]>([]);
-  const [createModalVisible, handleModalVisible] = useState(false);
-  const seqRef = React.useRef(0);
+  const [createModalVisible, handleCreateModalVisible] =
+    useState<boolean>(false);
+  const actionRef = useRef<ActionType>();
+  const [row, setRow] = useState<API.NotificationResponse>();
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
-  const handleSend = async (values: {
-    title: string;
-    message: string;
-    level: string;
-    target?: string;
-  }) => {
-    const hide = message.loading('正在发送');
+  const fetchUnread = async () => {
     try {
-      await postWsTestPush({
-        title: values.title,
-        message: values.message,
-        level: values.level,
-        target: values.target || 'all',
-      });
-      hide();
-      message.success('发送成功');
-
-      seqRef.current++;
-      const record: NotificationRecord = {
-        id: seqRef.current,
-        title: values.title,
-        message: values.message,
-        level: values.level as any,
-        target: values.target || 'all',
-        timestamp: Date.now(),
-      };
-      setRecords((prev) => [record, ...prev]);
-      return true;
+      const res = await getNotificationsUnread();
+      const data = (res as any).data || {};
+      setUnreadCount(data.count ?? 0);
     } catch {
-      hide();
-      message.error('发送失败，请重试');
-      return false;
+      // 静默
     }
   };
+
+  React.useEffect(() => {
+    fetchUnread();
+  }, []);
+
+  /**
+   * 标记已读
+   */
+  const handleMarkRead = async (id: number) => {
+    try {
+      await putNotificationsIdRead({ id });
+      message.success('已标记已读');
+      actionRef.current?.reload();
+      fetchUnread();
+    } catch {
+      message.error('操作失败');
+    }
+  };
+
+  /**
+   * 全部已读
+   */
+  const handleMarkAllRead = async () => {
+    try {
+      await putNotificationsReadAll();
+      message.success('已全部标记已读');
+      actionRef.current?.reload();
+      setUnreadCount(0);
+    } catch {
+      message.error('操作失败');
+    }
+  };
+
+  /**
+   * 删除通知
+   */
+  const handleRemove = async (id: number) => {
+    try {
+      await deleteNotificationsId({ id });
+      message.success('删除成功');
+      actionRef.current?.reload();
+      fetchUnread();
+    } catch {
+      message.error('删除失败，请重试');
+    }
+  };
+
+  const columns: ProColumns<API.NotificationResponse>[] = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      hideInSearch: true,
+      width: 60,
+    },
+    {
+      title: '标题',
+      dataIndex: 'title',
+      width: 200,
+    },
+    {
+      title: '类型',
+      dataIndex: 'type',
+      width: 100,
+      valueType: 'select',
+      valueEnum: {
+        system: { text: '系统' },
+        order: { text: '订单' },
+        payment: { text: '支付' },
+        flash: { text: '秒杀' },
+        admin: { text: '管理员' },
+      },
+      render: (_, record) => {
+        const cfg = notificationTypeMap[record.type || ''];
+        return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
+      },
+    },
+    {
+      title: '内容',
+      dataIndex: 'content',
+      hideInSearch: true,
+      width: 300,
+      ellipsis: true,
+    },
+    {
+      title: '已读',
+      dataIndex: 'is_read',
+      width: 80,
+      filters: true,
+      valueType: 'select',
+      valueEnum: {
+        true: { text: '已读' },
+        false: { text: '未读' },
+      },
+      render: (_, record) =>
+        record.is_read ? (
+          <Tag color="default">已读</Tag>
+        ) : (
+          <Tag color="red">未读</Tag>
+        ),
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'created_at',
+      hideInForm: true,
+      hideInSearch: true,
+      width: 150,
+      render: (_, record) => formatTime(record.created_at),
+    },
+    {
+      title: '操作',
+      dataIndex: 'option',
+      valueType: 'option',
+      width: 160,
+      fixed: 'right',
+      render: (_, record) => (
+        <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
+          <a onClick={() => setRow(record)}>查看</a>
+          {!record.is_read && (
+            <>
+              <Divider type="vertical" />
+              <a onClick={() => handleMarkRead(record.id!)}>标为已读</a>
+            </>
+          )}
+          <Divider type="vertical" />
+          <Popconfirm
+            title="确认删除"
+            description={`确定要删除通知「${record.title}」吗？`}
+            onConfirm={() => handleRemove(record.id!)}
+          >
+            <a style={{ color: '#ff4d4f' }}>删除</a>
+          </Popconfirm>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <PageContainer
@@ -71,74 +191,86 @@ const NotificationList: React.FC = () => {
         },
       }}
     >
-      <Card
-        title="推送记录"
-        styles={{ header: { padding: '12px 24px' } }}
-        extra={
-          <Button type="primary" onClick={() => handleModalVisible(true)}>
-            发送通知
-          </Button>
-        }
-      >
-        {records.length === 0 ? (
-          <div
-            style={{ textAlign: 'center', color: '#999', padding: '60px 0' }}
-          >
-            暂无推送记录
-          </div>
-        ) : (
-          <List<NotificationRecord>
-            dataSource={records}
-            renderItem={(item) => {
-              const levelCfg = levelMap[item.level] || levelMap.info;
-              return (
-                <List.Item>
-                  <List.Item.Meta
-                    title={
-                      <Space>
-                        <Typography.Text strong>{item.title}</Typography.Text>
-                        <Tag color={levelCfg.color}>{levelCfg.text}</Tag>
-                        {item.target && item.target !== 'all' && (
-                          <Tag>用户: {item.target}</Tag>
-                        )}
-                      </Space>
-                    }
-                    description={
-                      <div>
-                        <Typography.Paragraph
-                          style={{ marginBottom: 4, whiteSpace: 'pre-wrap' }}
-                          type="secondary"
-                        >
-                          {item.message}
-                        </Typography.Paragraph>
-                        <Typography.Text
-                          type="secondary"
-                          style={{ fontSize: 12 }}
-                        >
-                          {dayjs(item.timestamp).format('YYYY-MM-DD HH:mm:ss')}
-                        </Typography.Text>
-                      </div>
-                    }
-                  />
-                </List.Item>
-              );
-            }}
-          />
-        )}
-      </Card>
+      <ProTable<API.NotificationResponse>
+        headerTitle={`通知列表${
+          unreadCount > 0 ? `（${unreadCount} 条未读）` : ''
+        }`}
+        actionRef={actionRef}
+        rowKey="id"
+        scroll={{ x: 1100 }}
+        search={{
+          labelWidth: 100,
+          defaultCollapsed: false,
+        }}
+        toolBarRender={() => [
+          <Button key="markAllRead" onClick={handleMarkAllRead}>
+            全部已读
+          </Button>,
+          <Auth key="create" permission="canCreateNotification">
+            <Button
+              type="primary"
+              onClick={() => handleCreateModalVisible(true)}
+            >
+              发送通知
+            </Button>
+          </Auth>,
+        ]}
+        request={async (params) => {
+          const { current, pageSize, ...rest } = params;
+          const res = await getNotifications({
+            page: current || 1,
+            page_size: pageSize || 10,
+            ...rest,
+          });
+          const data = (res as any).data || {};
+          // 拉取列表后同步未读数
+          fetchUnread();
+          return {
+            data: data.list || [],
+            total: data.total || 0,
+            success: true,
+          };
+        }}
+        columns={columns}
+        pagination={{
+          defaultPageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          pageSizeOptions: ['10', '20', '50'],
+          showTotal: (total) => `共 ${total} 条`,
+        }}
+      />
 
       {/* 发送通知 */}
       <CreateForm
         modalVisible={createModalVisible}
-        onCancel={() => handleModalVisible(false)}
-        onSubmit={async (value) => {
-          const success = await handleSend(value);
-          if (success) {
-            handleModalVisible(false);
-          }
-          return success;
+        onCancel={() => handleCreateModalVisible(false)}
+        onSubmit={async () => {
+          handleCreateModalVisible(false);
+          actionRef.current?.reload();
+          fetchUnread();
+          return true;
         }}
       />
+
+      {/* 详情 */}
+      <Drawer
+        width={600}
+        open={!!row}
+        onClose={() => setRow(undefined)}
+        closable
+        title={row?.title || '通知详情'}
+      >
+        {row?.id && (
+          <ProDescriptions<API.NotificationResponse>
+            column={2}
+            title={row.title}
+            request={async () => ({ data: row || {} })}
+            params={{ id: row?.id }}
+            columns={columns as any}
+          />
+        )}
+      </Drawer>
     </PageContainer>
   );
 };

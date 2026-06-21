@@ -98,5 +98,11 @@ export default (initialState: {
 
     // ── User ──
     canUpdateUser: permissions.includes('user:update'),
+
+    // ── Notification ──
+    canCreateNotification:
+      roles.includes('admin') || permissions.includes('notification:create'),
+    canDeleteNotification:
+      roles.includes('admin') || permissions.includes('notification:delete'),
   };
 };
