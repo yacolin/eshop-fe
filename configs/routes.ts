@@ -106,6 +106,12 @@ export default [
     path: '/user',
     routes: [
       {
+        name: '通知管理',
+        path: '/user/notification',
+        component: './Notification',
+        access: 'isLoggedIn',
+      },
+      {
         name: '用户信息',
         path: '/user/user-info',
         component: './UserInfo',
