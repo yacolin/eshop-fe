@@ -1,19 +1,19 @@
 ---
 name: code-standard
 description: |
-  eshop-fe 项目代码规范指南。当用户在 eshop-fe 项目中编写新页面、新 CRUD 组件、或者需要遵循项目代码风格时使用。本技能提供从目录结构、导入顺序、ProTable 配置、CRUD 操作、表单组件到权限守卫的完整规范。适用于以下场景：
+  UmiJS + Ant Design Pro 项目代码规范指南。当用户在使用 UmiJS Max 4 + Ant Design ProComponents 的项目中编写新页面、新 CRUD 组件、或者需要遵循统一代码风格时使用。本技能提供从目录结构、导入顺序、ProTable 配置、CRUD 操作、表单组件到权限守卫的完整规范。适用于以下场景：
   - 创建新的管理页面（如商品管理、订单管理等）
   - 编写或修改 CreateForm / UpdateForm 表单组件
   - 添加 ProTable 列定义或修改表格配置
   - 需要遵循项目统一的代码风格和架构模式
   - Review 代码时检查是否符合项目规范
   - 任何涉及 ProTable CRUD 模板、权限控制、API 调用的代码编写
-  本技能专注于 eshop-fe 项目自身的约定，不涉及通用 React 或 TypeScript 规范。
+  本技能专注于 UmiJS + Ant Design Pro 技术栈的自身约定，是基于 eshop-fe 项目实际模式提炼的通用规范，不涉及通用 React 或 TypeScript 规范。
 ---
 
-# eshop-fe 项目代码规范
+# UmiJS + Ant Design Pro 项目代码规范
 
-本规范基于 eshop-fe 现有页面代码（Category、Product、Inventory、Order、Role、Permission 等）的实际模式提炼而成。**新增和修改代码时请遵循以下约定。**
+本规范基于 UmiJS Max 4 + Ant Design ProComponents 项目的实际模式提炼而成。**新增和修改代码时请遵循以下约定。**
 
 ## 1. 目录结构
 
@@ -79,7 +79,202 @@ import useCategoryOptions from './hooks/useCategoryOptions';
 - 表单组件固定命名 `CreateForm` / `UpdateForm`，使用 `React.FC<Props>` 类型标注
 - 辅助函数使用 camelCase：`handleAdd`, `handleUpdate`, `handleRemove`, `formatPrice`
 
-## 4. 页面状态管理
+## 4. 通用组件规范
+
+项目通用组件位于 `src/components/`，每个组件独立目录，以 `index.tsx` 作为入口。
+
+```
+src/components/
+  Auth/            — 权限守卫（按钮级）
+  LinkText/        — 可复制/可跳转的文本链接
+  CacheWarmup/     — 缓存预热按钮
+  NotifyBell/     — 实时通知铃铛
+  RightContent/    — 布局右上角区域（通知 + 用户菜单）
+```
+
+### 4.1 组件结构模板
+
+```typescript
+import { history, useAccess } from '@umijs/max';
+import { Button, Typography } from 'antd';
+import React from 'react';
+
+interface {ComponentName}Props {
+  /** 参数说明（使用 JSDoc 标注每个 prop） */
+  param1: string;
+  /** 可选参数 */
+  param2?: number;
+  /** 回调函数 */
+  onChange?: (value: string) => void;
+}
+
+const {ComponentName}: React.FC<{ComponentName}Props> = (props) => {
+  const { param1, param2, onChange } = props;
+  // 组件逻辑...
+  return <div>{/* ... */}</div>;
+};
+
+export default {ComponentName};
+```
+
+**规则**：
+
+- Props 接口命名为 `{ComponentName}Props`（如 `AuthProps`, `CacheWarmupProps`）
+- Props 中每个字段使用 JSDoc 单行注释 `/** */` 说明用途
+- 组件类型使用 `React.FC<Props>` 标注
+- 使用 `default export`
+- 使用 props 解构（`const { ... } = props`），非简单的组件可直接 `({ param1, param2 })` 解构参数
+- 不使用单独的 `.less` 文件，优先使用 antd 组件默认样式或少量 inline style
+
+### 4.2 Auth — 权限守卫
+
+```typescript
+interface AuthProps {
+  /** access.ts 中定义的权限键，如 'canCreateProduct' */
+  permission: string;
+  /** 无权限时的兜底渲染，默认不渲染任何内容 */
+  fallback?: React.ReactNode;
+  /** 有权限时渲染的内容 */
+  children: React.ReactNode;
+}
+```
+
+**用法**：
+
+```tsx
+// 标准用法：无权限时不渲染
+<Auth permission="canCreateProduct">
+  <Button type="primary">新建商品</Button>
+</Auth>
+
+// 带 fallback：无权限时渲染禁用态按钮
+<Auth permission="canDeleteProduct" fallback={<Button disabled>删除</Button>}>
+  <Popconfirm ...><a>删除</a></Popconfirm>
+</Auth>
+```
+
+**规则**：
+
+- 通过 `useAccess()` 获取权限映射表
+- 无权限且无 `fallback` 时，返回 `null` 不渲染任何内容
+- 有 `fallback` 时渲染兜底 UI（如禁用按钮），避免布局偏移
+
+### 4.3 LinkText — 可复制/可跳转文本链接
+
+```tsx
+interface LinkTextProps {
+  value: React.ReactNode; // 显示文本
+  path?: string; // 跳转路径（可选，无 path 则纯可复制文本）
+  state?: Record<string, any>; // 路由 state（传递给目标页面做筛选）
+}
+
+<LinkText
+  value={record.name}
+  path="/inventory/inventory"
+  state={{ product_name: record.name }}
+/>;
+```
+
+**规则**：
+
+- 使用 `Typography.Text` 的 `copyable` 属性实现一键复制
+- 当 `path` 存在时，文字可点击跳转（`cursor: pointer` + `history.push`）
+- 当 `path` 为空时，仅作为可复制文本展示（无点击跳转行为）
+- 常用于 ProTable 列中渲染 ID 或名称，方便复制且可跳转详情
+
+### 4.4 CacheWarmup — 缓存预热按钮
+
+```tsx
+interface CacheWarmupProps {
+  label?: string; // 按钮文案，默认「预热缓存」
+  size?: 'small' | 'middle' | 'large';
+  request: () => Promise<any>; // 预热请求函数
+}
+
+<CacheWarmup request={() => postCacheWarmup({ type: 'product' })} />;
+```
+
+**规则**：
+
+- `request` 属性接收一个返回 `Promise` 的函数，组件内自动管理 loading 状态
+- 使用 try/catch/finally 模式：loading 在 `finally` 中关闭（区别于页面 CRUD 的 `message.loading()`）
+- 成功消息从接口 `data.count` 动态拼接（`共处理 X 条`）
+- 失败消息统一为「{label}失败，请重试」
+
+```typescript
+const [loading, setLoading] = useState(false);
+
+const handleAction = async () => {
+  setLoading(true);
+  try {
+    const res = await request();
+    const data = (res as any).data || {};
+    message.success(
+      `${label}成功${data.count ? `，共处理 ${data.count} 条` : ''}`,
+    );
+  } catch {
+    message.error(`${label}失败，请重试`);
+  } finally {
+    setLoading(false); // 注意：finally 确保 loading 一定关闭
+  }
+};
+```
+
+### 4.5 NotifyBell — 实时通知铃铛
+
+```tsx
+// 无需 props，内部通过 WebSocketContext 订阅通知
+
+const NotifyBell: React.FC = () => {
+  const { subscribe } = useWebSocketContext();
+  // ...
+};
+```
+
+**规则**：
+
+- 无 Props，通过 `useWebSocketContext()` 的 `subscribe` 方法订阅 `'notification'` 消息类型
+- `subscribe` 返回取消订阅函数，在 useEffect cleanup 中调用
+- 通知存储上限 50 条，新消息插入头部后 `slice(0, 50)`
+- 消息级别映射：`error → red`, `warning → orange`, `success → green`, `info → blue`
+- 空状态显示「暂无通知」
+- 打开 Drawer 时标记所有通知为已读（`opacity: 0.5` 区分已读/未读）
+- 通过 `notification` API 弹出桌面级通知
+
+```typescript
+useEffect(() => {
+  const unsub = subscribe('notification', (msg) => {
+    // 处理消息...
+  });
+  return unsub; // 组件卸载时取消订阅
+}, [subscribe]);
+```
+
+### 4.6 RightContent — 布局右上角区域
+
+```tsx
+interface RightContentProps {
+  onLogout: () => void; // 退出登录回调
+}
+```
+
+**规则**：
+
+- 组合模式：内部包含 `NotifyBell` + 用户头像下拉菜单
+- `onLogout` 由父组件（`src/app.ts` 的 layout 配置）传入
+- 用户名从 `localStorage` 读取（`savedUsername`）
+- 个人资料页导航使用 `history.push('/user/user-info')`
+- 使用 inline style 实现 flex 布局，**不依赖独立 .less 文件**
+
+### 4.7 通用组件最佳实践
+
+- **无 .less 文件**：通用组件应依赖 antd 默认样式，不创建独立的 `.less` 文件；特殊覆盖可通过 `style` prop 或 `:global()` 在页面级 .less 中完成
+- **Props 接口设计**：使用可选 prop（`?`）提供合理默认值，减少调用方心智负担
+- **children 类型**：使用 `React.ReactNode` 而非 `React.FC`，更灵活
+- **组合优于继承**：如 `RightContent` 组合 `NotifyBell`，而非继承或高阶组件
+- **副作用清理**：涉及订阅（subscribe）、定时器、事件监听时，useEffect 必须返回 cleanup 函数
+
+## 5. 页面状态管理
 
 每个页面内部使用 useState，集中定义在组件函数顶部：
 
@@ -103,7 +298,7 @@ const {Entity}List: React.FC = () => {
 - 抽屉详情行：`row`
 - 批量选择：`selectedRowsState`
 
-## 5. ProTable 配置
+## 6. ProTable 配置
 
 ### 标准配置模板
 
@@ -228,7 +423,7 @@ const statusMap: Record<string, { text: string; color: string }> = {
 
 对于通用状态（如订单状态），状态映射定义在 `src/constants/index.ts` 中，按需导入使用。
 
-## 6. CRUD 操作函数模式
+## 7. CRUD 操作函数模式
 
 所有 CRUD 操作函数定义在组件外部（或组件内部），遵循一致的 try/catch 模式。
 
@@ -297,7 +492,7 @@ const handleRemove = async (selectedRows: API.{Entity}[]): Promise<boolean> => {
 - 创建/更新成功后调用 `actionRef.current?.reload()` 刷新表格
 - 删除成功后调用 `actionRef.current?.reloadAndRest?.()` 并 `setSelectedRows([])`
 
-## 7. 表单组件规范
+## 8. 表单组件规范
 
 ### CreateForm 模板
 
@@ -429,7 +624,167 @@ export default UpdateForm;
 - 示例：`const categories = useRootCategories(modalVisible);`
 - Hook 返回 `{ label: string; value: any }[]` 格式的选项数组
 
-## 8. 权限守卫
+## 9. Hooks 规范
+
+### 9.1 分类与文件位置
+
+| 类型 | 位置 | 导出方式 | 示例 |
+| --- | --- | --- | --- |
+| 全局共享 Hook | `src/hooks/` | named export（推荐）或同时提供 default | `useRouteFilter`, `useWebSocket` |
+| 业务页面 Hook | `src/pages/{Entity}/hooks/` | default export | `useCategoryOptions`, `useRootCategories` |
+
+- 全局 Hook 不限定于某个页面，可被多页面复用
+- 业务 Hook 与页面强相关，放在页面目录下，方便随页面一起维护
+
+### 9.2 命名规范
+
+```typescript
+// 全局 Hook — 以 use 开头，camelCase，命名空间级别的功能名
+export function useRouteFilter(...)    // 路由筛选
+export const useWebSocket = (...) =>   // WebSocket 连接
+
+// 业务 Hook — use{Entity}{Feature}
+export default function useCategoryOptions(visible: boolean, excludeId?: number) { ... }
+export default function useRootCategories(visible: boolean, excludeId?: number) { ... }
+```
+
+**命名规则**：
+
+- 一律以 `use` 开头，camelCase
+- 全局 Hook 使用功能描述：`useRouteFilter`, `useWebSocket`
+- 业务 Hook 使用 `use{Entity}{Feature}`：`useCategoryOptions`, `useProductList`
+- 文件命名与函数名一致：`useCategoryOptions.ts`, `useWebSocket.ts`
+
+### 9.3 业务 Hook 标准模板（表单选项类）
+
+```typescript
+import { get{Entity}s } from '@/services/api/{entities}';
+import { useEffect, useState } from 'react';
+
+/**
+ * 获取{Entity}选项列表（用于表单下拉选择器）
+ * @param visible 弹窗打开时才拉取
+ * @param excludeId 可选项，排除自身 ID（编辑时用）
+ */
+export default function use{Entity}Options(
+  visible: boolean,
+  excludeId?: number,
+) {
+  const [options, setOptions] = useState<{ label: string; value: number }[]>([]);
+
+  useEffect(() => {
+    if (!visible) return;
+
+    const fetchOptions = async () => {
+      try {
+        const res = await get{Entity}s({ page: 1, size: 100 });
+        const data = (res as any).data || {};
+        const list = data.list || [];
+        setOptions(
+          list
+            .filter((item: API.{Entity}) => item.id !== excludeId)
+            .map((item: API.{Entity}) => ({
+              label: item.name || '',
+              value: item.id || 0,
+            })),
+        );
+      } catch (error) {
+        console.error('Failed to fetch options:', error);
+      }
+    };
+
+    fetchOptions();
+  }, [visible, excludeId]);
+
+  return options;
+}
+```
+
+**规则**：
+
+- 第一个参数固定为 `visible: boolean`，弹窗关闭时不发起请求
+- 可选的 `excludeId` 参数用于编辑时排除自身
+- `useEffect` 依赖 `[visible, excludeId]`
+- `useEffect` 内用 `if (!visible) return;` 守卫
+- 返回值类型统一为 `{ label: string; value: number }[]`
+- 数据映射使用 `.map/.filter`，错误使用 `console.error`
+- JSDoc 标注参数用途
+
+### 9.4 业务 Hook 的调用方式
+
+```typescript
+// 在 CreateForm / UpdateForm 中，传入 modalVisible 控制懒加载
+const categories = useCategoryOptions(modalVisible);
+
+// 编辑时排除自身
+const categories = useCategoryOptions(modalVisible, record.id);
+```
+
+### 9.5 全局 Hook 规范
+
+```typescript
+// named export — 优先使用
+export function useRouteFilter<T extends Record<string, any>>(
+  formRef: React.MutableRefObject<any>,
+  keys: (keyof T)[],
+) {
+  // ...
+  return { getFilter, markApplied };
+}
+
+// named + default export — 适合需要同时两种导出的场景
+export const useWebSocket = (...) => { ... };
+export default useWebSocket;
+```
+
+**规则**：
+
+- 优先使用 `named export`（`export function useXxx` 或 `export const useXxx`）
+- 复杂的全局 Hook 可同时提供 named + default（如 `useWebSocket`）
+- 返回值使用对象解构：`const { getFilter, markApplied } = useRouteFilter(...)`
+- 接受配置参数时，通过 `useRef` 保持引用稳定避免无限重渲染
+- 清理副作用时，组件卸载通过 useEffect 返回的 cleanup 函数处理
+
+### 9.6 useRef 保持引用稳定
+
+对于可能频繁变化的配置或回调参数，使用 `xxxRef` 模式避免 hooks 链式重建：
+
+```typescript
+const configRef = useRef(config);
+configRef.current = config;
+
+const onMessageRef = useRef(onMessage);
+onMessageRef.current = onMessage;
+
+// 在稳定的 useCallback 中通过 ref 读取最新值
+const stableFn = useCallback(() => {
+  const currentConfig = configRef.current;
+  // ... 使用 currentConfig
+}, []); // 空依赖，永不重建
+```
+
+### 9.7 副作用清理
+
+```typescript
+useEffect(() => {
+  connect(); // 初始连接
+
+  return () => {
+    disconnect(); // 组件卸载时断开
+    if (timerRef.current) {
+      clearTimeout(timerRef.current); // 清理定时器
+      timerRef.current = null;
+    }
+  };
+}, [connect, disconnect]);
+```
+
+- 所有定时器（`setTimeout` / `setInterval`）必须清理
+- DOM 事件监听（`addEventListener`）必须移除
+- WebSocket 连接必须关闭
+- 清理函数在 unmount 和 deps 变化时都会执行
+
+## 10. 权限守卫
 
 ### 按钮级权限（使用 `<Auth>` 组件）
 
@@ -464,7 +819,7 @@ import Auth from '@/components/Auth';
 - 对应 `src/access.ts` 中定义的权限函数名
 - 路由级权限在 `configs/routes.ts` 中用 `access` 字段配置
 
-## 9. 错误处理
+## 11. 错误处理
 
 ### CRUD 操作中的统一模式
 
@@ -488,7 +843,7 @@ try {
 - 组件内只需 catch 未知错误，显示通用失败消息
 - 简单的状态变更操作可省略 loading 句柄，直接 try/catch
 
-## 10. 跨页面导航
+## 12. 跨页面导航
 
 使用 LinkText 组件（位于 `@/components/LinkText`）实现跨页面跳转+筛选条件传递：
 
@@ -513,7 +868,7 @@ const productName = getFilter('product_name', formProductName);
 markApplied();
 ```
 
-## 11. 价格格式化
+## 13. 价格格式化
 
 价格单位以「分」存储，显示时转换为「元」：
 
@@ -536,7 +891,7 @@ await postProducts({ ...fields, price: Math.round(fields.price * 100) });
 initialValues={{ price: values.price ? values.price / 100 : undefined }}
 ```
 
-## 12. 抽屉详情
+## 14. 抽屉详情
 
 使用 ProDescriptions 组件展示单行详情：
 
@@ -558,7 +913,7 @@ initialValues={{ price: values.price ? values.price / 100 : undefined }}
 - Drawer 的 `open` 使用 `!!row`
 - 关闭时 setRow(undefined)
 
-## 13. 内联状态变更（Dropdown 菜单）
+## 15. 内联状态变更（Dropdown 菜单）
 
 用于快速切换状态：
 
@@ -580,7 +935,7 @@ initialValues={{ price: values.price ? values.price / 100 : undefined }}
 </Dropdown>
 ```
 
-## 14. 注释规范
+## 16. 注释规范
 
 ```typescript
 /**
@@ -598,7 +953,7 @@ const handleAdd = async (fields: API.CreateDTO): Promise<boolean> => { ... };
 - 模态框/抽屉旁使用单行注释标注
 - 避免对显而易见的代码加注释
 
-## 15. 批量删除的 FooterToolbar
+## 17. 批量删除的 FooterToolbar
 
 ```typescript
 {
@@ -621,9 +976,9 @@ const handleAdd = async (fields: API.CreateDTO): Promise<boolean> => { ... };
 - 需要同时设置 ProTable 的 `rowSelection` 属性
 - `rowSelection` 的 `onChange` 绑定到 `setSelectedRows`
 
-## 16. CSS / Less 样式规范
+## 18. CSS / Less 样式规范
 
-### 16.1 文件管理
+### 18.1 文件管理
 
 - **默认不创建**：常规 CRUD 页面（Category、Product、Order 等）依赖 ProTable / antd 默认样式，**不需要** `index.less` 文件。仅在以下情况创建：
   - 用户明确要求或手动创建了 `index.less`
@@ -635,7 +990,7 @@ const handleAdd = async (fields: API.CreateDTO): Promise<boolean> => { ... };
 - 组件级别样式可提取为独立文件，如 `AdminIllustration.tsx` 的 SVG 内联样式保留在组件内
 - 通用 UI 组件（卡片、按钮变体等）考虑抽取到 `src/components/` 对应目录
 
-### 16.2 类名命名
+### 18.2 类名命名
 
 采用 **camelCase** 命名，与 CSS Modules 的 `styles.xxx` 调用一致：
 
@@ -678,7 +1033,7 @@ const handleAdd = async (fields: API.CreateDTO): Promise<boolean> => { ... };
 <div className={`${styles.loginGlow} ${styles.loginGlowTop}`} />
 ```
 
-### 16.3 注释结构
+### 18.3 注释结构
 
 使用带分隔线的块注释区分样式区域：
 
@@ -691,7 +1046,7 @@ const handleAdd = async (fields: API.CreateDTO): Promise<boolean> => { ... };
 /* 左侧：插图面板 */
 ```
 
-### 16.4 全局样式覆盖（`:global`）
+### 18.4 全局样式覆盖（`:global`）
 
 当需要覆盖 Ant Design 组件内部样式时，使用 `:global()` 包裹选择器：
 
@@ -705,7 +1060,7 @@ const handleAdd = async (fields: API.CreateDTO): Promise<boolean> => { ... };
 }
 ```
 
-### 16.5 颜色与透明度
+### 18.5 颜色与透明度
 
 RGBA 透明度使用百分比形式：
 
@@ -723,7 +1078,7 @@ color: rgba(255, 255, 255, 55%);
 box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 ```
 
-### 16.6 卡片与容器样式
+### 18.6 卡片与容器样式
 
 ```less
 .statCard {
@@ -743,7 +1098,7 @@ box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 ```
 
-### 16.7 渐变背景
+### 18.7 渐变背景
 
 大区块背景使用 `linear-gradient`，装饰光晕使用 `radial-gradient`：
 
@@ -763,7 +1118,7 @@ box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 ```
 
-### 16.8 Flexbox 布局模式
+### 18.8 Flexbox 布局模式
 
 ```less
 // 居中容器
@@ -783,7 +1138,7 @@ height: 100%;
 /* 子项：margin-top: auto 推到底部 */
 ```
 
-### 16.9 嵌套选择器
+### 18.9 嵌套选择器
 
 Less 嵌套层级不超过 3 层：
 
@@ -802,7 +1157,7 @@ Less 嵌套层级不超过 3 层：
 }
 ```
 
-### 16.10 响应式与 hover 效果
+### 18.10 响应式与 hover 效果
 
 ```less
 // Hover 动效
@@ -825,7 +1180,7 @@ Less 嵌套层级不超过 3 层：
 }
 ```
 
-### 16.11 溢出与文本省略
+### 18.11 溢出与文本省略
 
 ```less
 .ellipsis {
@@ -835,7 +1190,7 @@ Less 嵌套层级不超过 3 层：
 }
 ```
 
-### 16.12 页面级样式布局参考
+### 18.12 页面级样式布局参考
 
 **Home 页面模式**（Dashboard 概览页）：
 
