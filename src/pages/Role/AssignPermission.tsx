@@ -233,8 +233,10 @@ const AssignPermissionPage: React.FC = () => {
                             type="secondary"
                             style={{ fontSize: 12, whiteSpace: 'nowrap' }}
                           >
-                            {groupIds.filter((id) => selectedIds.includes(id))
-                              .length }
+                            {
+                              groupIds.filter((id) => selectedIds.includes(id))
+                                .length
+                            }
                             /{groupIds.length}
                           </Typography.Text>
                         </Space>

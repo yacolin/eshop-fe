@@ -1,5 +1,9 @@
 import NotifyBell from '@/components/NotifyBell';
-import { UserOutlined, LogoutOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  LogoutOutlined,
+  ProfileOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { Avatar, Dropdown } from 'antd';
 import React from 'react';
 

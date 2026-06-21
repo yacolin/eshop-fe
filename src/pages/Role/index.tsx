@@ -9,13 +9,13 @@ import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
-import { history } from '@umijs/max';
 import {
   deleteRolesId,
   getRoles,
   postRoles,
   putRolesId,
 } from '@/services/api/roles';
+import { history } from '@umijs/max';
 import CreateForm from './components/CreateForm';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
@@ -170,7 +170,11 @@ const RoleList: React.FC = () => {
             <a
               onClick={() =>
                 history.push(
-                  `/user/role/assign-permission?roleId=${record.id}&roleName=${encodeURIComponent(record.display_name || record.name || '')}`,
+                  `/user/role/assign-permission?roleId=${
+                    record.id
+                  }&roleName=${encodeURIComponent(
+                    record.display_name || record.name || '',
+                  )}`,
                 )
               }
             >
@@ -224,10 +228,7 @@ const RoleList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Auth key="create" permission="canCreateRole">
-            <Button
-              type="primary"
-              onClick={() => handleModalVisible(true)}
-            >
+            <Button type="primary" onClick={() => handleModalVisible(true)}>
               新建角色
             </Button>
           </Auth>,
@@ -261,36 +262,35 @@ const RoleList: React.FC = () => {
 
       {selectedRowsState?.length > 0 && (
         <Auth permission="canDeleteRole">
-
-        <FooterToolbar
-          extra={
-            <div>
-              已选择{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              项&nbsp;&nbsp;
-            </div>
-          }
-        >
-          <Popconfirm
-            title="确认批量删除"
-            description={`确定要删除选中的 ${selectedRowsState.length} 个角色吗？`}
-            onConfirm={async () => {
-              const hasSystem = selectedRowsState.some((r) => r.is_system);
-              if (hasSystem) {
-                message.warning('系统内置角色不可删除');
-                return;
-              }
-              const success = await handleRemove(selectedRowsState);
-              if (success) {
-                setSelectedRows([]);
-                actionRef.current?.reloadAndRest?.();
-              }
-            }}
+          <FooterToolbar
+            extra={
+              <div>
+                已选择{' '}
+                <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
+                项&nbsp;&nbsp;
+              </div>
+            }
           >
-            <Button danger>批量删除</Button>
-          </Popconfirm>
-        </FooterToolbar>
-      </Auth>
+            <Popconfirm
+              title="确认批量删除"
+              description={`确定要删除选中的 ${selectedRowsState.length} 个角色吗？`}
+              onConfirm={async () => {
+                const hasSystem = selectedRowsState.some((r) => r.is_system);
+                if (hasSystem) {
+                  message.warning('系统内置角色不可删除');
+                  return;
+                }
+                const success = await handleRemove(selectedRowsState);
+                if (success) {
+                  setSelectedRows([]);
+                  actionRef.current?.reloadAndRest?.();
+                }
+              }}
+            >
+              <Button danger>批量删除</Button>
+            </Popconfirm>
+          </FooterToolbar>
+        </Auth>
       )}
 
       <CreateForm

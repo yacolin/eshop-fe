@@ -209,10 +209,7 @@ const InventoryList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Auth key="create" permission="canCreateInventory">
-            <Button
-              type="primary"
-              onClick={() => handleModalVisible(true)}
-            >
+            <Button type="primary" onClick={() => handleModalVisible(true)}>
               新建库存
             </Button>
           </Auth>,

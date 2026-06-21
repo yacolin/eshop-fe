@@ -215,10 +215,7 @@ const CategoryList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Auth key="create" permission="canCreateCategory">
-            <Button
-              type="primary"
-              onClick={() => handleModalVisible(true)}
-            >
+            <Button type="primary" onClick={() => handleModalVisible(true)}>
               新建分类
             </Button>
           </Auth>,
@@ -254,31 +251,30 @@ const CategoryList: React.FC = () => {
 
       {selectedRowsState?.length > 0 && (
         <Auth permission="canDeleteCategory">
-
-        <FooterToolbar
-          extra={
-            <div>
-              已选择{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              项&nbsp;&nbsp;
-            </div>
-          }
-        >
-          <Popconfirm
-            title="确认批量删除"
-            description={`确定要删除选中的 ${selectedRowsState.length} 个分类吗？`}
-            onConfirm={async () => {
-              const success = await handleRemove(selectedRowsState);
-              if (success) {
-                setSelectedRows([]);
-                actionRef.current?.reloadAndRest?.();
-              }
-            }}
+          <FooterToolbar
+            extra={
+              <div>
+                已选择{' '}
+                <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
+                项&nbsp;&nbsp;
+              </div>
+            }
           >
-            <Button danger>批量删除</Button>
-          </Popconfirm>
-        </FooterToolbar>
-      </Auth>
+            <Popconfirm
+              title="确认批量删除"
+              description={`确定要删除选中的 ${selectedRowsState.length} 个分类吗？`}
+              onConfirm={async () => {
+                const success = await handleRemove(selectedRowsState);
+                if (success) {
+                  setSelectedRows([]);
+                  actionRef.current?.reloadAndRest?.();
+                }
+              }}
+            >
+              <Button danger>批量删除</Button>
+            </Popconfirm>
+          </FooterToolbar>
+        </Auth>
       )}
 
       {/* 新建弹窗 */}
