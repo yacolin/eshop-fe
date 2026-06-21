@@ -76,11 +76,6 @@ export default [
         component: './Refund',
       },
       {
-        name: '秒杀管理',
-        path: '/sales/flash-sale',
-        component: './FlashSale',
-      },
-      {
         name: '优惠券管理',
         path: '/sales/coupon',
         component: './Coupon',
