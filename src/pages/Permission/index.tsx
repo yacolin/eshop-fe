@@ -98,6 +98,12 @@ const PermissionList: React.FC = () => {
       fixed: 'left',
     },
     {
+      title: '排序',
+      dataIndex: 'sort',
+      hideInSearch: true,
+      width: 60,
+    },
+    {
       title: '权限名称',
       dataIndex: 'name',
       width: 180,
@@ -122,7 +128,7 @@ const PermissionList: React.FC = () => {
     {
       title: '分类',
       dataIndex: 'category',
-      width: 100,
+      width: 150,
       copyable: true,
     },
     {
@@ -134,12 +140,6 @@ const PermissionList: React.FC = () => {
         1: { text: '启用', status: 'Success' },
         2: { text: '禁用', status: 'Error' },
       },
-    },
-    {
-      title: '排序',
-      dataIndex: 'sort',
-      hideInSearch: true,
-      width: 60,
     },
     {
       title: '描述',
@@ -228,6 +228,8 @@ const PermissionList: React.FC = () => {
           const res = await getPermissions({
             page: current || 1,
             size: pageSize || 10,
+            sort_by: 'sort',
+            order: 'asc',
             ...rest,
           });
           const data = (res as any).data || {};

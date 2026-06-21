@@ -50,7 +50,7 @@ declare namespace API {
     total?: number;
   };
 
-  type ClaimCouponReq = {
+  type ClaimCouponDTO = {
     coupon_id: number;
   };
 
@@ -86,7 +86,7 @@ declare namespace API {
     parent_id?: number;
   };
 
-  type CreateCouponReq = {
+  type CreateCouponDTO = {
     coupon_type: 'fixed' | 'percentage' | 'voucher';
     description?: string;
     end_time: string;
@@ -154,7 +154,7 @@ declare namespace API {
     sku: string;
   };
 
-  type CreatePromotionReq = {
+  type CreatePromotionDTO = {
     description?: string;
     end_time: string;
     name: string;
@@ -431,6 +431,10 @@ declare namespace API {
     resource?: string;
     /** 角色 */
     role?: string;
+    /** 排序字段（sort/created_at/name） */
+    sort_by?: 'sort' | 'created_at' | 'name';
+    /** 排序方向 */
+    order?: 'asc' | 'desc';
   };
 
   type getProductsCacheIdParams = {
@@ -630,7 +634,7 @@ declare namespace API {
     total?: number;
   };
 
-  type LinkProductsReq = {
+  type LinkProductsDTO = {
     discount: number;
     product_ids: number[];
   };
@@ -1197,7 +1201,7 @@ declare namespace API {
     parent_id?: number;
   };
 
-  type UpdateCouponReq = {
+  type UpdateCouponDTO = {
     description?: string;
     end_time?: string;
     max_discount?: number;
@@ -1254,7 +1258,7 @@ declare namespace API {
     price?: number;
   };
 
-  type UpdatePromotionReq = {
+  type UpdatePromotionDTO = {
     description?: string;
     end_time?: string;
     name?: string;
@@ -1288,7 +1292,7 @@ declare namespace API {
     zip_code?: string;
   };
 
-  type UseCouponReq = {
+  type UseCouponDTO = {
     order_amount: number;
     order_no: string;
     user_coupon_id: number;

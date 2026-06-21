@@ -4,7 +4,7 @@ import { request } from '@umijs/max';
 
 /** 创建优惠券模板 创建新的优惠券模板，支持满减券、折扣券、代金券 POST /api/v1/admin/coupons */
 export async function postAdminCoupons(
-  body: API.CreateCouponReq,
+  body: API.CreateCouponDTO,
   options?: { [key: string]: any },
 ) {
   return request<API.Response & { data?: API.CouponResponse }>(
@@ -24,7 +24,7 @@ export async function postAdminCoupons(
 export async function putAdminCouponsId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.putAdminCouponsIdParams,
-  body: API.UpdateCouponReq,
+  body: API.UpdateCouponDTO,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
@@ -83,7 +83,7 @@ export async function getCouponsId(
 
 /** 领取优惠券 当前登录用户领取指定优惠券 POST /api/v1/coupons/claim */
 export async function postCouponsClaim(
-  body: API.ClaimCouponReq,
+  body: API.ClaimCouponDTO,
   options?: { [key: string]: any },
 ) {
   return request<API.Response & { data?: API.UserCouponResponse }>(
@@ -134,7 +134,7 @@ export async function getCouponsUsable(options?: { [key: string]: any }) {
 
 /** 使用优惠券 结算时使用优惠券，标记为已使用并返回抵扣金额 POST /api/v1/coupons/use */
 export async function postCouponsUse(
-  body: API.UseCouponReq,
+  body: API.UseCouponDTO,
   options?: { [key: string]: any },
 ) {
   return request<API.Response & { data?: Record<string, any> }>(

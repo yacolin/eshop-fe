@@ -2,7 +2,7 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 获取权限列表 获取权限列表，支持分页和筛选 GET /api/v1/permissions */
+/** 获取权限列表 获取权限列表，支持分页、筛选和排序 GET /api/v1/permissions */
 export async function getPermissions(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getPermissionsParams,

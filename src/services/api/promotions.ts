@@ -4,7 +4,7 @@ import { request } from '@umijs/max';
 
 /** 创建促销活动 创建新的促销活动（限时折扣/满减活动） POST /api/v1/admin/promotions */
 export async function postAdminPromotions(
-  body: API.CreatePromotionReq,
+  body: API.CreatePromotionDTO,
   options?: { [key: string]: any },
 ) {
   return request<API.Response & { data?: API.PromotionResponse }>(
@@ -24,7 +24,7 @@ export async function postAdminPromotions(
 export async function putAdminPromotionsId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.putAdminPromotionsIdParams,
-  body: API.UpdatePromotionReq,
+  body: API.UpdatePromotionDTO,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
@@ -46,7 +46,7 @@ export async function putAdminPromotionsId(
 export async function postAdminPromotionsIdProducts(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.postAdminPromotionsIdProductsParams,
-  body: API.LinkProductsReq,
+  body: API.LinkProductsDTO,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
