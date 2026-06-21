@@ -8,6 +8,7 @@ import * as categories from './categories';
 import * as coupons from './coupons';
 import * as dashboard from './dashboard';
 import * as inventories from './inventories';
+import * as notifications from './notifications';
 import * as orders from './orders';
 import * as paymentMethods from './paymentMethods';
 import * as payments from './payments';
@@ -28,6 +29,7 @@ export default {
   categories,
   dashboard,
   inventories,
+  notifications,
   orders,
   payments,
   paymentMethods,

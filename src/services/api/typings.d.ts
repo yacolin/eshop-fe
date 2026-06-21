@@ -226,6 +226,11 @@ declare namespace API {
     id: number;
   };
 
+  type deleteNotificationsIdParams = {
+    /** 通知ID */
+    id: number;
+  };
+
   type deleteOrdersIdParams = {
     /** 订单ID */
     id: number;
@@ -331,6 +336,13 @@ declare namespace API {
   type getInventoriesProductProductIdParams = {
     /** 产品ID */
     productId: number;
+  };
+
+  type getNotificationsParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    page_size?: number;
   };
 
   type getOrdersIdItemsParams = {
@@ -681,6 +693,24 @@ declare namespace API {
     status: 'approved' | 'rejected' | 'hidden';
   };
 
+  type NotificationListResult = {
+    list?: NotificationResponse[];
+    total?: number;
+  };
+
+  type NotificationResponse = {
+    content?: string;
+    created_at?: string;
+    id?: number;
+    is_read?: boolean;
+    read_at?: string;
+    title?: string;
+    type?: NotificationType;
+    user_id?: number;
+  };
+
+  type NotificationType = 'system' | 'order' | 'payment' | 'flash' | 'admin';
+
   type OnlineStatsResponse = {
     /** 连接数 */
     connections?: number;
@@ -983,6 +1013,11 @@ declare namespace API {
     id: number;
   };
 
+  type putNotificationsIdReadParams = {
+    /** 通知ID */
+    id: number;
+  };
+
   type putOrdersIdParams = {
     /** 订单ID */
     id: number;
@@ -1136,6 +1171,13 @@ declare namespace API {
     updated_at?: string;
   };
 
+  type SendSystemNotificationDTO = {
+    content: string;
+    title: string;
+    /** 0 表示全体 */
+    user_id?: number;
+  };
+
   type SessionResponse = {
     /** 首次连接时间 */
     connected_at?: string;
@@ -1189,6 +1231,10 @@ declare namespace API {
     count?: number;
     /** 商品名称 */
     name?: string;
+  };
+
+  type UnreadCountResponse = {
+    count?: number;
   };
 
   type UpdateCartItemDTO = {
