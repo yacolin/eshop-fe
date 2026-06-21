@@ -61,6 +61,16 @@ export default [
         component: './Order',
       },
       {
+        name: '支付管理',
+        path: '/sales/payment',
+        component: './Payment',
+      },
+      {
+        name: '退款管理',
+        path: '/sales/refund',
+        component: './Refund',
+      },
+      {
         name: '优惠券管理',
         path: '/sales/coupon',
         component: './Coupon',

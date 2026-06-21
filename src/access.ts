@@ -76,6 +76,18 @@ export default (initialState: {
     canModerateReview: permissions.includes('review:moderate'),
     canDeleteReview: permissions.includes('review:delete'),
 
+    // ── Payment ──
+    canCreatePayment:
+      roles.includes('admin') || permissions.includes('payment:create'),
+    canUpdatePayment:
+      roles.includes('admin') || permissions.includes('payment:update'),
+
+    // ── Refund ──
+    canCreateRefund:
+      roles.includes('admin') || permissions.includes('refund:create'),
+    canUpdateRefund:
+      roles.includes('admin') || permissions.includes('refund:update'),
+
     // ── User ──
     canUpdateUser: permissions.includes('user:update'),
   };
