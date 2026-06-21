@@ -73,6 +73,12 @@ export default (initialState: {
     canUpdateCoupon:
       roles.includes('admin') || permissions.includes('coupon:update'),
 
+    // ── Flash Sale ──
+    canCreateFlashSale:
+      roles.includes('admin') || permissions.includes('flash_sale:create'),
+    canUpdateFlashSale:
+      roles.includes('admin') || permissions.includes('flash_sale:update'),
+
     // ── Promotion ──
     canCreatePromotion:
       roles.includes('admin') || permissions.includes('promotion:create'),
