@@ -1,0 +1,118 @@
+.loginContainer {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 右侧：表单面板 */
+.loginFormPanel {
+  flex: 0 0 45%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  order: 2;
+}
+
+.loginFormWrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+.loginActions {
+  text-align: center;
+  font-size: 13px;
+}
+
+.loginFormInner {
+  padding: 20px 0 0;
+}
+
+/* 左侧：插图面板 */
+.loginIllustrationPanel {
+  flex: 0 0 55%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1a1f35 100%);
+  position: relative;
+  overflow: hidden;
+  order: 1;
+}
+
+/* 装饰光晕 */
+.loginGlow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.loginGlowTop {
+  top: 15%;
+  left: 20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 12%) 0%,
+    transparent 70%
+  );
+}
+
+.loginGlowBottom {
+  bottom: 10%;
+  right: 10%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 10%) 0%,
+    transparent 70%
+  );
+}
+
+/* 插图容器 */
+.loginIllustration {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 40px;
+}
+
+.loginSvgWrapper {
+  max-width: 100%;
+  width: 480px;
+}
+
+/* 欢迎文案 */
+.loginWelcome {
+  text-align: center;
+  margin-top: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.loginWelcomeTitle {
+  color: #f1f5f9;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+.loginWelcomeSubtitle {
+  color: rgba(255, 255, 255, 55%);
+  font-size: 15px;
+  margin-top: 12px;
+  letter-spacing: 1px;
+  line-height: 1.6;
+}
+
+/* 忘记密码链接 */
+.loginForgotPassword {
+  float: right;
+}

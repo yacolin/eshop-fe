@@ -621,6 +621,250 @@ const handleAdd = async (fields: API.CreateDTO): Promise<boolean> => { ... };
 - 需要同时设置 ProTable 的 `rowSelection` 属性
 - `rowSelection` 的 `onChange` 绑定到 `setSelectedRows`
 
+## 16. CSS / Less 样式规范
+
+### 16.1 文件管理
+
+- **默认不创建**：常规 CRUD 页面（Category、Product、Order 等）依赖 ProTable / antd 默认样式，**不需要** `index.less` 文件。仅在以下情况创建：
+  - 用户明确要求或手动创建了 `index.less`
+  - 用户提到需要抽离样式或提取样式到独立文件
+  - 页面包含 `:global(.ant-*)` 覆盖 antd 组件内部样式
+  - 页面有特殊布局、渐变背景、卡片动效等非标准样式
+- 每个页面独立一个 `index.less` 文件，与 `index.tsx` 同目录
+- 使用 CSS Modules 方式导入：`import styles from './index.less'`
+- 组件级别样式可提取为独立文件，如 `AdminIllustration.tsx` 的 SVG 内联样式保留在组件内
+- 通用 UI 组件（卡片、按钮变体等）考虑抽取到 `src/components/` 对应目录
+
+### 16.2 类名命名
+
+采用 **camelCase** 命名，与 CSS Modules 的 `styles.xxx` 调用一致：
+
+```less
+/* ✅ 正确 */
+.loginContainer {
+  ...;
+}
+.statCard {
+  ...;
+}
+.loginFormPanel {
+  ...;
+}
+
+/* ❌ 错误：kebab-case 在 styles.xxx 中需用括号访问 */
+.login-container {
+  ...;
+} // 必须写 styles['login-container']
+.login-form-panel {
+  ...;
+} // 必须写 styles['login-form-panel']
+```
+
+修饰符类名同样使用 camelCase，搭配多个 className：
+
+```less
+.loginGlow {
+  ...;
+}
+.loginGlowTop {
+  ...;
+}
+.loginGlowBottom {
+  ...;
+}
+```
+
+```tsx
+<div className={`${styles.loginGlow} ${styles.loginGlowTop}`} />
+```
+
+### 16.3 注释结构
+
+使用带分隔线的块注释区分样式区域：
+
+```less
+/* ─── 等高校对行 ──────────────────────────────── */
+
+/* ─── 实时数据 ────────────────────────────────── */
+
+/* 右侧：表单面板 */
+/* 左侧：插图面板 */
+```
+
+### 16.4 全局样式覆盖（`:global`）
+
+当需要覆盖 Ant Design 组件内部样式时，使用 `:global()` 包裹选择器：
+
+```less
+.chartCard {
+  height: 100%;
+
+  :global(.ant-card-body) {
+    height: calc(100% - 56px); /* 扣除卡片标题栏高度 */
+  }
+}
+```
+
+### 16.5 颜色与透明度
+
+RGBA 透明度使用百分比形式：
+
+```less
+/* ✅ 正确 */
+box-shadow: 0 1px 4px rgba(0, 0, 0, 6%);
+background: radial-gradient(
+  circle,
+  rgba(59, 130, 246, 12%) 0%,
+  transparent 70%
+);
+color: rgba(255, 255, 255, 55%);
+
+/* ❌ 避免 */
+box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+```
+
+### 16.6 卡片与容器样式
+
+```less
+.statCard {
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 6%);
+  transition: box-shadow 0.25s, transform 0.25s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 10%);
+    transform: translateY(-2px);
+  }
+}
+
+.chartCard {
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 6%);
+}
+```
+
+### 16.7 渐变背景
+
+大区块背景使用 `linear-gradient`，装饰光晕使用 `radial-gradient`：
+
+```less
+/* 大面积背景渐变 */
+.loginIllustrationPanel {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1a1f35 100%);
+}
+
+/* 装饰光晕 */
+.loginGlowTop {
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 12%) 0%,
+    transparent 70%
+  );
+}
+```
+
+### 16.8 Flexbox 布局模式
+
+```less
+// 居中容器
+display: flex;
+align-items: center;
+justify-content: center;
+
+// 水平等距排列
+display: flex;
+gap: 24px;
+flex-wrap: wrap;
+
+// 纵向填充 + 底部自动边距
+display: flex;
+flex-direction: column;
+height: 100%;
+/* 子项：margin-top: auto 推到底部 */
+```
+
+### 16.9 嵌套选择器
+
+Less 嵌套层级不超过 3 层：
+
+```less
+.chartEqualRow {
+  margin-top: 16px;
+
+  .chartCard {
+    height: 100%;
+
+    :global(.ant-card-body) {
+      /* 第 3 层：允许 */
+      height: calc(100% - 56px);
+    }
+  }
+}
+```
+
+### 16.10 响应式与 hover 效果
+
+```less
+// Hover 动效
+.transition-hover {
+  transition: box-shadow 0.25s, transform 0.25s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 10%);
+    transform: translateY(-2px);
+  }
+}
+
+// 列表项分隔线
+.eventItem {
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+```
+
+### 16.11 溢出与文本省略
+
+```less
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+```
+
+### 16.12 页面级样式布局参考
+
+**Home 页面模式**（Dashboard 概览页）：
+
+```
+.container              → 页面外层容器
+  .statRow              → 统计数据行
+    .statCard           → 统计卡片（带 hover 动效）
+  .chartRow             → 图表的行
+    .chartCard          → 图表卡片
+  .chartEqualRow        → 等高校对行
+    .chartCard          → 内嵌卡片（:global 覆盖 ant-card-body）
+  .realtimeRow          → 实时数据行
+    .realtimeBody       → Flex 纵向布局
+    .realtimeStats      → 统计项 Flex 行
+    .onlineUsers        → 底部在线用户（border-top + margin-top: auto）
+```
+
+**Login 页面模式**（全屏登录页）：
+
+```
+.loginContainer        → 100vw x 100vh flex 容器
+  .loginFormPanel      → 右侧表单面板（flex: 0 0 45%, order: 2）
+    .loginFormWrapper  → 表单宽度约束
+  .loginIllustrationPanel → 左侧插图面板（flex: 0 0 55%, order: 1）
+    .loginGlow         → 装饰光晕（position: absolute）
+    .loginIllustration → 插图居中容器
+    .loginWelcome      → 欢迎文案居中
+```
+
 ---
 
-**参考页面**：Category（最标准的 CRUD 模板）、Product（含价格转换）、Inventory（含跨页面筛选）、Order（含状态变更 Dropdown）、Permission（含 useModel('@@initialState') 刷新）
+**参考页面**：Category（最标准的 CRUD 模板）、Product（含价格转换）、Inventory（含跨页面筛选）、Order（含状态变更 Dropdown）、Permission（含 useModel('@@initialState') 刷新）、**Home（CSS Modules + Less 嵌套 + :global 覆盖）**、**Login（CSS Modules + 渐变背景 + flex 左右布局）**
