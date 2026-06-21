@@ -2,15 +2,9 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
   PageContainer,
   ProDescriptions,
-  ProForm,
-  ProFormDateTimePicker,
-  ProFormDigit,
-  ProFormSelect,
-  ProFormText,
-  ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Modal, Popconfirm, Tag } from 'antd';
+import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
 import dayjs from 'dayjs';
 import React, { useRef, useState } from 'react';
 
@@ -19,6 +13,10 @@ import {
   postAdminCoupons,
   putAdminCouponsId,
 } from '@/services/api/coupons';
+
+import CreateForm from './components/CreateForm';
+import type { FormValueType } from './components/UpdateForm';
+import UpdateForm from './components/UpdateForm';
 
 const formatPrice = (price?: number) => {
   if (price === undefined || price === null) return '-';
@@ -46,6 +44,46 @@ const scopeMap: Record<string, string> = {
   global: '全局',
   category: '指定分类',
   product: '指定商品',
+};
+
+/**
+ * 新增优惠券
+ */
+const handleAdd = async (fields: API.CreateCouponReq) => {
+  try {
+    await postAdminCoupons({
+      ...fields,
+      start_time: dayjs(fields.start_time as any).valueOf(),
+      end_time: dayjs(fields.end_time as any).valueOf(),
+    } as any);
+    message.success('创建成功');
+    return true;
+  } catch {
+    message.error('创建失败');
+    return false;
+  }
+};
+
+/**
+ * 更新优惠券
+ */
+const handleUpdate = async (fields: FormValueType) => {
+  try {
+    await putAdminCouponsId({ id: fields.id || 0 }, {
+      ...fields,
+      start_time: fields.start_time
+        ? dayjs(fields.start_time as any).valueOf()
+        : undefined,
+      end_time: fields.end_time
+        ? dayjs(fields.end_time as any).valueOf()
+        : undefined,
+    } as any);
+    message.success('更新成功');
+    return true;
+  } catch {
+    message.error('更新失败');
+    return false;
+  }
 };
 
 const CouponList: React.FC = () => {
@@ -253,223 +291,41 @@ const CouponList: React.FC = () => {
       />
 
       {/* 新建 */}
-      <Modal
-        title="新建优惠券"
-        width={640}
-        open={createModalVisible}
+      <CreateForm
+        modalVisible={createModalVisible}
         onCancel={() => handleCreateModalVisible(false)}
-        footer={null}
-        destroyOnHidden
-      >
-        <ProForm<API.CreateCouponReq>
-          layout="horizontal"
-          labelCol={{ span: 6 }}
-          wrapperCol={{ span: 16 }}
-          style={{ width: '90%', margin: '0 auto' }}
-          onFinish={async (values) => {
-            try {
-              await postAdminCoupons({
-                ...values,
-                min_amount: values.min_amount,
-                max_discount: values.max_discount,
-                total_stock: values.total_stock,
-                start_time: dayjs(values.start_time).valueOf(),
-                end_time: dayjs(values.end_time).valueOf(),
-              } as any);
-              message.success('创建成功');
-              handleCreateModalVisible(false);
-              actionRef.current?.reload();
-              return true;
-            } catch {
-              message.error('创建失败');
-              return false;
-            }
-          }}
-          submitter={{
-            render: (_, dom) => (
-              <div
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: 8,
-                }}
-              >
-                {dom}
-              </div>
-            ),
-          }}
-        >
-          <ProFormText
-            name="name"
-            label="优惠券名称"
-            rules={[{ required: true, message: '请输入名称' }]}
-          />
-          <ProFormSelect
-            name="coupon_type"
-            label="类型"
-            rules={[{ required: true, message: '请选择类型' }]}
-            options={[
-              { label: '满减券', value: 'fixed' },
-              { label: '折扣券', value: 'percentage' },
-              { label: '代金券', value: 'voucher' },
-            ]}
-          />
-          <ProFormDigit
-            name="min_amount"
-            label="最低金额（分）"
-            rules={[{ required: true, message: '请输入最低金额' }]}
-            fieldProps={{ min: 0, precision: 0 }}
-            placeholder="单位：分"
-          />
-          <ProFormDigit
-            name="max_discount"
-            label="最大优惠（分）"
-            fieldProps={{ min: 0, precision: 0 }}
-            placeholder="单位：分，不限制留空"
-          />
-          <ProFormDigit
-            name="total_stock"
-            label="总库存"
-            rules={[{ required: true, message: '请输入库存' }]}
-            fieldProps={{ min: 1, precision: 0 }}
-          />
-          <ProFormSelect
-            name="scope"
-            label="适用场景"
-            rules={[{ required: true, message: '请选择场景' }]}
-            options={[
-              { label: '全局', value: 'global' },
-              { label: '指定分类', value: 'category' },
-              { label: '指定商品', value: 'product' },
-            ]}
-          />
-          <ProFormText
-            name="scope_value"
-            label="场景值"
-            placeholder="分类ID或商品ID"
-          />
-          <ProFormDateTimePicker
-            name="start_time"
-            label="开始时间"
-            rules={[{ required: true, message: '请选择开始时间' }]}
-          />
-          <ProFormDateTimePicker
-            name="end_time"
-            label="结束时间"
-            rules={[{ required: true, message: '请选择结束时间' }]}
-          />
-          <ProFormTextArea name="description" label="描述" />
-        </ProForm>
-      </Modal>
+        onSubmit={async (value) => {
+          const success = await handleAdd(value);
+          if (success) {
+            handleCreateModalVisible(false);
+            actionRef.current?.reload();
+          }
+          return success;
+        }}
+      />
 
       {/* 编辑 */}
-      <Modal
-        title="编辑优惠券"
-        width={640}
-        open={updateModalVisible}
-        onCancel={() => {
-          handleUpdateModalVisible(false);
-          setEditRecord(undefined);
-        }}
-        footer={null}
-        destroyOnHidden
-      >
-        <ProForm<API.UpdateCouponReq>
-          layout="horizontal"
-          labelCol={{ span: 6 }}
-          wrapperCol={{ span: 16 }}
-          style={{ width: '90%', margin: '0 auto' }}
-          initialValues={{
-            ...editRecord,
-            start_time: editRecord?.start_time
-              ? dayjs(editRecord.start_time)
-              : undefined,
-            end_time: editRecord?.end_time
-              ? dayjs(editRecord.end_time)
-              : undefined,
-          }}
-          onFinish={async (values) => {
-            try {
-              await putAdminCouponsId({ id: editRecord!.id! }, {
-                ...values,
-                min_amount: values.min_amount,
-                max_discount: values.max_discount,
-                start_time: values.start_time
-                  ? dayjs(values.start_time).valueOf()
-                  : undefined,
-                end_time: values.end_time
-                  ? dayjs(values.end_time).valueOf()
-                  : undefined,
-              } as any);
-              message.success('更新成功');
+      {editRecord && (
+        <UpdateForm
+          onSubmit={async (value) => {
+            const success = await handleUpdate({
+              ...value,
+              id: editRecord.id,
+            });
+            if (success) {
               handleUpdateModalVisible(false);
               setEditRecord(undefined);
               actionRef.current?.reload();
-              return true;
-            } catch {
-              message.error('更新失败');
-              return false;
             }
           }}
-          submitter={{
-            render: (_, dom) => (
-              <div
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: 8,
-                }}
-              >
-                {dom}
-              </div>
-            ),
+          onCancel={() => {
+            handleUpdateModalVisible(false);
+            setEditRecord(undefined);
           }}
-        >
-          <ProFormText
-            name="name"
-            label="优惠券名称"
-            rules={[{ required: true, message: '请输入名称' }]}
-          />
-          <ProFormDigit
-            name="min_amount"
-            label="最低金额（分）"
-            fieldProps={{ min: 0, precision: 0 }}
-          />
-          <ProFormDigit
-            name="max_discount"
-            label="最大优惠（分）"
-            fieldProps={{ min: 0, precision: 0 }}
-          />
-          <ProFormSelect
-            name="scope"
-            label="适用场景"
-            options={[
-              { label: '全局', value: 'global' },
-              { label: '指定分类', value: 'category' },
-              { label: '指定商品', value: 'product' },
-            ]}
-          />
-          <ProFormText name="scope_value" label="场景值" />
-          <ProFormSelect
-            name="status"
-            label="状态"
-            options={[
-              { label: '启用', value: 'active' },
-              { label: '禁用', value: 'inactive' },
-            ]}
-          />
-          <ProFormDateTimePicker name="start_time" label="开始时间" />
-          <ProFormDateTimePicker name="end_time" label="结束时间" />
-          <ProFormDigit
-            name="user_limit"
-            label="每人限领"
-            fieldProps={{ min: 0, precision: 0 }}
-          />
-          <ProFormTextArea name="description" label="描述" />
-        </ProForm>
-      </Modal>
+          updateModalVisible={updateModalVisible}
+          values={editRecord}
+        />
+      )}
 
       {/* 详情 */}
       <Drawer

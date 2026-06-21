@@ -12,5 +12,6 @@
 /.mfsu
 .swc
 .turbopack
-.claude
+.claude/settings.json
+.claude/settings.local.json
 resume_fe.md
