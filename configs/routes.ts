@@ -61,6 +61,11 @@ export default [
         component: './Order',
       },
       {
+        name: '购物车',
+        path: '/sales/cart',
+        component: './Cart',
+      },
+      {
         name: '支付管理',
         path: '/sales/payment',
         component: './Payment',

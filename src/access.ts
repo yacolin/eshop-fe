@@ -43,6 +43,14 @@ export default (initialState: {
     canUpdateOrder: permissions.includes('order:update'),
     canDeleteOrder: permissions.includes('order:delete'),
 
+    // ── Cart ──
+    canCreateCart:
+      roles.includes('admin') || permissions.includes('cart:create'),
+    canUpdateCart:
+      roles.includes('admin') || permissions.includes('cart:update'),
+    canDeleteCart:
+      roles.includes('admin') || permissions.includes('cart:delete'),
+
     // ── Role（admin 角色自动拥有所有角色管理能力）──
     canCreateRole:
       roles.includes('admin') || permissions.includes('role:create'),
