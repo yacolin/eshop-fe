@@ -368,6 +368,17 @@ declare namespace API {
     status?: string;
   };
 
+  type getInventoriesEnrichedParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+    /** SKU名称模糊搜索 */
+    sku_name?: string;
+    /** SKU精确搜索 */
+    sku?: string;
+  };
+
   type getInventoriesParams = {
     /** 页码 */
     page?: number;
@@ -704,6 +715,23 @@ declare namespace API {
     /** 低库存预警阈值。quantity<=threshold 时自动标为 lowstock */
     threshold?: number;
     updated_at?: string;
+  };
+
+  type InventoryEnrichedItem = {
+    created_at?: string;
+    id?: number;
+    quantity?: number;
+    reserved?: number;
+    sku_id?: number;
+    sku_name?: string;
+    status?: string;
+    threshold?: number;
+    updated_at?: string;
+  };
+
+  type InventoryEnrichedResult = {
+    list?: InventoryEnrichedItem[];
+    total?: number;
   };
 
   type InventoryListResult = {

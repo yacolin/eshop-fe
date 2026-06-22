@@ -65,6 +65,29 @@ export async function putInventoriesId(
   );
 }
 
+/** 列出所有库存（含 SKU 名称） 获取所有库存的列表，每条记录附带 SKU 名称，用于列表展示增强 GET /api/v1/inventories/enriched */
+export async function getInventoriesEnriched(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getInventoriesEnrichedParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.InventoryEnrichedResult }>(
+    '/api/v1/inventories/enriched',
+    {
+      method: 'GET',
+      params: {
+        // page has a default value: 1
+        page: '1',
+        // size has a default value: 10
+        size: '10',
+
+        ...params,
+      },
+      ...(options || {}),
+    },
+  );
+}
+
 /** 释放库存 释放之前预订的库存 POST /api/v1/inventories/release */
 export async function postInventoriesRelease(
   body: API.ReleaseInventoryDTO,

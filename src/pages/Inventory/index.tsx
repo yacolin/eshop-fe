@@ -11,7 +11,7 @@ import Auth from '@/components/Auth';
 import { useRouteFilter } from '@/hooks/useRouteFilter';
 
 import {
-  getInventories,
+  getInventoriesEnriched,
   postInventories,
   putInventoriesId,
 } from '@/services/api/inventories';
@@ -19,7 +19,6 @@ import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
-import useSkuOptions from './hooks/useSkuOptions';
 
 const statusMap: Record<string, { text: string; color: string }> = {
   instock: { text: '有货', color: '#52c41a' },
@@ -67,16 +66,14 @@ const InventoryList: React.FC = () => {
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<API.Inventory>();
-  const skus = useSkuOptions(true);
+  const [row, setRow] = useState<API.InventoryEnrichedItem>();
 
   const formRef = useRef<any>(null);
   const { getFilter, markApplied } = useRouteFilter<{
-    product_name: string;
-    sku: string;
-  }>(formRef, ['product_name', 'sku']);
+    sku_name: string;
+  }>(formRef, ['sku_name']);
 
-  const columns: ProColumns<API.Inventory>[] = [
+  const columns: ProColumns<API.InventoryEnrichedItem>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -86,19 +83,10 @@ const InventoryList: React.FC = () => {
       fixed: 'left',
     },
     {
-      title: 'SKU',
-      dataIndex: 'sku_id',
+      title: 'SKU 名称',
+      dataIndex: 'sku_name',
       width: 240,
       ellipsis: true,
-      render: (_, record) => {
-        const sku = skus.find((s) => s.value === record.sku_id);
-        return sku ? sku.label : `SKU #${record.sku_id}`;
-      },
-    },
-    {
-      title: 'SKU',
-      dataIndex: 'sku',
-      hideInTable: true,
     },
     {
       title: '库存数量',
@@ -193,7 +181,7 @@ const InventoryList: React.FC = () => {
         },
       }}
     >
-      <ProTable<API.Inventory>
+      <ProTable<API.InventoryEnrichedItem>
         headerTitle="库存列表"
         actionRef={actionRef}
         formRef={formRef}
@@ -211,22 +199,14 @@ const InventoryList: React.FC = () => {
           </Auth>,
         ]}
         request={async (params) => {
-          const {
-            current,
-            pageSize,
-            product_name: formProductName,
-            sku: formSku,
-            ...rest
-          } = params;
-          const productName = getFilter('product_name', formProductName);
-          const sku = getFilter('sku', formSku);
+          const { current, pageSize, sku_name: formSkuName, ...rest } = params;
+          const skuName = getFilter('sku_name', formSkuName);
           markApplied();
 
-          const res = await getInventories({
+          const res = await getInventoriesEnriched({
             page: current || 1,
             size: pageSize || 10,
-            product_name: productName,
-            sku,
+            sku_name: skuName,
             ...rest,
           });
           const data = (res as any).data || {};
@@ -289,7 +269,7 @@ const InventoryList: React.FC = () => {
         title={row?.id ? `库存 #${row.id}` : '库存详情'}
       >
         {row && (
-          <ProDescriptions<API.Inventory>
+          <ProDescriptions<API.InventoryEnrichedItem>
             column={2}
             title={`SKU ID: ${row.sku_id}`}
             request={async () => ({ data: row || {} })}
