@@ -1,8 +1,20 @@
 declare namespace API {
+  type ActivityCursorResult = {
+    has_more?: boolean;
+    list?: FlashActivity[];
+    next_cursor?: number;
+  };
+
   type AddToCartDTO = {
     product_id: number;
     quantity: number;
     sku?: string;
+  };
+
+  type CachedProductItem = {
+    id?: number;
+    min_price?: number;
+    name?: string;
   };
 
   type CartItemResponse = {
@@ -103,9 +115,9 @@ declare namespace API {
   };
 
   type CreateInventoryDTO = {
-    product_id: number;
     /** 初始物理库存量 */
     quantity: number;
+    sku_id: number;
     /** 低库存预警阈值(默认0) */
     threshold?: number;
   };
@@ -150,8 +162,6 @@ declare namespace API {
     category_ids?: number[];
     description?: string;
     name: string;
-    price: number;
-    sku: string;
   };
 
   type CreatePromotionDTO = {
@@ -188,6 +198,15 @@ declare namespace API {
     name: string;
     sort?: number;
     status?: number;
+  };
+
+  type CreateSkuDTO = {
+    image?: string;
+    name: string;
+    price: number;
+    product_id: number;
+    sku_code: string;
+    spec?: Record<string, any>;
   };
 
   type DashboardResponse = {
@@ -261,11 +280,29 @@ declare namespace API {
     id: string;
   };
 
+  type deleteSkusIdParams = {
+    /** SKU ID */
+    id: number;
+  };
+
   type deleteUsersUserIdRolesRoleIdParams = {
     /** 用户ID */
     user_id: string;
     /** 角色ID */
     role_id: string;
+  };
+
+  type FlashActivity = {
+    created_at?: string;
+    end_time?: string;
+    flash_price?: number;
+    id?: number;
+    product_id?: number;
+    sold_stock?: number;
+    start_time?: string;
+    status?: string;
+    total_stock?: number;
+    updated_at?: string;
   };
 
   type getAdminReviewsPendingParams = {
@@ -322,6 +359,15 @@ declare namespace API {
     page_size?: number;
   };
 
+  type getFlashActivitiesCursorParams = {
+    /** 游标（上一页最后一条的 ID，首次查询传 0） */
+    cursor?: number;
+    /** 每页条数 */
+    size?: number;
+    /** 筛选状态：pending/active/finished */
+    status?: string;
+  };
+
   type getInventoriesParams = {
     /** 页码 */
     page?: number;
@@ -333,9 +379,9 @@ declare namespace API {
     sku?: string;
   };
 
-  type getInventoriesProductProductIdParams = {
-    /** 产品ID */
-    productId: number;
+  type getInventoriesSkuSkuIdParams = {
+    /** SKU ID */
+    skuId: number;
   };
 
   type getNotificationsParams = {
@@ -447,6 +493,15 @@ declare namespace API {
     sort_by?: 'sort' | 'created_at' | 'name';
     /** 排序方向 */
     order?: 'asc' | 'desc';
+  };
+
+  type getProductsCacheCursorParams = {
+    /** 游标（上一页最后一条的 ID，首次查询传 0） */
+    cursor?: number;
+    /** 每页条数 */
+    size?: number;
+    /** 分类ID筛选 */
+    category_id?: number;
   };
 
   type getProductsCacheIdParams = {
@@ -600,6 +655,16 @@ declare namespace API {
     page_size?: number;
   };
 
+  type getSkusIdParams = {
+    /** SKU ID */
+    id: number;
+  };
+
+  type getSkusParams = {
+    /** 产品ID */
+    product_id: number;
+  };
+
   type getUsersUserIdOrdersParams = {
     /** 用户ID */
     user_id: number;
@@ -629,11 +694,11 @@ declare namespace API {
   type Inventory = {
     created_at?: string;
     id?: number;
-    product_id?: number;
     /** 实际物理库存。卖出一件减一 */
     quantity?: number;
     /** 已预订(下单未支付)数量。下单+1, 支付/取消-1 */
     reserved?: number;
+    sku_id?: number;
     /** 库存状态: instock / lowstock / outofstock */
     status?: string;
     /** 低库存预警阈值。quantity<=threshold 时自动标为 lowstock */
@@ -891,11 +956,15 @@ declare namespace API {
     created_at?: string;
     description?: string;
     id?: number;
+    min_price?: number;
     name?: string;
-    /** 价格，单位：分 */
-    price?: number;
-    sku?: string;
     updated_at?: string;
+  };
+
+  type ProductCacheCursorResult = {
+    has_more?: boolean;
+    list?: CachedProductItem[];
+    next_cursor?: number;
   };
 
   type ProductCategoryBrief = {
@@ -916,11 +985,11 @@ declare namespace API {
     created_at?: string;
     description?: string;
     id?: number;
+    min_price?: number;
     name?: string;
-    price?: number;
     quantity?: number;
     reserved?: number;
-    sku?: string;
+    skus?: SkuResponse[];
     status?: string;
     threshold?: number;
     updated_at?: string;
@@ -942,20 +1011,33 @@ declare namespace API {
     review_count?: number;
   };
 
+  type ProductResponse = {
+    created_at?: string;
+    description?: string;
+    id?: number;
+    min_price?: number;
+    name?: string;
+    updated_at?: string;
+  };
+
   type ProductWithCategoryDTO = {
     categories?: ProductCategoryBrief[];
     created_at?: string;
     description?: string;
     id?: number;
+    min_price?: number;
     name?: string;
-    price?: number;
-    sku?: string;
     updated_at?: string;
   };
 
   type ProductWithCategoryListResult = {
     list?: ProductWithCategoryDTO[];
     total?: number;
+  };
+
+  type ProductWithSkusResponse = {
+    product?: ProductResponse;
+    skus?: SkuResponse[];
   };
 
   type PromotionListResult = {
@@ -1038,6 +1120,11 @@ declare namespace API {
     id: string;
   };
 
+  type putSkusIdParams = {
+    /** SKU ID */
+    id: number;
+  };
+
   type ReconnectRequest = {
     /** 客户端最后收到的消息序列号 */
     last_seq: number;
@@ -1096,9 +1183,9 @@ declare namespace API {
   };
 
   type ReleaseInventoryDTO = {
-    product_id: number;
     /** 释放数量 */
     quantity: number;
+    sku_id: number;
   };
 
   type ReplyReviewReq = {
@@ -1106,9 +1193,9 @@ declare namespace API {
   };
 
   type ReserveInventoryDTO = {
-    product_id: number;
     /** 预占数量 */
     quantity: number;
+    sku_id: number;
   };
 
   type Response = {
@@ -1191,6 +1278,23 @@ declare namespace API {
     reconnect_count?: number;
     /** 用户ID */
     user_id?: number;
+  };
+
+  type SkuListResult = {
+    list?: SkuResponse[];
+    total?: number;
+  };
+
+  type SkuResponse = {
+    created_at?: string;
+    id?: number;
+    image?: string;
+    name?: string;
+    price?: number;
+    product_id?: number;
+    sku_code?: string;
+    spec?: Record<string, any>;
+    updated_at?: string;
   };
 
   type StatusDistDTO = {
@@ -1301,7 +1405,6 @@ declare namespace API {
     category_ids?: number[];
     description?: string;
     name?: string;
-    price?: number;
   };
 
   type UpdatePromotionDTO = {
@@ -1321,6 +1424,14 @@ declare namespace API {
     display_name?: string;
     sort?: number;
     status?: number;
+  };
+
+  type UpdateSkuDTO = {
+    image?: string;
+    name?: string;
+    price?: number;
+    sku_code?: string;
+    spec?: Record<string, any>;
   };
 
   type UpdateUserInfoRequest = {

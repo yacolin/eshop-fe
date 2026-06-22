@@ -1,6 +1,5 @@
 import {
   ProForm,
-  ProFormDigit,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
@@ -12,8 +11,6 @@ import useCategoryOptions from '@/pages/Category/hooks/useCategoryOptions';
 
 export type FormValueType = {
   name?: string;
-  sku?: string;
-  price?: number;
   description?: string;
   category_ids?: number[];
   id?: number;
@@ -47,8 +44,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         onFinish={props.onSubmit}
         initialValues={{
           name: values.name,
-          sku: values.sku,
-          price: values.price ? values.price / 100 : undefined,
           description: values.description,
           category_ids: values.category_ids,
         }}
@@ -72,24 +67,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           label="商品名称"
           width="md"
           rules={[{ required: true, message: '请输入商品名称' }]}
-        />
-        <ProFormText
-          name="sku"
-          label="SKU"
-          width="md"
-          disabled
-          tooltip="SKU 创建后不可修改"
-        />
-        <ProFormDigit
-          name="price"
-          label="价格（元）"
-          width="md"
-          min={0}
-          rules={[{ required: true, message: '请输入价格' }]}
-          fieldProps={{
-            precision: 2,
-            prefix: '¥',
-          }}
         />
         <ProFormSelect
           name="category_ids"

@@ -7,7 +7,7 @@ import {
 import { Modal } from 'antd';
 import React from 'react';
 
-import useProductOptions from '../hooks/useProductOptions';
+import useSkuOptions from '../hooks/useSkuOptions';
 
 export type FormValueType = {
   quantity?: number;
@@ -29,7 +29,7 @@ const statusMap: Record<string, string> = {
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const { values } = props;
-  const products = useProductOptions(props.updateModalVisible);
+  const skus = useSkuOptions(props.updateModalVisible);
 
   const available = (values.quantity || 0) - (values.reserved || 0);
 
@@ -50,7 +50,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         style={{ width: '90%', margin: '0 auto' }}
         onFinish={props.onSubmit}
         initialValues={{
-          product_id: values.product_id,
+          sku_id: values.sku_id,
           quantity: values.quantity,
           threshold: values.threshold,
         }}
@@ -70,13 +70,13 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         }}
       >
         <ProFormSelect
-          name="product_id"
-          label="关联产品"
+          name="sku_id"
+          label="关联 SKU"
           width="md"
           disabled
           showSearch
-          options={products}
-          tooltip="当前库存关联的产品，不可修改"
+          options={skus}
+          tooltip="当前库存关联的 SKU，不可修改"
         />
         <ProFormDigit
           name="quantity"

@@ -12,7 +12,7 @@ import React from 'react';
 interface CreateFormProps {
   modalVisible: boolean;
   onCancel: () => void;
-  onSubmit: (values: API.CreateCouponReq) => Promise<boolean>;
+  onSubmit: (values: API.CreateCouponDTO) => Promise<boolean>;
 }
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
@@ -27,13 +27,13 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       footer={null}
       destroyOnHidden
     >
-      <ProForm<API.CreateCouponReq>
+      <ProForm<API.CreateCouponDTO>
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 16 }}
         style={{ width: '90%', margin: '0 auto' }}
         onFinish={async (values) => {
-          const success = await onSubmit(values as API.CreateCouponReq);
+          const success = await onSubmit(values as API.CreateCouponDTO);
           if (success) {
             onCancel();
           }

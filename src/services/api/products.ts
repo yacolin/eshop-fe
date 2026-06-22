@@ -155,6 +155,26 @@ export async function getProductsCache(
   );
 }
 
+/** 基于游标从缓存查询商品 从 Redis 缓存中基于游标分页读取商品列表 GET /api/v1/products/cache-cursor */
+export async function getProductsCacheCursor(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getProductsCacheCursorParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.ProductCacheCursorResult }>(
+    '/api/v1/products/cache-cursor',
+    {
+      method: 'GET',
+      params: {
+        // size has a default value: 20
+        size: '20',
+        ...params,
+      },
+      ...(options || {}),
+    },
+  );
+}
+
 /** 从缓存查询商品 从 Redis 缓存中根据 ID 查询单个商品 GET /api/v1/products/cache/${param0} */
 export async function getProductsCacheId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

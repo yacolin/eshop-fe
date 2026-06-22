@@ -1,6 +1,5 @@
 import {
   ProForm,
-  ProFormDigit,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
@@ -60,23 +59,6 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           label="商品名称"
           width="md"
           rules={[{ required: true, message: '请输入商品名称' }]}
-        />
-        <ProFormText
-          name="sku"
-          label="SKU"
-          width="md"
-          rules={[{ required: true, message: '请输入 SKU' }]}
-        />
-        <ProFormDigit
-          name="price"
-          label="价格（元）"
-          width="md"
-          min={0}
-          rules={[{ required: true, message: '请输入价格' }]}
-          fieldProps={{
-            precision: 2,
-            prefix: '¥',
-          }}
         />
         <ProFormSelect
           name="category_ids"

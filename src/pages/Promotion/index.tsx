@@ -266,7 +266,7 @@ const PromotionList: React.FC = () => {
         footer={null}
         destroyOnHidden
       >
-        <ProForm<API.CreatePromotionReq>
+        <ProForm<API.CreatePromotionDTO>
           layout="horizontal"
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 16 }}
@@ -368,7 +368,7 @@ const PromotionList: React.FC = () => {
         footer={null}
         destroyOnHidden
       >
-        <ProForm<API.UpdatePromotionReq>
+        <ProForm<API.UpdatePromotionDTO>
           layout="horizontal"
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 16 }}

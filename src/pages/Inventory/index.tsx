@@ -19,7 +19,7 @@ import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
-import useProductOptions from './hooks/useProductOptions';
+import useSkuOptions from './hooks/useSkuOptions';
 
 const statusMap: Record<string, { text: string; color: string }> = {
   instock: { text: '有货', color: '#52c41a' },
@@ -30,11 +30,7 @@ const statusMap: Record<string, { text: string; color: string }> = {
 const handleAdd = async (fields: API.CreateInventoryDTO) => {
   const hide = message.loading('正在创建');
   try {
-    await postInventories({
-      product_id: fields.product_id,
-      quantity: fields.quantity,
-      threshold: fields.threshold,
-    });
+    await postInventories(fields);
     hide();
     message.success('创建成功');
     return true;
@@ -72,7 +68,7 @@ const InventoryList: React.FC = () => {
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
   const [row, setRow] = useState<API.Inventory>();
-  const products = useProductOptions(true);
+  const skus = useSkuOptions(true);
 
   const formRef = useRef<any>(null);
   const { getFilter, markApplied } = useRouteFilter<{
@@ -90,13 +86,13 @@ const InventoryList: React.FC = () => {
       fixed: 'left',
     },
     {
-      title: '产品',
-      dataIndex: 'product_name',
+      title: 'SKU',
+      dataIndex: 'sku_id',
       width: 240,
       ellipsis: true,
       render: (_, record) => {
-        const product = products.find((p) => p.value === record.product_id);
-        return product ? product.label : record.product_id;
+        const sku = skus.find((s) => s.value === record.sku_id);
+        return sku ? sku.label : `SKU #${record.sku_id}`;
       },
     },
     {
@@ -295,7 +291,7 @@ const InventoryList: React.FC = () => {
         {row && (
           <ProDescriptions<API.Inventory>
             column={2}
-            title={`产品 ID: ${row.product_id}`}
+            title={`SKU ID: ${row.sku_id}`}
             request={async () => ({ data: row || {} })}
             params={{ id: row.id }}
             columns={columns as any}

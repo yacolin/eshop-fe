@@ -7,6 +7,7 @@ import * as carts from './carts';
 import * as categories from './categories';
 import * as coupons from './coupons';
 import * as dashboard from './dashboard';
+import * as flashActivities from './flashActivities';
 import * as inventories from './inventories';
 import * as notifications from './notifications';
 import * as orders from './orders';
@@ -18,6 +19,7 @@ import * as promotions from './promotions';
 import * as refunds from './refunds';
 import * as reviews from './reviews';
 import * as roles from './roles';
+import * as skus from './skus';
 import * as users from './users';
 import * as websocket from './websocket';
 export default {
@@ -28,6 +30,7 @@ export default {
   carts,
   categories,
   dashboard,
+  flashActivities,
   inventories,
   notifications,
   orders,
@@ -37,6 +40,7 @@ export default {
   products,
   refunds,
   roles,
+  skus,
   users,
   websocket,
 };

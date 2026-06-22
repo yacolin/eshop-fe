@@ -6,7 +6,7 @@ import {
 import { Modal } from 'antd';
 import React from 'react';
 
-import useProductOptions from '../hooks/useProductOptions';
+import useSkuOptions from '../hooks/useSkuOptions';
 
 interface CreateFormProps {
   modalVisible: boolean;
@@ -16,7 +16,7 @@ interface CreateFormProps {
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
   const { modalVisible, onCancel, onSubmit } = props;
-  const products = useProductOptions(modalVisible);
+  const skus = useSkuOptions(modalVisible);
 
   return (
     <Modal
@@ -53,13 +53,13 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
         }}
       >
         <ProFormSelect
-          name="product_id"
-          label="产品"
+          name="sku_id"
+          label="SKU"
           width="md"
           showSearch
-          rules={[{ required: true, message: '请选择产品' }]}
-          options={products}
-          placeholder="搜索并选择产品"
+          rules={[{ required: true, message: '请选择 SKU' }]}
+          options={skus}
+          placeholder="搜索并选择 SKU"
           fieldProps={{
             filterOption: (input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),

@@ -47,10 +47,7 @@ const formatPrice = (price?: number) => {
 const handleAdd = async (fields: API.CreateProductDTO) => {
   const hide = message.loading('正在创建');
   try {
-    await postProducts({
-      ...fields,
-      price: Math.round(fields.price * 100),
-    });
+    await postProducts(fields);
     hide();
     message.success('创建成功');
     return true;
@@ -72,7 +69,6 @@ const handleUpdate = async (fields: FormValueType) => {
       {
         name: fields.name,
         description: fields.description,
-        price: fields.price ? Math.round(fields.price * 100) : undefined,
         category_ids: fields.category_ids,
       },
     );
@@ -253,25 +249,10 @@ const ProductCursorList: React.FC = () => {
       },
     },
     {
-      title: 'SKU',
-      dataIndex: 'sku',
-      width: 150,
-      render: (_, record) => (
-        <LinkText
-          value={record.sku}
-          path="/inventory/inventory"
-          state={{ sku: record.sku }}
-        />
-      ),
-      formItemProps: {
-        rules: [{ required: true, message: 'SKU 为必填项' }],
-      },
-    },
-    {
-      title: '价格',
-      dataIndex: 'price',
+      title: '最低价格',
+      dataIndex: 'min_price',
       width: 100,
-      render: (_, record) => formatPrice(record.price),
+      render: (_, record) => formatPrice(record.min_price),
     },
     // {
     //   title: '分类',

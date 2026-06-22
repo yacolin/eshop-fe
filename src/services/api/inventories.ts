@@ -65,23 +65,6 @@ export async function putInventoriesId(
   );
 }
 
-/** 根据产品ID获取库存 根据产品ID获取库存信息 GET /api/v1/inventories/product/${param0} */
-export async function getInventoriesProductProductId(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getInventoriesProductProductIdParams,
-  options?: { [key: string]: any },
-) {
-  const { productId: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.Inventory }>(
-    `/api/v1/inventories/product/${param0}`,
-    {
-      method: 'GET',
-      params: { ...queryParams },
-      ...(options || {}),
-    },
-  );
-}
-
 /** 释放库存 释放之前预订的库存 POST /api/v1/inventories/release */
 export async function postInventoriesRelease(
   body: API.ReleaseInventoryDTO,
@@ -113,6 +96,23 @@ export async function postInventoriesReserve(
         'Content-Type': 'application/json',
       },
       data: body,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 根据SKU ID获取库存 根据SKU ID获取库存信息 GET /api/v1/inventories/sku/${param0} */
+export async function getInventoriesSkuSkuId(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getInventoriesSkuSkuIdParams,
+  options?: { [key: string]: any },
+) {
+  const { skuId: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.Inventory }>(
+    `/api/v1/inventories/sku/${param0}`,
+    {
+      method: 'GET',
+      params: { ...queryParams },
       ...(options || {}),
     },
   );

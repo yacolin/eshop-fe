@@ -49,7 +49,7 @@ const scopeMap: Record<string, string> = {
 /**
  * 新增优惠券
  */
-const handleAdd = async (fields: API.CreateCouponReq) => {
+const handleAdd = async (fields: API.CreateCouponDTO) => {
   try {
     await postAdminCoupons({
       ...fields,

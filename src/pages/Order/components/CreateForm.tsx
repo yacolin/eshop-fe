@@ -112,10 +112,10 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
     const res = await getProductsCache({ page: 1, size: 100 });
     const data = (res as any).data || {};
     setProductOptions(
-      (data.list || []).map((p: API.Product) => ({
-        label: `${p.name} (${p.sku})`,
+      (data.list || []).map((p: API.CachedProductItem) => ({
+        label: `${p.name}`,
         value: String(p.id),
-        price: p.price,
+        price: p.min_price,
       })),
     );
   };
