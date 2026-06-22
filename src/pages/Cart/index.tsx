@@ -1,5 +1,5 @@
-import type { ProColumns } from '@ant-design/pro-components';
-import { PageContainer } from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
 import { useModel } from '@umijs/max';
 import {
   Button,
@@ -10,10 +10,9 @@ import {
   Row,
   Space,
   Statistic,
-  Table,
   Tag,
 } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
 import {
@@ -33,27 +32,9 @@ const CartList: React.FC = () => {
   const { initialState } = useModel('@@initialState');
   const userId = initialState?.userId;
 
+  const actionRef = useRef<ActionType>();
   const [cart, setCart] = useState<API.CartResponse>();
-  const [loading, setLoading] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
-
-  const fetchCart = async () => {
-    if (!userId) return;
-    setLoading(true);
-    try {
-      const res = await getCarts({ user_id: userId });
-      const data = (res as any).data || {};
-      setCart(data);
-    } catch {
-      // 静默处理
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCart();
-  }, []);
 
   /**
    * 更新购物车项数量
@@ -65,7 +46,7 @@ const CartList: React.FC = () => {
         { quantity },
       );
       message.success('数量已更新');
-      fetchCart();
+      actionRef.current?.reload();
       return true;
     } catch {
       message.error('更新失败，请重试');
@@ -80,7 +61,7 @@ const CartList: React.FC = () => {
     try {
       await deleteCartsItemsItemId({ item_id: itemId, user_id: userId });
       message.success('已移除');
-      fetchCart();
+      actionRef.current?.reload();
     } catch {
       message.error('移除失败，请重试');
     }
@@ -93,7 +74,7 @@ const CartList: React.FC = () => {
     try {
       await deleteCarts({ user_id: userId });
       message.success('购物车已清空');
-      setCart(undefined);
+      actionRef.current?.reload();
     } catch {
       message.error('清空失败，请重试');
     }
@@ -209,17 +190,17 @@ const CartList: React.FC = () => {
       {/* 统计卡片 */}
       <Row gutter={24} style={{ marginBottom: 16 }}>
         <Col span={6}>
-          <Card loading={loading} styles={{ body: { padding: '20px 24px' } }}>
+          <Card styles={{ body: { padding: '20px 24px' } }}>
             <Statistic title="用户ID" value={cart?.user_id ?? '-'} />
           </Card>
         </Col>
         <Col span={6}>
-          <Card loading={loading} styles={{ body: { padding: '20px 24px' } }}>
+          <Card styles={{ body: { padding: '20px 24px' } }}>
             <Statistic title="商品总数" value={cart?.total_items ?? 0} />
           </Card>
         </Col>
         <Col span={6}>
-          <Card loading={loading} styles={{ body: { padding: '20px 24px' } }}>
+          <Card styles={{ body: { padding: '20px 24px' } }}>
             <Statistic
               title="购物车总价"
               value={formatPrice(cart?.total_price)}
@@ -228,57 +209,52 @@ const CartList: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card loading={loading} styles={{ body: { padding: '20px 24px' } }}>
+          <Card styles={{ body: { padding: '20px 24px' } }}>
             <Statistic title="商品种类" value={items.length} />
           </Card>
         </Col>
       </Row>
 
-      {/* 操作栏 */}
-      <Card
-        title="购物车商品"
-        styles={{
-          header: { padding: '12px 24px' },
-          body: hasItems ? { padding: 0 } : { padding: 24 },
+      {/* Table */}
+      <ProTable<API.CartItemResponse>
+        headerTitle="购物车列表"
+        actionRef={actionRef}
+        rowKey={(record) => record.id || record.product_id || 0}
+        columns={columns as any}
+        pagination={false}
+        size="middle"
+        search={false}
+        locale={{ emptyText: '购物车为空' }}
+        options={{
+          density: false,
+          setting: false,
         }}
-        extra={
-          <Space>
-            <Auth permission="canCreateCart">
-              <Button type="primary" onClick={() => setAddModalVisible(true)}>
-                添加商品
+        request={async () => {
+          if (!userId) return { data: [], success: true };
+          const res = await getCarts({ user_id: userId });
+          const data = (res as any).data || {};
+          setCart(data);
+          return { data: data.items || [], success: true };
+        }}
+        toolBarRender={() => [
+          <Auth key="create" permission="canCreateCart">
+            <Button type="primary" onClick={() => setAddModalVisible(true)}>
+              添加商品
+            </Button>
+          </Auth>,
+          <Auth key="clear" permission="canDeleteCart">
+            <Popconfirm
+              title="确认清空"
+              description="确定要清空购物车中的所有商品吗？"
+              onConfirm={handleClearCart}
+            >
+              <Button danger disabled={!hasItems}>
+                清空购物车
               </Button>
-            </Auth>
-            <Auth permission="canDeleteCart">
-              <Popconfirm
-                title="确认清空"
-                description="确定要清空购物车中的所有商品吗？"
-                onConfirm={handleClearCart}
-              >
-                <Button danger disabled={!hasItems}>
-                  清空购物车
-                </Button>
-              </Popconfirm>
-            </Auth>
-          </Space>
-        }
-      >
-        {hasItems ? (
-          <Table<API.CartItemResponse>
-            rowKey={(record) => record.id || record.product_id || 0}
-            dataSource={items}
-            columns={columns as any}
-            pagination={false}
-            loading={loading}
-            size="middle"
-          />
-        ) : (
-          <div
-            style={{ textAlign: 'center', color: '#999', padding: '40px 0' }}
-          >
-            购物车为空
-          </div>
-        )}
-      </Card>
+            </Popconfirm>
+          </Auth>,
+        ]}
+      />
 
       {/* 添加商品 */}
       <CreateForm
@@ -287,7 +263,7 @@ const CartList: React.FC = () => {
         userId={userId}
         onSubmit={async () => {
           setAddModalVisible(false);
-          fetchCart();
+          actionRef.current?.reload();
           return true;
         }}
       />
