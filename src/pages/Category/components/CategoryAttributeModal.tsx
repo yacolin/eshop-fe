@@ -94,7 +94,7 @@ const CategoryAttributeModal: React.FC<CategoryAttributeModalProps> = ({
       onCancel={onCancel}
       onOk={handleSave}
       confirmLoading={saving}
-      destroyOnClose
+      destroyOnHidden
     >
       {loading ? (
         <div style={{ textAlign: 'center', padding: 40 }}>

@@ -448,11 +448,12 @@ const ProductList: React.FC = () => {
         open={skuModalVisible}
         onCancel={() => setSkuModalVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         {row?.id && (
           <SkuMatrixEditor
             productId={row.id}
+            productName={row.name || ''}
             defaultPrice={row.min_price}
             onSuccess={() => setSkuModalVisible(false)}
           />

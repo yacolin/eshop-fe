@@ -500,7 +500,7 @@ const AttributeList: React.FC = () => {
           setValueSortOrder(undefined);
         }}
         confirmLoading={savingValue}
-        destroyOnClose
+        destroyOnHidden
       >
         <div style={{ padding: '16px 0' }}>
           <div style={{ marginBottom: 16 }}>

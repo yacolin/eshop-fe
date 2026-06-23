@@ -206,7 +206,7 @@ const AttributeConfigModal: React.FC<AttributeConfigModalProps> = ({
       onCancel={onCancel}
       onOk={handleSave}
       confirmLoading={saving}
-      destroyOnClose
+      destroyOnHidden
     >
       {loading ? (
         <div style={{ textAlign: 'center', padding: 40 }}>
