@@ -477,8 +477,12 @@ declare namespace API {
     size?: number;
     /** SKU名称模糊搜索 */
     sku_name?: string;
-    /** SKU精确搜索 */
-    sku?: string;
+    /** SKU编码精确搜索 */
+    sku_code?: string;
+    /** 产品ID精确搜索 */
+    product_id?: number;
+    /** 产品名称模糊搜索 */
+    product_name?: string;
   };
 
   type getInventoriesParams = {
@@ -486,10 +490,18 @@ declare namespace API {
     page?: number;
     /** 每页条数 */
     size?: number;
+    /** 产品ID精确搜索 */
+    product_id?: number;
     /** 产品名称模糊搜索 */
     product_name?: string;
-    /** SKU精确搜索 */
-    sku?: string;
+    /** SKU编码精确搜索 */
+    sku_code?: string;
+    /** SKU名称模糊搜索 */
+    sku_name?: string;
+    /** 库存状态(instock/lowstock/outofstock) */
+    status?: string;
+    /** 是否低库存 */
+    low_stock?: boolean;
   };
 
   type getInventoriesSkuSkuIdParams = {
@@ -843,8 +855,11 @@ declare namespace API {
   type InventoryEnrichedItem = {
     created_at?: string;
     id?: number;
+    product_id?: number;
+    product_name?: string;
     quantity?: number;
     reserved?: number;
+    sku_code?: string;
     sku_id?: number;
     sku_name?: string;
     status?: string;

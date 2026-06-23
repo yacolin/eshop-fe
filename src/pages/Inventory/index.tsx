@@ -4,11 +4,12 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Tag } from 'antd';
-import React, { useRef, useState } from 'react';
+import { Button, Divider, Drawer, message, Select, Tag } from 'antd';
+import React, { useMemo, useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
 import { useRouteFilter } from '@/hooks/useRouteFilter';
+import useProductOptions from '@/pages/Sku/hooks/useProductOptions';
 
 import {
   getInventoriesEnriched,
@@ -91,6 +92,11 @@ const InventoryList: React.FC = () => {
   const [row, setRow] = useState<API.InventoryEnrichedItem>();
 
   const formRef = useRef<any>(null);
+  const products = useProductOptions(true);
+  const productOptions = useMemo(
+    () => products.map((p) => ({ ...p })),
+    [products],
+  );
   const { getFilter, markApplied } = useRouteFilter<{
     sku_name: string;
   }>(formRef, ['sku_name']);
@@ -105,11 +111,42 @@ const InventoryList: React.FC = () => {
       fixed: 'left',
     },
     {
+      title: '所属产品',
+      dataIndex: 'product_name',
+      width: 200,
+      ellipsis: true,
+      hideInSearch: true,
+    },
+    {
+      title: '所属产品',
+      dataIndex: 'product_id',
+      hideInTable: true,
+      renderFormItem: () => (
+        <Select
+          allowClear
+          showSearch
+          placeholder="搜索并选择产品"
+          options={productOptions}
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        />
+      ),
+    },
+    {
       title: 'SKU 名称',
       dataIndex: 'sku_name',
       width: 280,
       ellipsis: true,
       copyable: true,
+    },
+    {
+      title: 'SKU 编码',
+      dataIndex: 'sku_code',
+      width: 160,
+      ellipsis: true,
+      copyable: true,
+      hideInSearch: true,
     },
     {
       title: '库存数量',
@@ -209,7 +246,7 @@ const InventoryList: React.FC = () => {
         actionRef={actionRef}
         formRef={formRef}
         rowKey="id"
-        scroll={{ x: 1200 }}
+        scroll={{ x: 1600 }}
         search={{
           labelWidth: 100,
           defaultCollapsed: false,
@@ -227,7 +264,13 @@ const InventoryList: React.FC = () => {
           </Auth>,
         ]}
         request={async (params) => {
-          const { current, pageSize, sku_name: formSkuName, ...rest } = params;
+          const {
+            current,
+            pageSize,
+            product_id,
+            sku_name: formSkuName,
+            ...rest
+          } = params;
           const skuName = getFilter('sku_name', formSkuName);
           markApplied();
 
@@ -235,6 +278,7 @@ const InventoryList: React.FC = () => {
             page: current || 1,
             size: pageSize || 10,
             sku_name: skuName,
+            product_id,
             ...rest,
           });
           const data = (res as any).data || {};
