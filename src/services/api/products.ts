@@ -132,14 +132,14 @@ export async function putProductsIdAttributes(
   });
 }
 
-/** 获取产品详情（含库存） 根据产品ID获取产品详情，包含产品信息和库存信息 GET /api/v1/products/${param0}/detail */
+/** 获取产品详情（含 SKU） GET /api/v1/products/${param0}/detail */
 export async function getProductsIdDetail(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getProductsIdDetailParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.ProductDetailDTO }>(
+  return request<API.Response & { data?: API.ProductWithSkusResponse }>(
     `/api/v1/products/${param0}/detail`,
     {
       method: 'GET',

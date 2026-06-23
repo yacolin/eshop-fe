@@ -47,7 +47,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
   return (
     <Modal
       title="新建库存"
-      width={700}
+      width={600}
       open={modalVisible}
       onCancel={() => onCancel()}
       footer={null}
@@ -58,7 +58,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
-        style={{ width: '95%', margin: '0 auto' }}
+        style={{ width: '90%', margin: '0 auto' }}
         onFinish={async (values) => {
           const success = await onSubmit({
             sku_id: values.sku_id!,
@@ -87,7 +87,6 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
         <ProFormSelect
           name="product_id"
           label="产品"
-          width="lg"
           showSearch
           rules={[{ required: true, message: '请选择产品' }]}
           options={products}
@@ -101,7 +100,6 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
         <ProFormSelect
           name="sku_id"
           label="SKU"
-          width="lg"
           showSearch
           rules={[{ required: true, message: '请选择 SKU' }]}
           options={skuOptions}
@@ -114,19 +112,17 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
         <ProFormDigit
           name="quantity"
           label="初始库存"
-          width="lg"
           min={0}
           rules={[{ required: true, message: '请输入库存数量' }]}
-          fieldProps={{ precision: 0, style: { width: '100%' } }}
+          fieldProps={{ precision: 0 }}
         />
         <ProFormDigit
           name="threshold"
           label="低库存预警"
-          width="lg"
           min={0}
           initialValue={0}
           tooltip="库存数量低于此值时自动标记为低库存"
-          fieldProps={{ precision: 0, style: { width: '100%' } }}
+          fieldProps={{ precision: 0 }}
         />
       </ProForm>
     </Modal>

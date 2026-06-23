@@ -37,6 +37,14 @@ declare namespace API {
     value?: string;
   };
 
+  type BatchCreateInventoryDTO = {
+    /** 统一初始物理库存量 */
+    quantity: number;
+    sku_ids: number[];
+    /** 统一低库存预警阈值 */
+    threshold?: number;
+  };
+
   type BatchCreateSkuDTO = {
     skus: BatchCreateSkuItem[];
   };

@@ -13,8 +13,10 @@ import { useRouteFilter } from '@/hooks/useRouteFilter';
 import {
   getInventoriesEnriched,
   postInventories,
+  postInventoriesBatch,
   putInventoriesId,
 } from '@/services/api/inventories';
+import BatchCreateForm from './components/BatchCreateForm';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
@@ -36,6 +38,25 @@ const handleAdd = async (fields: API.CreateInventoryDTO) => {
   } catch {
     hide();
     message.error('创建失败，请重试');
+    return false;
+  }
+};
+
+const handleBatchAdd = async (fields: {
+  sku_ids: number[];
+  quantity: number;
+  threshold?: number;
+}) => {
+  const hide = message.loading('正在批量创建');
+  try {
+    const res = await postInventoriesBatch(fields);
+    const data = ((res as any).data as API.Inventory[]) || [];
+    hide();
+    message.success(`批量创建成功，共 ${data.length} 条记录`);
+    return true;
+  } catch {
+    hide();
+    message.error('批量创建失败，请重试');
     return false;
   }
 };
@@ -62,6 +83,7 @@ const handleUpdate = async (fields: FormValueType) => {
 
 const InventoryList: React.FC = () => {
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
+  const [batchModalVisible, handleBatchModalVisible] = useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
@@ -198,6 +220,11 @@ const InventoryList: React.FC = () => {
               新建库存
             </Button>
           </Auth>,
+          <Auth key="batchCreate" permission="canCreateInventory">
+            <Button onClick={() => handleBatchModalVisible(true)}>
+              批量新建库存
+            </Button>
+          </Auth>,
         ]}
         request={async (params) => {
           const { current, pageSize, sku_name: formSkuName, ...rest } = params;
@@ -234,6 +261,19 @@ const InventoryList: React.FC = () => {
           const success = await handleAdd(value);
           if (success) {
             handleModalVisible(false);
+            actionRef.current?.reload();
+          }
+          return success;
+        }}
+      />
+
+      <BatchCreateForm
+        onCancel={() => handleBatchModalVisible(false)}
+        modalVisible={batchModalVisible}
+        onSubmit={async (value) => {
+          const success = await handleBatchAdd(value);
+          if (success) {
+            handleBatchModalVisible(false);
             actionRef.current?.reload();
           }
           return success;
