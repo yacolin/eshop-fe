@@ -434,6 +434,7 @@ const ProductList: React.FC = () => {
         {row?.id && (
           <SkuMatrixEditor
             productId={row.id}
+            defaultPrice={row.min_price}
             onSuccess={() => setSkuModalVisible(false)}
           />
         )}

@@ -17,6 +17,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 interface SkuMatrixEditorProps {
   productId: number;
+  /** 默认价格（分），从 Product.min_price 传入 */
+  defaultPrice?: number;
   onSuccess?: () => void;
 }
 
@@ -37,6 +39,7 @@ function cartesian<T>(arrays: T[][]): T[][] {
 
 const SkuMatrixEditor: React.FC<SkuMatrixEditorProps> = ({
   productId,
+  defaultPrice,
   onSuccess,
 }) => {
   const [attributes, setAttributes] = useState<API.ProductAttributeItem[]>([]);
@@ -48,6 +51,12 @@ const SkuMatrixEditor: React.FC<SkuMatrixEditorProps> = ({
   const [rowData, setRowData] = useState<
     Record<string, { price: number; sku_code: string; image: string }>
   >({});
+
+  /** 生成默认 SKU 编码：SKU-P{产品ID}{属性值ID序列}-{4位随机大写字母} */
+  const generateSkuCode = (combo: ComboItem[]) => {
+    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `SKU-P${productId}${combo.map((c) => c.valueId).join('')}-${suffix}`;
+  };
 
   const fetchAttributes = async () => {
     setLoading(true);
@@ -113,6 +122,26 @@ const SkuMatrixEditor: React.FC<SkuMatrixEditorProps> = ({
 
   const generateName = (combo: ComboItem[]) =>
     combo.map((c) => c.value).join('-');
+
+  // 组合变化时自动生成默认价格和 SKU 编码（保留已有编辑）
+  useEffect(() => {
+    if (combinations.length === 0) return;
+    setRowData((prev) => {
+      const next: Record<
+        string,
+        { price: number; sku_code: string; image: string }
+      > = {};
+      for (const combo of combinations) {
+        const key = getRowKey(combo);
+        next[key] = prev[key] || {
+          price: (defaultPrice || 0) / 100,
+          sku_code: generateSkuCode(combo),
+          image: '',
+        };
+      }
+      return next;
+    });
+  }, [combinations]);
 
   const updateRow = (
     key: string,
