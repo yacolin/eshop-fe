@@ -85,8 +85,9 @@ const InventoryList: React.FC = () => {
     {
       title: 'SKU 名称',
       dataIndex: 'sku_name',
-      width: 240,
+      width: 280,
       ellipsis: true,
+      copyable: true,
     },
     {
       title: '库存数量',

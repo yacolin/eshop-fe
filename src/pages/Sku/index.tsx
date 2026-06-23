@@ -14,7 +14,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { history, useLocation } from '@umijs/max';
 
@@ -127,22 +127,27 @@ const SkuList: React.FC = () => {
 
   const formRef = useRef<any>(null);
   const location = useLocation();
-  const [initialProductId, setInitialProductId] = useState<number | undefined>(
-    (location.state as any)?.product_id,
-  );
+  const initialProductId = (location.state as any)?.product_id;
+  const [tableLoading, setTableLoading] = useState(!!initialProductId);
+  const pageReadyRef = useRef(!initialProductId);
   const initRef = useRef(false);
 
   const products = useProductOptions(true);
+  const productMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const p of products) {
+      map[p.value] = p.label;
+    }
+    return map;
+  }, [products]);
 
-  // 产品选项加载完成后回填搜索框，触发一次查询
+  // 产品选项加载完成后回填搜索框，再放行请求
   useEffect(() => {
     if (initialProductId && products.length > 0 && !initRef.current) {
       initRef.current = true;
-      const timer = setTimeout(() => {
-        formRef.current?.setFieldsValue({ product_id: initialProductId });
-        formRef.current?.submit();
-      }, 100);
-      return () => clearTimeout(timer);
+      formRef.current?.setFieldsValue({ product_id: initialProductId });
+      pageReadyRef.current = true;
+      formRef.current?.submit();
     }
   }, [products, initialProductId]);
 
@@ -156,14 +161,31 @@ const SkuList: React.FC = () => {
       fixed: 'left',
     },
     {
+      title: '所属产品',
+      dataIndex: 'product_id',
+      width: 200,
+      render: (_, record) => productMap[record.product_id || 0] || '-',
+      renderFormItem: () => (
+        <Select
+          allowClear
+          showSearch
+          placeholder="搜索并选择产品"
+          options={products}
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        />
+      ),
+    },
+    {
       title: 'SKU 名称',
       dataIndex: 'name',
-      width: 180,
+      width: 200,
       render: (_, record) => (
         <Typography.Text
           copyable
           ellipsis
-          style={{ width: 160, margin: 0, color: '#1677ff', cursor: 'pointer' }}
+          style={{ width: 180, margin: 0, color: '#1677ff', cursor: 'pointer' }}
           onClick={() =>
             history.push('/inventory/inventory', {
               sku_name: record.name,
@@ -194,13 +216,32 @@ const SkuList: React.FC = () => {
       title: '规格',
       dataIndex: 'spec',
       hideInSearch: true,
-      width: 200,
-      ellipsis: true,
+      width: 320,
       render: (_, record) => {
         if (!record.spec || Object.keys(record.spec).length === 0) return '-';
-        return Object.entries(record.spec)
-          .map(([k, v]) => `${k}: ${v}`)
-          .join('; ');
+        const COLORS = [
+          'blue',
+          'gold',
+          'green',
+          'purple',
+          'red',
+          'cyan',
+          'magenta',
+        ];
+        const entries = Object.entries(record.spec);
+        return (
+          <div style={{ display: 'flex' }}>
+            {entries.map(([k, v], i) => (
+              <Tag
+                key={k}
+                color={COLORS[i % COLORS.length]}
+                style={{ flex: 1, textAlign: 'center' }}
+              >
+                {k}: {v}
+              </Tag>
+            ))}
+          </div>
+        );
       },
     },
     {
@@ -209,23 +250,6 @@ const SkuList: React.FC = () => {
       hideInSearch: true,
       width: 80,
       render: (_, record) => (record.image ? <Tag color="blue">有</Tag> : '-'),
-    },
-    {
-      title: '所属产品',
-      dataIndex: 'product_id',
-      hideInTable: true,
-      renderFormItem: () => (
-        <Select
-          allowClear
-          showSearch
-          placeholder="搜索并选择产品"
-          options={products}
-          filterOption={(input, option) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
-        />
-      ),
-      width: 200,
     },
     {
       title: '创建时间',
@@ -301,12 +325,11 @@ const SkuList: React.FC = () => {
         actionRef={actionRef}
         formRef={formRef}
         rowKey="id"
+        loading={tableLoading}
         scroll={{ x: 1300 }}
         search={{
           labelWidth: 100,
           defaultCollapsed: false,
-          onReset: () => setInitialProductId(undefined),
-          onSubmit: () => setInitialProductId(undefined),
         }}
         toolBarRender={() => [
           <Auth key="create" permission="canCreateSku">
@@ -316,6 +339,8 @@ const SkuList: React.FC = () => {
           </Auth>,
         ]}
         request={async (params) => {
+          if (!pageReadyRef.current)
+            return { data: [], total: 0, success: true };
           const { current, pageSize, ...rest } = params;
           const res = await getSkus({
             page: current || 1,
@@ -323,6 +348,7 @@ const SkuList: React.FC = () => {
             ...rest,
           });
           const data = (res as any).data || {};
+          setTableLoading(false);
           return {
             data: data.list || [],
             total: data.total || 0,

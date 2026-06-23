@@ -17,7 +17,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 interface SkuMatrixEditorProps {
   productId: number;
-  productName: string;
   /** 默认价格（分），从 Product.min_price 传入 */
   defaultPrice?: number;
   onSuccess?: () => void;
@@ -40,7 +39,6 @@ function cartesian<T>(arrays: T[][]): T[][] {
 
 const SkuMatrixEditor: React.FC<SkuMatrixEditorProps> = ({
   productId,
-  productName,
   defaultPrice,
   onSuccess,
 }) => {
@@ -123,7 +121,7 @@ const SkuMatrixEditor: React.FC<SkuMatrixEditorProps> = ({
     combo.map((c) => c.valueId).join(',');
 
   const generateName = (combo: ComboItem[]) =>
-    `${productName}${combo.map((c) => c.value).join('-')}`;
+    combo.map((c) => c.value).join('-');
 
   // 组合变化时自动生成默认价格和 SKU 编码（保留已有编辑）
   useEffect(() => {
