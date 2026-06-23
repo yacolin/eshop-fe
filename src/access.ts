@@ -33,6 +33,11 @@ export default (initialState: {
     canCreateInventory: permissions.includes('inventory:create'),
     canUpdateInventory: permissions.includes('inventory:update'),
 
+    // ── Sku ──
+    canCreateSku: permissions.includes('sku:create'),
+    canUpdateSku: permissions.includes('sku:update'),
+    canDeleteSku: permissions.includes('sku:delete'),
+
     // ── Category ──
     canCreateCategory: permissions.includes('category:create'),
     canUpdateCategory: permissions.includes('category:update'),

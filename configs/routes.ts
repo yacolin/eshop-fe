@@ -44,6 +44,11 @@ export default [
         component: './ProductCursor',
       },
       {
+        name: 'SKU',
+        path: '/inventory/sku',
+        component: './Sku',
+      },
+      {
         name: '分类',
         path: '/inventory/category',
         component: './Category',
