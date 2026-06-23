@@ -53,6 +53,11 @@ export default [
         path: '/inventory/category',
         component: './Category',
       },
+      {
+        name: '属性管理',
+        path: '/inventory/attribute',
+        component: './Attribute',
+      },
     ],
   },
   {

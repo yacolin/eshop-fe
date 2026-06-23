@@ -10,9 +10,31 @@ declare namespace API {
     sku_id: number;
   };
 
+  type AttributeListResult = {
+    list?: AttributeResponse[];
+    total?: number;
+  };
+
+  type AttributeResponse = {
+    created_at?: string;
+    id?: number;
+    name?: string;
+    sort_order?: number;
+    updated_at?: string;
+  };
+
   type AttributeValueItem = {
     value?: string;
     value_id?: number;
+  };
+
+  type AttributeValueResponse = {
+    attribute_id?: number;
+    created_at?: string;
+    id?: number;
+    sort_order?: number;
+    updated_at?: string;
+    value?: string;
   };
 
   type BatchCreateSkuDTO = {
@@ -114,6 +136,17 @@ declare namespace API {
     user_limit?: number;
     valid_days?: number;
     value?: number;
+  };
+
+  type CreateAttributeDTO = {
+    name: string;
+    sort_order?: number;
+  };
+
+  type CreateAttributeValueDTO = {
+    attribute_id: number;
+    sort_order?: number;
+    value: string;
   };
 
   type CreateCategoryDTO = {
@@ -248,6 +281,16 @@ declare namespace API {
     id: number;
   };
 
+  type deleteAttributesIdParams = {
+    /** 属性ID */
+    id: number;
+  };
+
+  type deleteAttributeValuesIdParams = {
+    /** 属性值ID */
+    id: number;
+  };
+
   type deleteCartsItemsItemIdParams = {
     /** 用户ID */
     user_id?: number;
@@ -330,6 +373,23 @@ declare namespace API {
   };
 
   type getAdminReviewsPendingParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+  };
+
+  type getAttributesIdParams = {
+    /** 属性ID */
+    id: number;
+  };
+
+  type getAttributesIdValuesParams = {
+    /** 属性ID */
+    id: number;
+  };
+
+  type getAttributesParams = {
     /** 页码 */
     page?: number;
     /** 每页条数 */
@@ -1165,6 +1225,16 @@ declare namespace API {
     id: number;
   };
 
+  type putAttributesIdParams = {
+    /** 属性ID */
+    id: number;
+  };
+
+  type putAttributeValuesIdParams = {
+    /** 属性值ID */
+    id: number;
+  };
+
   type putCartsItemsItemIdParams = {
     /** 用户ID */
     user_id?: number;
@@ -1433,6 +1503,16 @@ declare namespace API {
 
   type UnreadCountResponse = {
     count?: number;
+  };
+
+  type UpdateAttributeDTO = {
+    name?: string;
+    sort_order?: number;
+  };
+
+  type UpdateAttributeValueDTO = {
+    sort_order?: number;
+    value?: string;
   };
 
   type UpdateCartItemDTO = {

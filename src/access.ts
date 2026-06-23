@@ -84,6 +84,14 @@ export default (initialState: {
     canUpdatePromotion:
       roles.includes('admin') || permissions.includes('promotion:update'),
 
+    // ── Attribute ──
+    canCreateAttribute:
+      roles.includes('admin') || permissions.includes('attribute:create'),
+    canUpdateAttribute:
+      roles.includes('admin') || permissions.includes('attribute:update'),
+    canDeleteAttribute:
+      roles.includes('admin') || permissions.includes('attribute:delete'),
+
     // ── Review ──
     // 审核/回复统一使用 review:moderate（数据库权限定义）
     canModerateReview: permissions.includes('review:moderate'),

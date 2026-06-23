@@ -2,6 +2,8 @@
 /* eslint-disable */
 // API 更新时间：
 // API 唯一标识：
+import * as attributeValues from './attributeValues';
+import * as attributes from './attributes';
 import * as auths from './auths';
 import * as carts from './carts';
 import * as categories from './categories';
@@ -26,6 +28,8 @@ export default {
   coupons,
   promotions,
   reviews,
+  attributeValues,
+  attributes,
   auths,
   carts,
   categories,
