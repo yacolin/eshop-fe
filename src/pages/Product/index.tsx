@@ -10,6 +10,7 @@ import {
   Divider,
   Drawer,
   message,
+  Modal,
   Popconfirm,
   Tag,
   Tooltip,
@@ -31,6 +32,7 @@ import UpdateForm from './components/UpdateForm';
 
 import CacheWarmup from '@/components/CacheWarmup';
 import useCategoryOptions from '../Category/hooks/useCategoryOptions';
+import SkuMatrixEditor from './components/SkuMatrixEditor';
 import type { FormValueType } from './components/UpdateForm';
 
 /**
@@ -113,6 +115,7 @@ const ProductList: React.FC = () => {
   const [selectedRowsState, setSelectedRows] = useState<
     API.ProductWithCategoryDTO[]
   >([]);
+  const [skuModalVisible, setSkuModalVisible] = useState(false);
 
   const categories = useCategoryOptions(true);
 
@@ -399,15 +402,42 @@ const ProductList: React.FC = () => {
         title={row?.name || '商品详情'}
       >
         {row?.name && (
-          <ProDescriptions<API.ProductWithCategoryDTO>
-            column={2}
-            title={row?.name}
-            request={async () => ({ data: row || {} })}
-            params={{ id: row?.name }}
-            columns={columns as any}
-          />
+          <>
+            <ProDescriptions<API.ProductWithCategoryDTO>
+              column={2}
+              title={row?.name}
+              request={async () => ({ data: row || {} })}
+              params={{ id: row?.name }}
+              columns={columns as any}
+            />
+            <Divider />
+            <div style={{ textAlign: 'center' }}>
+              <Auth permission="canCreateSku">
+                <Button type="primary" onClick={() => setSkuModalVisible(true)}>
+                  SKU 管理
+                </Button>
+              </Auth>
+            </div>
+          </>
         )}
       </Drawer>
+
+      {/* SKU 批量创建弹窗 */}
+      <Modal
+        title={`SKU 管理 - ${row?.name || ''}`}
+        width={900}
+        open={skuModalVisible}
+        onCancel={() => setSkuModalVisible(false)}
+        footer={null}
+        destroyOnClose
+      >
+        {row?.id && (
+          <SkuMatrixEditor
+            productId={row.id}
+            onSuccess={() => setSkuModalVisible(false)}
+          />
+        )}
+      </Modal>
     </PageContainer>
   );
 };

@@ -96,6 +96,23 @@ export async function deleteProductsId(
   );
 }
 
+/** 获取产品属性定义 获取产品的所有规格属性维度及其可选值 GET /api/v1/products/${param0}/attributes */
+export async function getProductsIdAttributes(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getProductsIdAttributesParams,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.ProductAttributeItem[] }>(
+    `/api/v1/products/${param0}/attributes`,
+    {
+      method: 'GET',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
+}
+
 /** 获取产品详情（含库存） 根据产品ID获取产品详情，包含产品信息和库存信息 GET /api/v1/products/${param0}/detail */
 export async function getProductsIdDetail(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -125,6 +142,28 @@ export async function getProductsIdEnriched(
     {
       method: 'GET',
       params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
+}
+
+/** 批量创建 SKU 批量创建 SKU，自动生成属性组合关联 POST /api/v1/products/${param0}/skus/batch */
+export async function postProductsIdSkusBatch(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.postProductsIdSkusBatchParams,
+  body: API.BatchCreateSkuDTO,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.BatchCreateSkuResult }>(
+    `/api/v1/products/${param0}/skus/batch`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      params: { ...queryParams },
+      data: body,
       ...(options || {}),
     },
   );

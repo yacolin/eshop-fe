@@ -10,6 +10,30 @@ declare namespace API {
     sku_id: number;
   };
 
+  type AttributeValueItem = {
+    value?: string;
+    value_id?: number;
+  };
+
+  type BatchCreateSkuDTO = {
+    skus: BatchCreateSkuItem[];
+  };
+
+  type BatchCreateSkuItem = {
+    attr_value_ids: number[];
+    image?: string;
+    name: string;
+    price: number;
+    sku_code: string;
+  };
+
+  type BatchCreateSkuResult = {
+    failed?: number;
+    skus?: SkuResponse[];
+    success?: number;
+    total?: number;
+  };
+
   type CachedProductItem = {
     id?: number;
     min_price?: number;
@@ -564,6 +588,11 @@ declare namespace API {
     sku?: string;
   };
 
+  type getProductsIdAttributesParams = {
+    /** 产品ID */
+    id: number;
+  };
+
   type getProductsIdDetailParams = {
     /** 产品ID */
     id: number;
@@ -986,6 +1015,11 @@ declare namespace API {
     id: number;
   };
 
+  type postProductsIdSkusBatchParams = {
+    /** 产品ID */
+    id: number;
+  };
+
   type postRolesIdPermissionsParams = {
     /** 角色ID */
     id: string;
@@ -1003,6 +1037,12 @@ declare namespace API {
     min_price?: number;
     name?: string;
     updated_at?: string;
+  };
+
+  type ProductAttributeItem = {
+    attribute_id?: number;
+    attribute_name?: string;
+    values?: AttributeValueItem[];
   };
 
   type ProductCacheCursorResult = {
