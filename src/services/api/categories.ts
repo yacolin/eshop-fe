@@ -95,6 +95,42 @@ export async function deleteCategoriesId(
   );
 }
 
+/** 获取品类关联的属性列表 获取指定品类关联的规格属性维度列表 GET /api/v1/categories/${param0}/attributes */
+export async function getCategoriesIdAttributes(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getCategoriesIdAttributesParams,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.CategoryAttributeResponse[] }>(
+    `/api/v1/categories/${param0}/attributes`,
+    {
+      method: 'GET',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
+}
+
+/** 设置品类关联的属性 全量替换指定品类关联的规格属性，原有关联会被清除 PUT /api/v1/categories/${param0}/attributes */
+export async function putCategoriesIdAttributes(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.putCategoriesIdAttributesParams,
+  body: API.SetCategoryAttributesDTO,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response>(`/api/v1/categories/${param0}/attributes`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    params: { ...queryParams },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 列出子分类 根据父分类ID获取子分类列表 GET /api/v1/categories/${param0}/children */
 export async function getCategoriesIdChildren(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

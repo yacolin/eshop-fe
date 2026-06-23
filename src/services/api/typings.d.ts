@@ -96,6 +96,11 @@ declare namespace API {
     updated_at?: string;
   };
 
+  type CategoryAttributeResponse = {
+    attribute_id?: number;
+    attribute_name?: string;
+  };
+
   type CategoryDistDTO = {
     /** 分类名称 */
     category?: string;
@@ -401,6 +406,11 @@ declare namespace API {
     user_id?: number;
     /** 会话ID */
     session_id?: string;
+  };
+
+  type getCategoriesIdAttributesParams = {
+    /** 品类ID */
+    id: number;
   };
 
   type getCategoriesIdChildrenParams = {
@@ -1244,6 +1254,11 @@ declare namespace API {
     item_id: number;
   };
 
+  type putCategoriesIdAttributesParams = {
+    /** 品类ID */
+    id: number;
+  };
+
   type putCategoriesIdParams = {
     /** 分类ID */
     id: number;
@@ -1442,6 +1457,10 @@ declare namespace API {
     reconnect_count?: number;
     /** 用户ID */
     user_id?: number;
+  };
+
+  type SetCategoryAttributesDTO = {
+    attribute_ids: number[];
   };
 
   type SkuListResult = {
