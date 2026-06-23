@@ -4,8 +4,19 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
-import React, { useRef, useState } from 'react';
+import {
+  Button,
+  Divider,
+  Drawer,
+  message,
+  Popconfirm,
+  Select,
+  Tag,
+  Typography,
+} from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { history, useLocation } from '@umijs/max';
 
 import Auth from '@/components/Auth';
 
@@ -114,7 +125,26 @@ const SkuList: React.FC = () => {
   const [row, setRow] = useState<API.SkuResponse>();
   const [, setSelectedRows] = useState<API.SkuResponse[]>([]);
 
+  const formRef = useRef<any>(null);
+  const location = useLocation();
+  const [initialProductId, setInitialProductId] = useState<number | undefined>(
+    (location.state as any)?.product_id,
+  );
+  const initRef = useRef(false);
+
   const products = useProductOptions(true);
+
+  // 产品选项加载完成后回填搜索框，触发一次查询
+  useEffect(() => {
+    if (initialProductId && products.length > 0 && !initRef.current) {
+      initRef.current = true;
+      const timer = setTimeout(() => {
+        formRef.current?.setFieldsValue({ product_id: initialProductId });
+        formRef.current?.submit();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [products, initialProductId]);
 
   const columns: ProColumns<API.SkuResponse>[] = [
     {
@@ -129,20 +159,36 @@ const SkuList: React.FC = () => {
       title: 'SKU 名称',
       dataIndex: 'name',
       width: 180,
-      ellipsis: true,
+      render: (_, record) => (
+        <Typography.Text
+          copyable
+          ellipsis
+          style={{ width: 160, margin: 0, color: '#1677ff', cursor: 'pointer' }}
+          onClick={() =>
+            history.push('/inventory/inventory', {
+              sku_name: record.name,
+            })
+          }
+        >
+          {record.name}
+        </Typography.Text>
+      ),
     },
     {
       title: 'SKU 编码',
       dataIndex: 'sku_code',
       width: 160,
       ellipsis: true,
+      render: (_, record) => (
+        <Typography.Text copyable>{record.sku_code}</Typography.Text>
+      ),
     },
     {
       title: '价格',
       dataIndex: 'price',
-      hideInSearch: true,
       width: 100,
       render: (_, record) => formatPrice(record.price),
+      valueType: 'money',
     },
     {
       title: '规格',
@@ -167,12 +213,18 @@ const SkuList: React.FC = () => {
     {
       title: '所属产品',
       dataIndex: 'product_id',
-      valueType: 'select',
-      valueEnum: products.reduce((acc, p) => {
-        acc[p.value] = p.label;
-        return acc;
-      }, {} as Record<number, string>),
       hideInTable: true,
+      renderFormItem: () => (
+        <Select
+          allowClear
+          showSearch
+          placeholder="搜索并选择产品"
+          options={products}
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        />
+      ),
       width: 200,
     },
     {
@@ -247,11 +299,14 @@ const SkuList: React.FC = () => {
       <ProTable<API.SkuResponse>
         headerTitle="SKU 列表"
         actionRef={actionRef}
+        formRef={formRef}
         rowKey="id"
         scroll={{ x: 1300 }}
         search={{
           labelWidth: 100,
           defaultCollapsed: false,
+          onReset: () => setInitialProductId(undefined),
+          onSubmit: () => setInitialProductId(undefined),
         }}
         toolBarRender={() => [
           <Auth key="create" permission="canCreateSku">
@@ -261,18 +316,18 @@ const SkuList: React.FC = () => {
           </Auth>,
         ]}
         request={async (params) => {
-          const { product_id } = params;
-
-          if (!product_id) {
-            return { data: [], total: 0, success: true };
-          }
-
+          const { current, pageSize, ...rest } = params;
           const res = await getSkus({
-            product_id: Number(product_id),
+            page: current || 1,
+            size: pageSize || 10,
+            ...rest,
           });
           const data = (res as any).data || {};
-          const list = data.list || [];
-          return { data: list, total: list.length, success: true };
+          return {
+            data: data.list || [],
+            total: data.total || 0,
+            success: true,
+          };
         }}
         columns={columns}
         rowSelection={{

@@ -133,8 +133,8 @@ const ProductList: React.FC = () => {
       render: (_, record) => (
         <LinkText
           value={record.name}
-          path="/inventory/inventory"
-          state={{ product_name: record.name }}
+          path="/inventory/sku"
+          state={{ product_id: record.id }}
         />
       ),
       formItemProps: {

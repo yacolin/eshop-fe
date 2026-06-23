@@ -672,8 +672,24 @@ declare namespace API {
   };
 
   type getSkusParams = {
-    /** 产品ID */
-    product_id: number;
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+    /** 产品ID（可选） */
+    product_id?: number;
+    /** SKU名称模糊搜索 */
+    name?: string;
+    /** SKU编码精确搜索 */
+    sku_code?: string;
+    /** 最低价格（分） */
+    price_min?: number;
+    /** 最高价格（分） */
+    price_max?: number;
+    /** 排序字段 (id, name, price, created_at) */
+    sort_by?: string;
+    /** 排序方向 (asc, desc) */
+    order?: string;
   };
 
   type getUsersUserIdOrdersParams = {
