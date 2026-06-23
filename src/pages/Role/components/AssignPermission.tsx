@@ -122,7 +122,7 @@ const AssignPermission: React.FC<AssignPermissionProps> = (props) => {
       onCancel={onCancel}
       onOk={handleSave}
       confirmLoading={saving}
-      destroyOnClose
+      destroyOnHidden
     >
       <Spin spinning={loading}>
         <Checkbox

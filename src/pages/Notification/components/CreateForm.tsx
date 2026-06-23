@@ -25,7 +25,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       open={modalVisible}
       onCancel={() => onCancel()}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
       <ProForm<{ title: string; content: string; user_id?: number }>
         layout="horizontal"

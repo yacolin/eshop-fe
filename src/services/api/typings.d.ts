@@ -6,9 +6,8 @@ declare namespace API {
   };
 
   type AddToCartDTO = {
-    product_id: number;
     quantity: number;
-    sku?: string;
+    sku_id: number;
   };
 
   type CachedProductItem = {
@@ -25,6 +24,7 @@ declare namespace API {
     product_name?: string;
     quantity?: number;
     sku?: string;
+    sku_id?: number;
     /** 库存状态 */
     stock?: number;
   };

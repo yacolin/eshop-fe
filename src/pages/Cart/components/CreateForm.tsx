@@ -1,4 +1,4 @@
-import { ProForm, ProFormDigit, ProFormText } from '@ant-design/pro-components';
+import { ProForm, ProFormDigit } from '@ant-design/pro-components';
 import { message, Modal } from 'antd';
 import React from 'react';
 
@@ -21,9 +21,9 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       open={modalVisible}
       onCancel={() => onCancel()}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
-      <ProForm<{ product_id: number; quantity: number; sku?: string }>
+      <ProForm<{ sku_id: number; quantity: number }>
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
@@ -34,9 +34,8 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
             await postCartsItems(
               { user_id: userId },
               {
-                product_id: values.product_id,
+                sku_id: values.sku_id,
                 quantity: values.quantity,
-                sku: values.sku || undefined,
               },
             );
             hide();
@@ -65,10 +64,10 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
         }}
       >
         <ProFormDigit
-          name="product_id"
-          label="商品ID"
+          name="sku_id"
+          label="商品"
           width="md"
-          rules={[{ required: true, message: '请输入商品ID' }]}
+          rules={[{ required: true, message: '请输入商品sku_id' }]}
           min={1}
           fieldProps={{ precision: 0 }}
         />
@@ -80,12 +79,6 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           min={1}
           initialValue={1}
           fieldProps={{ precision: 0 }}
-        />
-        <ProFormText
-          name="sku"
-          label="SKU"
-          width="md"
-          tooltip="可选，指定商品的具体规格"
         />
       </ProForm>
     </Modal>
