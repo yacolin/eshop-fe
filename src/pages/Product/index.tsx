@@ -32,6 +32,7 @@ import UpdateForm from './components/UpdateForm';
 
 import CacheWarmup from '@/components/CacheWarmup';
 import useCategoryOptions from '../Category/hooks/useCategoryOptions';
+import AttributeConfigModal from './components/AttributeConfigModal';
 import SkuMatrixEditor from './components/SkuMatrixEditor';
 import type { FormValueType } from './components/UpdateForm';
 
@@ -115,6 +116,7 @@ const ProductList: React.FC = () => {
   const [selectedRowsState, setSelectedRows] = useState<
     API.ProductWithCategoryDTO[]
   >([]);
+  const [attrModalVisible, setAttrModalVisible] = useState(false);
   const [skuModalVisible, setSkuModalVisible] = useState(false);
 
   const categories = useCategoryOptions(true);
@@ -411,7 +413,17 @@ const ProductList: React.FC = () => {
               columns={columns as any}
             />
             <Divider />
-            <div style={{ textAlign: 'center' }}>
+            <div
+              style={{
+                textAlign: 'center',
+                display: 'flex',
+                gap: 12,
+                justifyContent: 'center',
+              }}
+            >
+              <Button onClick={() => setAttrModalVisible(true)}>
+                配置属性
+              </Button>
               <Auth permission="canCreateSku">
                 <Button type="primary" onClick={() => setSkuModalVisible(true)}>
                   SKU 管理
@@ -421,6 +433,13 @@ const ProductList: React.FC = () => {
           </>
         )}
       </Drawer>
+
+      {/* 属性配置弹窗 */}
+      <AttributeConfigModal
+        productId={row?.id || 0}
+        visible={attrModalVisible}
+        onCancel={() => setAttrModalVisible(false)}
+      />
 
       {/* SKU 批量创建弹窗 */}
       <Modal

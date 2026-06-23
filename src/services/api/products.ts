@@ -113,6 +113,25 @@ export async function getProductsIdAttributes(
   );
 }
 
+/** 更新产品属性关联 全量替换产品的规格属性值关联，原有关联会被清除 PUT /api/v1/products/${param0}/attributes */
+export async function putProductsIdAttributes(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.putProductsIdAttributesParams,
+  body: API.UpdateProductAttributesDTO,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response>(`/api/v1/products/${param0}/attributes`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    params: { ...queryParams },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 获取产品详情（含库存） 根据产品ID获取产品详情，包含产品信息和库存信息 GET /api/v1/products/${param0}/detail */
 export async function getProductsIdDetail(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

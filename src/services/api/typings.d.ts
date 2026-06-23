@@ -1045,6 +1045,11 @@ declare namespace API {
     values?: AttributeValueItem[];
   };
 
+  type ProductAttributeUpdateItem = {
+    attribute_id: number;
+    value_ids: number[];
+  };
+
   type ProductCacheCursorResult = {
     has_more?: boolean;
     list?: CachedProductItem[];
@@ -1192,6 +1197,11 @@ declare namespace API {
   type putPermissionsIdParams = {
     /** 权限ID */
     id: string;
+  };
+
+  type putProductsIdAttributesParams = {
+    /** 产品ID */
+    id: number;
   };
 
   type putProductsIdParams = {
@@ -1483,6 +1493,10 @@ declare namespace API {
     display_name?: string;
     sort?: number;
     status?: number;
+  };
+
+  type UpdateProductAttributesDTO = {
+    attributes: ProductAttributeUpdateItem[];
   };
 
   type UpdateProductDTO = {
