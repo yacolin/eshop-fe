@@ -5,6 +5,26 @@ declare namespace API {
     next_cursor?: number;
   };
 
+  type AddressListResp = {
+    list?: AddressResp[];
+    total?: number;
+  };
+
+  type AddressResp = {
+    city?: string;
+    consignee?: string;
+    created_at?: string;
+    detail?: string;
+    district?: string;
+    id?: number;
+    is_default?: boolean;
+    phone?: string;
+    province?: string;
+    updated_at?: string;
+    user_id?: number;
+    zip_code?: string;
+  };
+
   type AddToCartDTO = {
     quantity: number;
     sku_id: number;
@@ -151,6 +171,17 @@ declare namespace API {
     value?: number;
   };
 
+  type CreateAddressReq = {
+    city: string;
+    consignee: string;
+    detail: string;
+    district: string;
+    is_default?: boolean;
+    phone: string;
+    province: string;
+    zip_code?: string;
+  };
+
   type CreateAttributeDTO = {
     name: string;
     sort_order?: number;
@@ -289,6 +320,11 @@ declare namespace API {
     top_products?: TopProductDTO[];
   };
 
+  type deleteAddressesIdParams = {
+    /** 地址ID */
+    id: number;
+  };
+
   type deleteAdminReviewsIdParams = {
     /** 评论ID */
     id: number;
@@ -383,6 +419,11 @@ declare namespace API {
     status?: string;
     total_stock?: number;
     updated_at?: string;
+  };
+
+  type getAddressesIdParams = {
+    /** 地址ID */
+    id: number;
   };
 
   type getAdminReviewsPendingParams = {
@@ -1243,6 +1284,11 @@ declare namespace API {
     updated_at?: string;
   };
 
+  type putAddressesIdParams = {
+    /** 地址ID */
+    id: number;
+  };
+
   type putAdminCouponsIdParams = {
     /** 优惠券模板ID */
     id: number;
@@ -1545,6 +1591,17 @@ declare namespace API {
 
   type UnreadCountResponse = {
     count?: number;
+  };
+
+  type UpdateAddressReq = {
+    city?: string;
+    consignee?: string;
+    detail?: string;
+    district?: string;
+    is_default?: boolean;
+    phone?: string;
+    province?: string;
+    zip_code?: string;
   };
 
   type UpdateAttributeDTO = {

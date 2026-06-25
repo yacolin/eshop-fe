@@ -71,6 +71,11 @@ export default [
         component: './Order',
       },
       {
+        name: '地址管理',
+        path: '/sales/address',
+        component: './Address',
+      },
+      {
         name: '购物车',
         path: '/sales/cart',
         component: './Cart',

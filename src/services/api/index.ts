@@ -2,6 +2,7 @@
 /* eslint-disable */
 // API 更新时间：
 // API 唯一标识：
+import * as addresses from './addresses';
 import * as attributeValues from './attributeValues';
 import * as attributes from './attributes';
 import * as auths from './auths';
@@ -25,6 +26,7 @@ import * as skus from './skus';
 import * as users from './users';
 import * as websocket from './websocket';
 export default {
+  addresses,
   coupons,
   promotions,
   reviews,

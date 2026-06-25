@@ -48,6 +48,14 @@ export default (initialState: {
     canUpdateOrder: permissions.includes('order:update'),
     canDeleteOrder: permissions.includes('order:delete'),
 
+    // ── Address ──
+    canCreateAddress:
+      roles.includes('admin') || permissions.includes('address:create'),
+    canUpdateAddress:
+      roles.includes('admin') || permissions.includes('address:update'),
+    canDeleteAddress:
+      roles.includes('admin') || permissions.includes('address:delete'),
+
     // ── Cart ──
     canCreateCart:
       roles.includes('admin') || permissions.includes('cart:create'),
