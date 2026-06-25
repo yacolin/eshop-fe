@@ -81,6 +81,11 @@ export default [
         component: './Cart',
       },
       {
+        name: '秒杀活动',
+        path: '/sales/flash-sale',
+        component: './FlashSale',
+      },
+      {
         name: '支付管理',
         path: '/sales/payment',
         component: './Payment',
