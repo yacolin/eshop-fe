@@ -19,7 +19,7 @@ const NotifyBell: React.FC = () => {
   const seqRef = useRef(0);
 
   useEffect(() => {
-    const unsub = subscribe('notification', (msg) => {
+    const unsub1 = subscribe('notification', (msg) => {
       const { title, message: content, level } = msg.payload || {};
       if (!title && !content) return;
 
@@ -42,7 +42,37 @@ const NotifyBell: React.FC = () => {
         duration: 4,
       });
     });
-    return unsub;
+
+    const unsub2 = subscribe('inventory.low', (msg) => {
+      const { sku_id, quantity, threshold } = msg.payload || {};
+      if (!sku_id) return;
+
+      seqRef.current++;
+      const item: NotifyItem = {
+        id: seqRef.current,
+        title: '库存不足',
+        message: `SKU #${sku_id} 库存不足（当前 ${quantity ?? '?'}，阈值 ${
+          threshold ?? '?'
+        }）`,
+        level: 'warning',
+        timestamp: msg.timestamp || Date.now(),
+        read: false,
+      };
+
+      setNotifications((prev) => [item, ...prev].slice(0, 50));
+
+      notification.warning({
+        message: item.title,
+        description: item.message,
+        placement: 'topRight',
+        duration: 6,
+      });
+    });
+
+    return () => {
+      unsub1();
+      unsub2();
+    };
   }, [subscribe]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;

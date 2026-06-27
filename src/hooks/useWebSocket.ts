@@ -164,14 +164,16 @@ export const useWebSocket = (
           setLastSeq(data.seq);
           lastSeqRef.current = data.seq;
 
-          // Idempotency: skip already-processed messages
-          if (processedSeqsRef.current.has(data.seq)) {
-            console.warn(
-              `[WebSocket] Duplicate message ignored, seq=${data.seq}`,
-            );
-            continue;
+          // Idempotency: skip already-processed messages (seq=0 表示无序列，跳过去重)
+          if (data.seq !== 0) {
+            if (processedSeqsRef.current.has(data.seq)) {
+              console.warn(
+                `[WebSocket] Duplicate message ignored, seq=${data.seq}`,
+              );
+              continue;
+            }
+            processedSeqsRef.current.add(data.seq);
           }
-          processedSeqsRef.current.add(data.seq);
           // Prevent unbounded growth; keep the most recent half
           if (processedSeqsRef.current.size > 1000) {
             const arr = Array.from(processedSeqsRef.current).sort(
