@@ -5,11 +5,13 @@ import {
   ProFormText,
 } from '@ant-design/pro-components';
 import { Modal } from 'antd';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import useSkuOptions from '../hooks/useSkuOptions';
+import useProductOptions from '@/pages/Sku/hooks/useProductOptions';
+import { getSkus } from '@/services/api/skus';
 
 export type FormValueType = {
+  product_id?: number;
   quantity?: number;
   threshold?: number;
 } & Partial<API.Inventory>;
@@ -29,9 +31,39 @@ const statusMap: Record<string, string> = {
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const { values } = props;
-  const skus = useSkuOptions(props.updateModalVisible);
+  const [skuOptions, setSkuOptions] = useState<
+    { label: string; value: number }[]
+  >([]);
+  const products = useProductOptions(props.updateModalVisible);
 
   const available = (values.quantity || 0) - (values.reserved || 0);
+  const productId = (values as any).product_id as number | undefined;
+
+  const loadSkus = async (pid: number) => {
+    if (!pid) {
+      setSkuOptions([]);
+      return;
+    }
+    try {
+      const res = await getSkus({ product_id: pid, page: 1, size: 1000 });
+      const data = (res as any).data || {};
+      const list: API.SkuResponse[] = data.list || [];
+      setSkuOptions(
+        list.map((sku) => ({
+          label: `${sku.name}（${sku.sku_code}）`,
+          value: sku.id || 0,
+        })),
+      );
+    } catch {
+      setSkuOptions([]);
+    }
+  };
+
+  useEffect(() => {
+    if (props.updateModalVisible && productId) {
+      loadSkus(productId);
+    }
+  }, [props.updateModalVisible, productId]);
 
   return (
     <Modal
@@ -42,7 +74,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
       onCancel={() => props.onCancel()}
       footer={null}
     >
-      <div></div>
       <ProForm
         layout="horizontal"
         labelCol={{ span: 6 }}
@@ -50,6 +81,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         style={{ width: '90%', margin: '0 auto' }}
         onFinish={props.onSubmit}
         initialValues={{
+          product_id: productId,
           sku_id: values.sku_id,
           quantity: values.quantity,
           threshold: values.threshold,
@@ -70,18 +102,32 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         }}
       >
         <ProFormSelect
+          name="product_id"
+          label="产品"
+          showSearch
+          disabled
+          options={products}
+          tooltip="当前库存关联的产品，不可修改"
+          fieldProps={{
+            filterOption: (input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+          }}
+        />
+        <ProFormSelect
           name="sku_id"
           label="关联 SKU"
-          width="md"
-          disabled
           showSearch
-          options={skus}
+          disabled
+          options={skuOptions}
           tooltip="当前库存关联的 SKU，不可修改"
+          fieldProps={{
+            filterOption: (input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+          }}
         />
         <ProFormDigit
           name="quantity"
           label="调整库存数量"
-          width="md"
           min={0}
           rules={[{ required: true, message: '请输入调整后的库存数量' }]}
           fieldProps={{ precision: 0 }}
@@ -90,7 +136,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         <ProFormDigit
           name="threshold"
           label="低库存预警阈值"
-          width="md"
           min={0}
           fieldProps={{ precision: 0 }}
           tooltip="库存数量低于此值时自动标记为低库存"
@@ -98,7 +143,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         <ProFormText
           name="reserved"
           label="已预订数量"
-          width="md"
           disabled
           initialValue={values.reserved ?? 0}
           tooltip="已预订数量由订单系统自动管理，不可手动修改"
@@ -106,7 +150,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         <ProFormText
           name="status"
           label="库存状态"
-          width="md"
           disabled
           initialValue={
             values.status ? statusMap[values.status] || values.status : '-'
@@ -116,7 +159,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         <ProFormText
           name="available"
           label="可用库存"
-          width="md"
           disabled
           initialValue={available}
           tooltip="可用库存 = 库存数量 - 已预订数量"
