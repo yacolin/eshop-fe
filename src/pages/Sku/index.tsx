@@ -26,6 +26,7 @@ import {
   postSkus,
   putSkusId,
 } from '@/services/api/skus';
+import BatchCreateForm from './components/BatchCreateForm';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
@@ -118,6 +119,7 @@ const handleRemove = async (selectedRows: API.SkuResponse[]) => {
 
 const SkuList: React.FC = () => {
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
+  const [batchModalVisible, setBatchModalVisible] = useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
@@ -337,6 +339,11 @@ const SkuList: React.FC = () => {
               新建 SKU
             </Button>
           </Auth>,
+          <Auth key="batchCreate" permission="canCreateSku">
+            <Button onClick={() => setBatchModalVisible(true)}>
+              批量创建 SKU
+            </Button>
+          </Auth>,
         ]}
         request={async (params) => {
           if (!pageReadyRef.current)
@@ -365,6 +372,15 @@ const SkuList: React.FC = () => {
           showQuickJumper: true,
           pageSizeOptions: ['10', '20', '50'],
           showTotal: (total) => `共 ${total} 条`,
+        }}
+      />
+
+      <BatchCreateForm
+        modalVisible={batchModalVisible}
+        onCancel={() => setBatchModalVisible(false)}
+        onSuccess={() => {
+          setBatchModalVisible(false);
+          actionRef.current?.reload();
         }}
       />
 

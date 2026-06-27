@@ -31,9 +31,9 @@ import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
 import CacheWarmup from '@/components/CacheWarmup';
+import SkuMatrixEditor from '@/pages/Sku/components/SkuMatrixEditor';
 import useCategoryOptions from '../Category/hooks/useCategoryOptions';
 import AttributeConfigModal from './components/AttributeConfigModal';
-import SkuMatrixEditor from './components/SkuMatrixEditor';
 import type { FormValueType } from './components/UpdateForm';
 
 /**

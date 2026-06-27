@@ -84,7 +84,13 @@ const SkuMatrixEditor: React.FC<SkuMatrixEditorProps> = ({
 
   const toggleValue = (attrId: number, valueId: number) => {
     setSelected((prev) => {
-      const next = new Set(prev[attrId] || []);
+      const cur = prev[attrId] || new Set<number>();
+      // 每个属性至少保留一个值，防止 SKU 属性缺失
+      if (cur.has(valueId) && cur.size <= 1) {
+        message.warning('每个属性至少需要选择一个值');
+        return prev;
+      }
+      const next = new Set(cur);
       if (next.has(valueId)) {
         next.delete(valueId);
       } else {
