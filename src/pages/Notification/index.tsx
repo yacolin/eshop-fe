@@ -15,6 +15,7 @@ import {
   putNotificationsIdRead,
   putNotificationsReadAll,
 } from '@/services/api/notifications';
+import dayjs from 'dayjs';
 import CreateForm from './components/CreateForm';
 
 const notificationTypeMap: Record<string, { text: string; color: string }> = {
@@ -25,8 +26,10 @@ const notificationTypeMap: Record<string, { text: string; color: string }> = {
   admin: { text: '管理员', color: 'purple' },
 };
 
-const formatTime = (t?: string) => {
-  if (!t) return '-';
+const formatTime = (t?: string | number) => {
+  if (t === undefined || t === null) return '-';
+  if (typeof t === 'number') return dayjs(t).format('YYYY-MM-DD HH:mm');
+  if (!t || typeof t !== 'string') return '-';
   return t.slice(0, 16).replace('T', ' ');
 };
 

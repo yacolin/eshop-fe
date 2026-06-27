@@ -39,11 +39,6 @@ export default [
         component: './Product',
       },
       {
-        name: '产品(游标)',
-        path: '/inventory/product-cursor',
-        component: './ProductCursor',
-      },
-      {
         name: 'SKU',
         path: '/inventory/sku',
         component: './Sku',
