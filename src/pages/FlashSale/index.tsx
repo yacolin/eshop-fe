@@ -1,3 +1,4 @@
+import CacheWarmup from '@/components/CacheWarmup';
 import type { ProColumns } from '@ant-design/pro-components';
 import {
   PageContainer,
@@ -8,7 +9,10 @@ import { Drawer, Select, Space, Tag } from 'antd';
 import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { getFlashActivitiesCursor } from '@/services/api/flashActivities';
+import {
+  getFlashActivitiesCursor,
+  postFlashActivitiesWarmup,
+} from '@/services/api/flashActivities';
 
 const flashStatusMap: Record<string, { text: string; color: string }> = {
   pending: { text: '待开始', color: 'default' },
@@ -203,6 +207,13 @@ const FlashSaleList: React.FC = () => {
               />
             </Space>
           }
+          toolBarRender={() => [
+            <CacheWarmup
+              key="warmup"
+              label="秒杀预热"
+              request={postFlashActivitiesWarmup}
+            />,
+          ]}
           rowKey="id"
           dataSource={dataSource}
           loading={loading}

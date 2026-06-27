@@ -21,3 +21,16 @@ export async function getFlashActivitiesCursor(
     },
   );
 }
+
+/** 批量预热活动库存到 Redis 将所有活动库存加载到 Redis 缓存 POST /api/v1/flash/activities/warmup */
+export async function postFlashActivitiesWarmup(options?: {
+  [key: string]: any;
+}) {
+  return request<API.Response & { data?: Record<string, any> }>(
+    '/api/v1/flash/activities/warmup',
+    {
+      method: 'POST',
+      ...(options || {}),
+    },
+  );
+}

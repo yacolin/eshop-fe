@@ -224,6 +224,7 @@ declare namespace API {
   };
 
   type CreateOrderDTO = {
+    address_id: number;
     /** 可选，默认 CNY */
     currency?: string;
     customer_id: string;
@@ -233,10 +234,8 @@ declare namespace API {
   };
 
   type CreateOrderItemDTO = {
-    product_id: string;
     quantity: number;
-    /** 单价，单位：分 */
-    unit_price: number;
+    sku_id: number;
   };
 
   type CreatePaymentRequest = {
@@ -1003,6 +1002,7 @@ declare namespace API {
     order_no?: string;
     product_id?: string;
     quantity?: number;
+    sku_id?: number;
     /** 单价，单位：分 */
     unit_price?: number;
   };
@@ -1013,20 +1013,27 @@ declare namespace API {
   };
 
   type OrderResponse = {
+    city?: string;
+    consignee?: string;
     /** 使用的优惠券模板ID */
     coupon_id?: number;
     created_at?: string;
     currency?: string;
     customer_id?: string;
+    detail_addr?: string;
     /** 优惠金额，单位：分 */
     discount_amount?: number;
+    district?: string;
     id?: number;
     items?: OrderItemResponse[];
     order_no?: string;
+    phone?: string;
+    province?: string;
     status?: string;
     /** 订单总金额（已扣优惠），单位：分 */
     total_amount?: number;
     updated_at?: string;
+    zip_code?: string;
   };
 
   type OrderTrendDTO = {
@@ -1260,7 +1267,7 @@ declare namespace API {
 
   type ProductWithSkusResponse = {
     product?: ProductResponse;
-    skus?: SkuResponse[];
+    skus?: SkuDetailResponse[];
   };
 
   type PromotionListResult = {
@@ -1530,6 +1537,20 @@ declare namespace API {
 
   type SetCategoryAttributesDTO = {
     attribute_ids: number[];
+  };
+
+  type SkuDetailResponse = {
+    available_quantity?: number;
+    created_at?: string;
+    id?: number;
+    image?: string;
+    inventory_status?: string;
+    name?: string;
+    price?: number;
+    product_id?: number;
+    sku_code?: string;
+    spec?: Record<string, any>;
+    updated_at?: string;
   };
 
   type SkuListResult = {
