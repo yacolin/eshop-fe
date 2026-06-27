@@ -546,7 +546,7 @@ declare namespace API {
 
   type getInventoriesSkuSkuIdParams = {
     /** SKU ID */
-    skuId: number;
+    sku_id: number;
   };
 
   type getNotificationsParams = {

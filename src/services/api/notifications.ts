@@ -52,11 +52,11 @@ export async function putNotificationsIdRead(
   });
 }
 
-/** 全部已读 标记当前用户所有通知为已读 PUT /api/v1/notifications/read-all */
-export async function putNotificationsReadAll(options?: {
+/** 全部已读 标记当前用户所有通知为已读 PUT /api/v1/notifications/readall */
+export async function putNotificationsReadall(options?: {
   [key: string]: any;
 }) {
-  return request<API.Response>('/api/v1/notifications/read-all', {
+  return request<API.Response>('/api/v1/notifications/readall', {
     method: 'PUT',
     ...(options || {}),
   });

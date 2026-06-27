@@ -148,7 +148,7 @@ export async function getInventoriesSkuSkuId(
   params: API.getInventoriesSkuSkuIdParams,
   options?: { [key: string]: any },
 ) {
-  const { skuId: param0, ...queryParams } = params;
+  const { sku_id: param0, ...queryParams } = params;
   return request<API.Response & { data?: API.Inventory }>(
     `/api/v1/inventories/sku/${param0}`,
     {

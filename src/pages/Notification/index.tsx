@@ -13,7 +13,7 @@ import {
   getNotifications,
   getNotificationsUnread,
   putNotificationsIdRead,
-  putNotificationsReadAll,
+  putNotificationsReadall,
 } from '@/services/api/notifications';
 import dayjs from 'dayjs';
 import CreateForm from './components/CreateForm';
@@ -73,7 +73,7 @@ const NotificationList: React.FC = () => {
    */
   const handleMarkAllRead = async () => {
     try {
-      await putNotificationsReadAll();
+      await putNotificationsReadall();
       message.success('已全部标记已读');
       actionRef.current?.reload();
       setUnreadCount(0);
