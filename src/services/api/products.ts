@@ -188,7 +188,7 @@ export async function postProductsIdSkusBatch(
   );
 }
 
-/** 从缓存获取产品列表 从 Redis 缓存中读取产品列表，支持分页和排序 GET /api/v1/products/cache */
+/** 从缓存获取产品列表 从 Redis 缓存中读取产品列表，支持分页、排序和分类筛选 GET /api/v1/products/cache */
 export async function getProductsCache(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getProductsCacheParams,

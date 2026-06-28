@@ -694,6 +694,8 @@ declare namespace API {
     page?: number;
     /** 每页条数 */
     size?: number;
+    /** 分类ID筛选 */
+    category_id?: number;
     /** 排序字段 (id, name, price) */
     sort_by?: string;
     /** 排序方向 (asc, desc) */
@@ -776,6 +778,8 @@ declare namespace API {
     name?: string;
     /** SKU精确搜索 */
     sku?: string;
+    /** 分类ID筛选 */
+    category_id?: number;
   };
 
   type getPromotionsIdParams = {

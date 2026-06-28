@@ -1,4 +1,4 @@
-import { getProductsEnriched } from '@/services/api/products';
+import { getProductsCache } from '@/services/api/products';
 import { useEffect, useState } from 'react';
 
 /**
@@ -21,11 +21,11 @@ export default function useProductOptionsByCategory(
       try {
         const params: any = { page: 1, size: 1000 };
         if (categoryId) params.category_id = categoryId;
-        const res = await getProductsEnriched(params);
+        const res = await getProductsCache(params);
         const data = (res as any).data || {};
-        const list = data.list || [];
+        const list: API.CachedProductItem[] = data.list || [];
         setOptions(
-          list.map((item: { id?: number; name?: string }) => ({
+          list.map((item) => ({
             label: item.name || '',
             value: item.id || 0,
           })),
