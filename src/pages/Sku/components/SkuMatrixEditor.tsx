@@ -258,9 +258,9 @@ const SkuMatrixEditor: React.FC<SkuMatrixEditorProps> = ({
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: 40 }}>
-        <Spin tip="加载属性定义..." />
-      </div>
+      <Spin tip="加载属性定义...">
+        <div style={{ textAlign: 'center', padding: 50 }} />
+      </Spin>
     );
   }
 

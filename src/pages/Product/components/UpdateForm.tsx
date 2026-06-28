@@ -7,7 +7,7 @@ import {
 import { Modal } from 'antd';
 import React from 'react';
 
-import useCategoryOptions from '@/pages/Category/hooks/useCategoryOptions';
+import useNonRootCategoryOptions from '@/pages/Category/hooks/useNonRootCategoryOptions';
 
 export type FormValueType = {
   name?: string;
@@ -25,7 +25,7 @@ export interface UpdateFormProps {
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const { values } = props;
-  const categories = useCategoryOptions(props.updateModalVisible);
+  const categories = useNonRootCategoryOptions(props.updateModalVisible);
 
   return (
     <Modal

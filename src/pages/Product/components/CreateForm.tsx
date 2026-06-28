@@ -7,7 +7,7 @@ import {
 import { Modal } from 'antd';
 import React from 'react';
 
-import useCategoryOptions from '@/pages/Category/hooks/useCategoryOptions';
+import useNonRootCategoryOptions from '@/pages/Category/hooks/useNonRootCategoryOptions';
 
 interface CreateFormProps {
   modalVisible: boolean;
@@ -17,7 +17,7 @@ interface CreateFormProps {
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
   const { modalVisible, onCancel, onSubmit } = props;
-  const categories = useCategoryOptions(modalVisible);
+  const categories = useNonRootCategoryOptions(modalVisible);
 
   return (
     <Modal

@@ -7,8 +7,9 @@ import {
 import { Modal } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 
+import useNonRootCategoryOptions from '@/pages/Category/hooks/useNonRootCategoryOptions';
 import { getProductsIdAttributes } from '@/services/api/products';
-import useProductOptions from '../hooks/useProductOptions';
+import useProductOptionsByCategory from '../hooks/useProductOptionsByCategory';
 
 interface CreateFormProps {
   modalVisible: boolean;
@@ -19,7 +20,9 @@ interface CreateFormProps {
 const CreateForm: React.FC<CreateFormProps> = (props) => {
   const { modalVisible, onCancel, onSubmit } = props;
   const formRef = useRef<any>(null);
-  const products = useProductOptions(modalVisible);
+  const [categoryId, setCategoryId] = useState<number>();
+  const categories = useNonRootCategoryOptions(modalVisible);
+  const products = useProductOptionsByCategory(modalVisible, categoryId);
   const [attributes, setAttributes] = useState<API.ProductAttributeItem[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<
     Record<number, { valueId: number; value: string }>
@@ -120,6 +123,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       width={600}
       open={modalVisible}
       onCancel={() => {
+        setCategoryId(undefined);
         setAttributes([]);
         setSelectedAttrs({});
         onCancel();
@@ -134,12 +138,13 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
         wrapperCol={{ span: 18 }}
         style={{ width: '90%', margin: '0 auto' }}
         onReset={() => {
+          setCategoryId(undefined);
           setAttributes([]);
           setSelectedAttrs({});
         }}
         onFinish={async (values) => {
           const success = await onSubmit({
-            ...values,
+            ...(values as any),
             spec: buildSpec(),
           });
           if (success) {
@@ -162,6 +167,22 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           ),
         }}
       >
+        <ProFormSelect
+          name="category_id"
+          label="分类筛选"
+          showSearch
+          options={categories}
+          placeholder="选择分类"
+          fieldProps={{
+            allowClear: true,
+            filterOption: (input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+            onChange: (val: number | undefined) => {
+              setCategoryId(val);
+              formRef.current?.setFieldsValue?.({ product_id: undefined });
+            },
+          }}
+        />
         <ProFormSelect
           name="product_id"
           label="所属产品"

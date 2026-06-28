@@ -1,8 +1,9 @@
+import useNonRootCategoryOptions from '@/pages/Category/hooks/useNonRootCategoryOptions';
 import SkuMatrixEditor from '@/pages/Sku/components/SkuMatrixEditor';
-import useProductOptions from '@/pages/Sku/hooks/useProductOptions';
+import useProductOptionsByCategory from '@/pages/Sku/hooks/useProductOptionsByCategory';
 import { getProductsId } from '@/services/api/products';
 import { Modal, Select } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface BatchCreateFormProps {
   modalVisible: boolean;
@@ -17,7 +18,18 @@ const BatchCreateForm: React.FC<BatchCreateFormProps> = ({
 }) => {
   const [productId, setProductId] = useState<number>();
   const [defaultPrice, setDefaultPrice] = useState<number>();
-  const products = useProductOptions(modalVisible);
+  const [categoryId, setCategoryId] = useState<number>();
+  const categories = useNonRootCategoryOptions(modalVisible);
+  const products = useProductOptionsByCategory(modalVisible, categoryId);
+
+  // 每次弹窗打开时重置表单状态
+  useEffect(() => {
+    if (modalVisible) {
+      setProductId(undefined);
+      setDefaultPrice(undefined);
+      setCategoryId(undefined);
+    }
+  }, [modalVisible]);
 
   const handleProductChange = async (id: number | undefined) => {
     setProductId(id);
@@ -42,12 +54,29 @@ const BatchCreateForm: React.FC<BatchCreateFormProps> = ({
       onCancel={() => {
         setProductId(undefined);
         setDefaultPrice(undefined);
+        setCategoryId(undefined);
         onCancel();
       }}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', gap: 12 }}>
+        <Select
+          allowClear
+          showSearch
+          style={{ width: 200 }}
+          placeholder="分类筛选"
+          value={categoryId}
+          onChange={(val) => {
+            setCategoryId(val);
+            setProductId(undefined);
+            setDefaultPrice(undefined);
+          }}
+          options={categories}
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        />
         <Select
           showSearch
           allowClear

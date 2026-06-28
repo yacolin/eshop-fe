@@ -32,7 +32,7 @@ import UpdateForm from './components/UpdateForm';
 
 import CacheWarmup from '@/components/CacheWarmup';
 import SkuMatrixEditor from '@/pages/Sku/components/SkuMatrixEditor';
-import useCategoryOptions from '../Category/hooks/useCategoryOptions';
+import useNonRootCategoryOptions from '../Category/hooks/useNonRootCategoryOptions';
 import AttributeConfigModal from './components/AttributeConfigModal';
 import type { FormValueType } from './components/UpdateForm';
 
@@ -119,7 +119,7 @@ const ProductList: React.FC = () => {
   const [attrModalVisible, setAttrModalVisible] = useState(false);
   const [skuModalVisible, setSkuModalVisible] = useState(false);
 
-  const categories = useCategoryOptions(true);
+  const categories = useNonRootCategoryOptions(true);
 
   const columns: ProColumns<API.ProductWithCategoryDTO>[] = [
     {

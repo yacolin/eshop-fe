@@ -148,6 +148,58 @@ export async function getCategoriesIdChildren(
   );
 }
 
+/** 从缓存列出全部分类 从 Redis 缓存中读取全部分类列表，仅返回 id 和 name GET /api/v1/categories/cache */
+export async function getCategoriesCache(options?: { [key: string]: any }) {
+  return request<API.Response & { data?: API.CachedCategoryItem[] }>(
+    '/api/v1/categories/cache',
+    {
+      method: 'GET',
+      ...(options || {}),
+    },
+  );
+}
+
+/** 从缓存查询分类 从 Redis 缓存中根据 ID 查询单个分类，仅返回 id 和 name GET /api/v1/categories/cache/${param0} */
+export async function getCategoriesCacheId(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getCategoriesCacheIdParams,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.CachedCategoryItem }>(
+    `/api/v1/categories/cache/${param0}`,
+    {
+      method: 'GET',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
+}
+
+/** 预热分类缓存 将全部分类数据加载到 Redis 缓存中 POST /api/v1/categories/cache/warmup */
+export async function postCategoriesCacheWarmup(options?: {
+  [key: string]: any;
+}) {
+  return request<API.Response & { data?: Record<string, any> }>(
+    '/api/v1/categories/cache/warmup',
+    {
+      method: 'POST',
+      ...(options || {}),
+    },
+  );
+}
+
+/** 从缓存列出非根分类 从 Redis 缓存中读取所有非根分类列表（仅返回 id 和 name） GET /api/v1/categories/non-root */
+export async function getCategoriesNonRoot(options?: { [key: string]: any }) {
+  return request<API.Response & { data?: API.CachedCategoryListResult }>(
+    '/api/v1/categories/non-root',
+    {
+      method: 'GET',
+      ...(options || {}),
+    },
+  );
+}
+
 /** 列出根分类 获取所有根分类的列表 GET /api/v1/categories/root */
 export async function getCategoriesRoot(options?: { [key: string]: any }) {
   return request<API.Response & { data?: API.CategoryListResult }>(

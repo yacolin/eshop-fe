@@ -30,7 +30,7 @@ import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
 import CacheWarmup from '@/components/CacheWarmup';
-import useCategoryOptions from '../Category/hooks/useCategoryOptions';
+import useNonRootCategoryOptions from '../Category/hooks/useNonRootCategoryOptions';
 import type { FormValueType } from './components/UpdateForm';
 
 /**
@@ -119,7 +119,7 @@ const ProductCursorList: React.FC = () => {
   const [row, setRow] = useState<API.Product>();
   const [selectedRowsState, setSelectedRows] = useState<API.Product[]>([]);
 
-  const categories = useCategoryOptions(true);
+  const categories = useNonRootCategoryOptions(true);
 
   // 游标分页状态
   const [dataSource, setDataSource] = useState<API.Product[]>([]);

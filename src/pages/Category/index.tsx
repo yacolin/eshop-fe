@@ -9,11 +9,13 @@ import { Button, Divider, Drawer, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
+import CacheWarmup from '@/components/CacheWarmup';
 
 import {
   deleteCategoriesId,
   getCategories,
   postCategories,
+  postCategoriesCacheWarmup,
   putCategoriesId,
 } from '@/services/api/categories';
 import CreateForm from './components/CreateForm';
@@ -230,6 +232,11 @@ const CategoryList: React.FC = () => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => [
+          <CacheWarmup
+            key="warmup"
+            label="预热分类"
+            request={postCategoriesCacheWarmup}
+          />,
           <Auth key="create" permission="canCreateCategory">
             <Button type="primary" onClick={() => handleModalVisible(true)}>
               新建分类

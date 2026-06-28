@@ -6,7 +6,8 @@ import {
 import { Modal } from 'antd';
 import React, { useRef, useState } from 'react';
 
-import useProductOptions from '@/pages/Sku/hooks/useProductOptions';
+import useNonRootCategoryOptions from '@/pages/Category/hooks/useNonRootCategoryOptions';
+import useProductOptionsByCategory from '@/pages/Sku/hooks/useProductOptionsByCategory';
 import { getSkus } from '@/services/api/skus';
 
 interface CreateFormProps {
@@ -18,7 +19,9 @@ interface CreateFormProps {
 const CreateForm: React.FC<CreateFormProps> = (props) => {
   const { modalVisible, onCancel, onSubmit } = props;
   const formRef = useRef<any>(null);
-  const products = useProductOptions(modalVisible);
+  const [categoryId, setCategoryId] = useState<number>();
+  const categories = useNonRootCategoryOptions(modalVisible);
+  const products = useProductOptionsByCategory(modalVisible, categoryId);
   const [skuOptions, setSkuOptions] = useState<
     { label: string; value: number }[]
   >([]);
@@ -60,10 +63,11 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
         wrapperCol={{ span: 18 }}
         style={{ width: '90%', margin: '0 auto' }}
         onFinish={async (values) => {
+          const v = values as any;
           const success = await onSubmit({
-            sku_id: values.sku_id!,
-            quantity: values.quantity,
-            threshold: values.threshold,
+            sku_id: v.sku_id!,
+            quantity: v.quantity,
+            threshold: v.threshold,
           });
           if (success) {
             onCancel();
@@ -84,6 +88,26 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           ),
         }}
       >
+        <ProFormSelect
+          name="category_id"
+          label="分类筛选"
+          showSearch
+          options={categories}
+          placeholder="选择分类"
+          fieldProps={{
+            allowClear: true,
+            filterOption: (input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+            onChange: (val: number | undefined) => {
+              setCategoryId(val);
+              setSkuOptions([]);
+              formRef.current?.setFieldsValue?.({
+                product_id: undefined,
+                sku_id: undefined,
+              });
+            },
+          }}
+        />
         <ProFormSelect
           name="product_id"
           label="产品"

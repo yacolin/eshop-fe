@@ -84,6 +84,16 @@ declare namespace API {
     total?: number;
   };
 
+  type CachedCategoryItem = {
+    id?: number;
+    name?: string;
+  };
+
+  type CachedCategoryListResult = {
+    list?: CachedCategoryItem[];
+    total?: number;
+  };
+
   type CachedProductItem = {
     id?: number;
     min_price?: number;
@@ -454,6 +464,11 @@ declare namespace API {
     user_id?: number;
     /** 会话ID */
     session_id?: string;
+  };
+
+  type getCategoriesCacheIdParams = {
+    /** 分类ID */
+    id: number;
   };
 
   type getCategoriesIdAttributesParams = {
