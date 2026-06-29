@@ -33,36 +33,10 @@ export default (initialState: {
     canCreateInventory: permissions.includes('inventory:create'),
     canUpdateInventory: permissions.includes('inventory:update'),
 
-    // ── Sku ──
-    canCreateSku: permissions.includes('sku:create'),
-    canUpdateSku: permissions.includes('sku:update'),
-    canDeleteSku: permissions.includes('sku:delete'),
-
     // ── Category ──
     canCreateCategory: permissions.includes('category:create'),
     canUpdateCategory: permissions.includes('category:update'),
     canDeleteCategory: permissions.includes('category:delete'),
-
-    // ── Order ──
-    canCreateOrder: permissions.includes('order:create'),
-    canUpdateOrder: permissions.includes('order:update'),
-    canDeleteOrder: permissions.includes('order:delete'),
-
-    // ── Address ──
-    canCreateAddress:
-      roles.includes('admin') || permissions.includes('address:create'),
-    canUpdateAddress:
-      roles.includes('admin') || permissions.includes('address:update'),
-    canDeleteAddress:
-      roles.includes('admin') || permissions.includes('address:delete'),
-
-    // ── Cart ──
-    canCreateCart:
-      roles.includes('admin') || permissions.includes('cart:create'),
-    canUpdateCart:
-      roles.includes('admin') || permissions.includes('cart:update'),
-    canDeleteCart:
-      roles.includes('admin') || permissions.includes('cart:delete'),
 
     // ── Role（admin 角色自动拥有所有角色管理能力）──
     canCreateRole:
@@ -80,42 +54,10 @@ export default (initialState: {
     canDeletePermission:
       roles.includes('admin') || permissions.includes('permission:delete'),
 
-    // ── Coupon ──
-    canCreateCoupon:
-      roles.includes('admin') || permissions.includes('coupon:create'),
-    canUpdateCoupon:
-      roles.includes('admin') || permissions.includes('coupon:update'),
-
-    // ── Promotion ──
-    canCreatePromotion:
-      roles.includes('admin') || permissions.includes('promotion:create'),
-    canUpdatePromotion:
-      roles.includes('admin') || permissions.includes('promotion:update'),
-
-    // ── Attribute ──
-    canCreateAttribute:
-      roles.includes('admin') || permissions.includes('attribute:create'),
-    canUpdateAttribute:
-      roles.includes('admin') || permissions.includes('attribute:update'),
-    canDeleteAttribute:
-      roles.includes('admin') || permissions.includes('attribute:delete'),
-
     // ── Review ──
     // 审核/回复统一使用 review:moderate（数据库权限定义）
     canModerateReview: permissions.includes('review:moderate'),
     canDeleteReview: permissions.includes('review:delete'),
-
-    // ── Payment ──
-    canCreatePayment:
-      roles.includes('admin') || permissions.includes('payment:create'),
-    canUpdatePayment:
-      roles.includes('admin') || permissions.includes('payment:update'),
-
-    // ── Refund ──
-    canCreateRefund:
-      roles.includes('admin') || permissions.includes('refund:create'),
-    canUpdateRefund:
-      roles.includes('admin') || permissions.includes('refund:update'),
 
     // ── User ──
     canUpdateUser: permissions.includes('user:update'),
