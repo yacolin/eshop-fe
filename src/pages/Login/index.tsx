@@ -17,7 +17,7 @@ import {
 } from '@ant-design/pro-components';
 import { message, Tabs, theme } from 'antd';
 
-import { postAuthLoginPassword } from '@/services/api/auths';
+import { postAuthLoginPassword } from '@/services/api/auth';
 
 import AdminIllustration from './AdminIllustration';
 import styles from './index.less';
