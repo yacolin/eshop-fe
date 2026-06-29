@@ -20,7 +20,7 @@ import CreateForm from './components/CreateForm';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
 
-const handleAdd = async (fields: API.CreateRoleRequest) => {
+const handleAdd = async (fields: API.CreateRoleReq) => {
   const hide = message.loading('正在创建');
   try {
     await postRoles(fields);
@@ -38,7 +38,7 @@ const handleUpdate = async (fields: FormValueType) => {
   const hide = message.loading('正在更新');
   try {
     await putRolesId(
-      { id: String(fields.id) },
+      { id: fields.id || 0 },
       {
         display_name: fields.display_name,
         description: fields.description,
@@ -62,7 +62,7 @@ const handleRemove = async (selectedRows: API.Role[]) => {
 
   try {
     await Promise.all(
-      selectedRows.map((row) => deleteRolesId({ id: String(row.id) })),
+      selectedRows.map((row) => deleteRolesId({ id: row.id || 0 })),
     );
     hide();
     message.success('删除成功');
@@ -237,12 +237,12 @@ const RoleList: React.FC = () => {
           const { current, pageSize, ...rest } = params;
           const res = await getRoles({
             page: current || 1,
-            page_size: pageSize || 10,
+            size: pageSize || 10,
             ...rest,
           });
           const data = (res as any).data || {};
           return {
-            data: data.roles || [],
+            data: data.list || [],
             total: data.total || 0,
             success: true,
           };

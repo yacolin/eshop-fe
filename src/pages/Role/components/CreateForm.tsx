@@ -12,7 +12,7 @@ import React from 'react';
 interface CreateFormProps {
   modalVisible: boolean;
   onCancel: () => void;
-  onSubmit: (values: API.CreateRoleRequest) => Promise<boolean>;
+  onSubmit: (values: API.CreateRoleReq) => Promise<boolean>;
 }
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
@@ -27,7 +27,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       onCancel={() => onCancel()}
       footer={null}
     >
-      <ProForm<API.CreateRoleRequest>
+      <ProForm<API.CreateRoleReq>
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
