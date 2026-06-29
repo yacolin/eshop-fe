@@ -1,8 +1,6 @@
 // 运行时配置
 import RightContent from '@/components/RightContent';
 import { WebSocketProvider } from '@/contexts/WebSocketContext';
-import { postAuthLogout } from '@/services/api/auths';
-import { getUsersUserIdRoles } from '@/services/api/roles';
 import { parseToken } from '@/utils/auth';
 import type { RequestConfig } from '@umijs/max';
 import { history, request as umiRequest } from '@umijs/max';
@@ -27,45 +25,20 @@ export async function getInitialState(): Promise<{
   const roles: string[] = claims?.roles || [];
   const userId: number | undefined = claims?.user_id || undefined;
 
-  // 获取用户权限列表，用于按钮级权限控制
-  let permissions: string[] = [];
-  if (userId) {
-    try {
-      const roleRes = await getUsersUserIdRoles({ user_id: userId });
-      const roleList = (roleRes as any).data || [];
-      const permSet = new Set<string>();
-      for (const role of roleList) {
-        for (const perm of role.permissions || []) {
-          if (perm.name) permSet.add(perm.name);
-        }
-      }
-      permissions = Array.from(permSet);
-    } catch {
-      // 静默失败，权限列表为空
-    }
-  }
-
   return {
     name: savedUsername || '未登录',
     roles,
     userId,
-    permissions,
+    permissions: [],
   };
 }
 
 export const layout = () => {
   const handleLogout = async () => {
     window.dispatchEvent(new Event('app:logout'));
-    try {
-      await postAuthLogout();
-      message.success('登出成功');
-    } catch (error) {
-      console.error('登出失败:', error);
-    } finally {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      history.push('/login');
-    }
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    history.push('/login');
   };
 
   return {
