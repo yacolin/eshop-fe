@@ -10,23 +10,13 @@ import { Button, Descriptions, message, Modal, Spin, Tag } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { getUsersProfile, putUsersInfo } from '@/services/api/users';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 
 import Auth from '@/components/Auth';
 
-dayjs.extend(utc);
-
-const genderMap: Record<number, string> = {
+const genderMap: Record<number | string, string> = {
   0: '未知',
   1: '男',
   2: '女',
-};
-
-const formatDateTime = (val?: string) => {
-  if (!val) return '-';
-  const d = dayjs.utc(val).local();
-  return d.isValid() ? d.format('YYYY-MM-DD HH:mm:ss') : val;
 };
 
 const UserInfoPage: React.FC = () => {
@@ -50,7 +40,7 @@ const UserInfoPage: React.FC = () => {
     fetchUser();
   }, []);
 
-  const handleUpdate = async (fields: API.UpdateUserInfoRequest) => {
+  const handleUpdate = async (fields: API.UpdateUserInfoReq) => {
     const hide = message.loading('正在更新');
     try {
       await putUsersInfo(fields);
@@ -103,7 +93,16 @@ const UserInfoPage: React.FC = () => {
               )}
             </Descriptions.Item>
             <Descriptions.Item label="昵称">
-              {userInfo?.nickname || '-'}
+              {user?.nickname || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="用户名">
+              {user?.username || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="邮箱">
+              {user?.email || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="手机号">
+              {user?.phone || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="性别">
               {userInfo?.gender !== undefined
@@ -125,9 +124,6 @@ const UserInfoPage: React.FC = () => {
             <Descriptions.Item label="城市">
               {userInfo?.city || '-'}
             </Descriptions.Item>
-            <Descriptions.Item label="地址">
-              {userInfo?.address || '-'}
-            </Descriptions.Item>
             <Descriptions.Item label="邮编">
               {userInfo?.zip_code || '-'}
             </Descriptions.Item>
@@ -137,11 +133,8 @@ const UserInfoPage: React.FC = () => {
             <Descriptions.Item label="时区">
               {userInfo?.timezone || '-'}
             </Descriptions.Item>
-            <Descriptions.Item label="创建时间">
-              {formatDateTime(user?.created_at)}
-            </Descriptions.Item>
-            <Descriptions.Item label="更新时间">
-              {formatDateTime(userInfo?.updated_at)}
+            <Descriptions.Item label="头像">
+              {user?.avatar ? <Tag>{user.avatar}</Tag> : '-'}
             </Descriptions.Item>
           </Descriptions>
         </div>
@@ -155,7 +148,7 @@ const UserInfoPage: React.FC = () => {
         footer={null}
         destroyOnHidden
       >
-        <ProForm<API.UpdateUserInfoRequest>
+        <ProForm<API.UpdateUserInfoReq>
           layout="horizontal"
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 18 }}
@@ -164,18 +157,17 @@ const UserInfoPage: React.FC = () => {
             await handleUpdate(values);
           }}
           initialValues={{
-            nickname: userInfo?.nickname,
+            nickname: user?.nickname,
             gender: userInfo?.gender,
             birthday: userInfo?.birthday,
             bio: userInfo?.bio,
             country: userInfo?.country,
             province: userInfo?.province,
             city: userInfo?.city,
-            address: userInfo?.address,
             zip_code: userInfo?.zip_code,
             language: userInfo?.language,
             timezone: userInfo?.timezone,
-            avatar: userInfo?.avatar,
+            avatar: user?.avatar,
           }}
           submitter={{
             render: (_, dom) => (
@@ -232,12 +224,6 @@ const UserInfoPage: React.FC = () => {
             label="城市"
             width="md"
             placeholder="请输入城市"
-          />
-          <ProFormText
-            name="address"
-            label="地址"
-            width="md"
-            placeholder="请输入地址"
           />
           <ProFormText
             name="zip_code"
