@@ -2,22 +2,57 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 列出所有库存 获取所有库存的列表，支持分页筛选 GET /api/v1/inventories */
-export async function getInventories(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getInventoriesParams,
+/** 支付扣减库存 POST /api/v1/inventories/deduct */
+export async function postInventoriesDeduct(
+  body: API.DeductStockReq,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: API.InventoryListResult }>(
-    '/api/v1/inventories',
+  return request<API.Response & { data?: API.Inventory }>(
+    '/api/v1/inventories/deduct',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 下单预占库存 POST /api/v1/inventories/lock */
+export async function postInventoriesLock(
+  body: API.LockStockReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.Inventory }>(
+    '/api/v1/inventories/lock',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 查询库存变更流水 GET /api/v1/inventories/logs */
+export async function getInventoriesLogs(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getInventoriesLogsParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.InventoryLogListResult }>(
+    '/api/v1/inventories/logs',
     {
       method: 'GET',
       params: {
         // page has a default value: 1
         page: '1',
-        // size has a default value: 10
-        size: '10',
-
+        // size has a default value: 20
+        size: '20',
         ...params,
       },
       ...(options || {}),
@@ -25,13 +60,13 @@ export async function getInventories(
   );
 }
 
-/** 创建库存 创建一个新的库存记录 POST /api/v1/inventories */
-export async function postInventories(
-  body: API.CreateInventoryDTO,
+/** 入库/补货 POST /api/v1/inventories/restock */
+export async function postInventoriesRestock(
+  body: API.RestockReq,
   options?: { [key: string]: any },
 ) {
   return request<API.Response & { data?: API.Inventory }>(
-    '/api/v1/inventories',
+    '/api/v1/inventories/restock',
     {
       method: 'POST',
       headers: {
@@ -43,62 +78,17 @@ export async function postInventories(
   );
 }
 
-/** 更新库存 根据ID更新库存信息 PUT /api/v1/inventories/${param0} */
-export async function putInventoriesId(
+/** 查询库存 GET /api/v1/inventories/stock */
+export async function getInventoriesStock(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.putInventoriesIdParams,
-  body: API.UpdateInventoryDTO,
+  params: API.getInventoriesStockParams,
   options?: { [key: string]: any },
 ) {
-  const { id: param0, ...queryParams } = params;
   return request<API.Response & { data?: API.Inventory }>(
-    `/api/v1/inventories/${param0}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      params: { ...queryParams },
-      data: body,
-      ...(options || {}),
-    },
-  );
-}
-
-/** 批量创建库存 批量创建多个SKU的库存记录 POST /api/v1/inventories/batch */
-export async function postInventoriesBatch(
-  body: API.BatchCreateInventoryDTO,
-  options?: { [key: string]: any },
-) {
-  return request<API.Response & { data?: API.Inventory[] }>(
-    '/api/v1/inventories/batch',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: body,
-      ...(options || {}),
-    },
-  );
-}
-
-/** 列出所有库存（含 SKU 名称） 获取所有库存的列表，每条记录附带 SKU 名称，用于列表展示增强 GET /api/v1/inventories/enriched */
-export async function getInventoriesEnriched(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getInventoriesEnrichedParams,
-  options?: { [key: string]: any },
-) {
-  return request<API.Response & { data?: API.InventoryEnrichedResult }>(
-    '/api/v1/inventories/enriched',
+    '/api/v1/inventories/stock',
     {
       method: 'GET',
       params: {
-        // page has a default value: 1
-        page: '1',
-        // size has a default value: 10
-        size: '10',
-
         ...params,
       },
       ...(options || {}),
@@ -106,54 +96,19 @@ export async function getInventoriesEnriched(
   );
 }
 
-/** 释放库存 释放之前预订的库存 POST /api/v1/inventories/release */
-export async function postInventoriesRelease(
-  body: API.ReleaseInventoryDTO,
+/** 取消释放库存 POST /api/v1/inventories/unlock */
+export async function postInventoriesUnlock(
+  body: API.UnlockStockReq,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: Record<string, any> }>(
-    '/api/v1/inventories/release',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: body,
-      ...(options || {}),
-    },
-  );
-}
-
-/** 预订库存 预订指定产品的库存 POST /api/v1/inventories/reserve */
-export async function postInventoriesReserve(
-  body: API.ReserveInventoryDTO,
-  options?: { [key: string]: any },
-) {
-  return request<API.Response & { data?: Record<string, any> }>(
-    '/api/v1/inventories/reserve',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: body,
-      ...(options || {}),
-    },
-  );
-}
-
-/** 根据SKU ID获取库存 根据SKU ID获取库存信息 GET /api/v1/inventories/sku/${param0} */
-export async function getInventoriesSkuSkuId(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getInventoriesSkuSkuIdParams,
-  options?: { [key: string]: any },
-) {
-  const { sku_id: param0, ...queryParams } = params;
   return request<API.Response & { data?: API.Inventory }>(
-    `/api/v1/inventories/sku/${param0}`,
+    '/api/v1/inventories/unlock',
     {
-      method: 'GET',
-      params: { ...queryParams },
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
       ...(options || {}),
     },
   );

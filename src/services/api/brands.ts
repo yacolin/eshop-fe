@@ -2,21 +2,22 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 角色列表 GET /api/v1/roles */
-export async function getRoles(
+/** 品牌列表 GET /api/v1/brands */
+export async function getBrands(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getRolesParams,
+  params: API.getBrandsParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: API.RoleListResult }>(
-    '/api/v1/roles',
+  return request<API.Response & { data?: API.BrandListResult }>(
+    '/api/v1/brands',
     {
       method: 'GET',
       params: {
         // page has a default value: 1
         page: '1',
-        // size has a default value: 20
-        size: '20',
+        // size has a default value: 10
+        size: '10',
+
         ...params,
       },
       ...(options || {}),
@@ -24,12 +25,12 @@ export async function getRoles(
   );
 }
 
-/** 创建角色 POST /api/v1/roles */
-export async function postRoles(
-  body: API.CreateRoleReq,
+/** 创建品牌 POST /api/v1/brands */
+export async function postBrands(
+  body: API.CreateBrandReq,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: API.Role }>('/api/v1/roles', {
+  return request<API.Response & { data?: API.Brand }>('/api/v1/brands', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,15 +40,15 @@ export async function postRoles(
   });
 }
 
-/** 获取角色 GET /api/v1/roles/${param0} */
-export async function getRolesId(
+/** 获取品牌详情 GET /api/v1/brands/${param0} */
+export async function getBrandsId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getRolesIdParams,
+  params: API.getBrandsIdParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.Role }>(
-    `/api/v1/roles/${param0}`,
+  return request<API.Response & { data?: API.Brand }>(
+    `/api/v1/brands/${param0}`,
     {
       method: 'GET',
       params: { ...queryParams },
@@ -56,16 +57,16 @@ export async function getRolesId(
   );
 }
 
-/** 更新角色 PUT /api/v1/roles/${param0} */
-export async function putRolesId(
+/** 更新品牌 PUT /api/v1/brands/${param0} */
+export async function putBrandsId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.putRolesIdParams,
-  body: API.UpdateRoleReq,
+  params: API.putBrandsIdParams,
+  body: API.UpdateBrandReq,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.Role }>(
-    `/api/v1/roles/${param0}`,
+  return request<API.Response & { data?: API.Brand }>(
+    `/api/v1/brands/${param0}`,
     {
       method: 'PUT',
       headers: {
@@ -78,16 +79,19 @@ export async function putRolesId(
   );
 }
 
-/** 删除角色 DELETE /api/v1/roles/${param0} */
-export async function deleteRolesId(
+/** 删除品牌 DELETE /api/v1/brands/${param0} */
+export async function deleteBrandsId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.deleteRolesIdParams,
+  params: API.deleteBrandsIdParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response>(`/api/v1/roles/${param0}`, {
-    method: 'DELETE',
-    params: { ...queryParams },
-    ...(options || {}),
-  });
+  return request<API.Response & { data?: Record<string, any> }>(
+    `/api/v1/brands/${param0}`,
+    {
+      method: 'DELETE',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
 }

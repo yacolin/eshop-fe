@@ -9,20 +9,16 @@ import { Button, Divider, Drawer, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
-import CacheWarmup from '@/components/CacheWarmup';
 
 import {
   deleteCategoriesId,
   getCategoriesAll,
   postCategories,
-  postCategoriesCacheWarmup,
   putCategoriesId,
 } from '@/services/api/categories';
 import CreateForm from './components/CreateForm';
-import UpdateForm from './components/UpdateForm';
-
-import CategoryAttributeModal from './components/CategoryAttributeModal';
 import type { FormValueType } from './components/UpdateForm';
+import UpdateForm from './components/UpdateForm';
 import useRootCategory from './hooks/useRootCategories';
 
 /**
@@ -97,9 +93,6 @@ const CategoryList: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [row, setRow] = useState<API.Category>();
   const [selectedRowsState, setSelectedRows] = useState<API.Category[]>([]);
-  const [attrModalVisible, setAttrModalVisible] = useState(false);
-  const [attrCategoryId, setAttrCategoryId] = useState(0);
-  const [attrCategoryName, setAttrCategoryName] = useState('');
 
   const rootCategories = useRootCategory(true);
 
@@ -171,18 +164,6 @@ const CategoryList: React.FC = () => {
               编辑
             </a>
           </Auth>
-          <Auth permission="canUpdateCategory">
-            <Divider type="vertical" />
-            <a
-              onClick={() => {
-                setAttrCategoryId(record.id || 0);
-                setAttrCategoryName(record.name || '');
-                setAttrModalVisible(true);
-              }}
-            >
-              配置属性
-            </a>
-          </Auth>
           <Auth permission="canDeleteCategory">
             <Divider type="vertical" />
             <Popconfirm
@@ -223,11 +204,6 @@ const CategoryList: React.FC = () => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => [
-          <CacheWarmup
-            key="warmup"
-            label="预热分类"
-            request={postCategoriesCacheWarmup}
-          />,
           <Auth key="create" permission="canCreateCategory">
             <Button type="primary" onClick={() => handleModalVisible(true)}>
               新建分类
@@ -349,16 +325,6 @@ const CategoryList: React.FC = () => {
           />
         )}
       </Drawer>
-
-      {/* 配置品类属性弹窗 */}
-      <CategoryAttributeModal
-        key={attrCategoryId}
-        categoryId={attrCategoryId}
-        categoryName={attrCategoryName}
-        visible={attrModalVisible}
-        onCancel={() => setAttrModalVisible(false)}
-        onSuccess={() => actionRef.current?.reload()}
-      />
     </PageContainer>
   );
 };

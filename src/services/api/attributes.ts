@@ -2,21 +2,17 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 获取属性维度列表 分页查询规格属性维度列表 GET /api/v1/attributes */
+/** 按类目查询属性 GET /api/v1/attributes */
 export async function getAttributes(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getAttributesParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: API.AttributeListResult }>(
+  return request<API.Response & { data?: API.Attribute[] }>(
     '/api/v1/attributes',
     {
       method: 'GET',
       params: {
-        // page has a default value: 1
-        page: '1',
-        // size has a default value: 10
-        size: '10',
         ...params,
       },
       ...(options || {}),
@@ -24,12 +20,12 @@ export async function getAttributes(
   );
 }
 
-/** 创建属性维度 创建一个新的规格属性维度，如"颜色"、"尺寸" POST /api/v1/attributes */
+/** 创建属性 POST /api/v1/attributes */
 export async function postAttributes(
-  body: API.CreateAttributeDTO,
+  body: API.CreateAttributeReq,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: API.AttributeResponse }>(
+  return request<API.Response & { data?: API.Attribute }>(
     '/api/v1/attributes',
     {
       method: 'POST',
@@ -42,14 +38,14 @@ export async function postAttributes(
   );
 }
 
-/** 获取属性维度详情 根据ID获取规格属性维度详情 GET /api/v1/attributes/${param0} */
+/** 获取属性详情 GET /api/v1/attributes/${param0} */
 export async function getAttributesId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getAttributesIdParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.AttributeResponse }>(
+  return request<API.Response & { data?: API.Attribute }>(
     `/api/v1/attributes/${param0}`,
     {
       method: 'GET',
@@ -59,15 +55,15 @@ export async function getAttributesId(
   );
 }
 
-/** 更新属性维度 根据ID更新规格属性维度信息 PUT /api/v1/attributes/${param0} */
+/** 更新属性 PUT /api/v1/attributes/${param0} */
 export async function putAttributesId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.putAttributesIdParams,
-  body: API.UpdateAttributeDTO,
+  body: API.UpdateAttributeReq,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.AttributeResponse }>(
+  return request<API.Response & { data?: API.Attribute }>(
     `/api/v1/attributes/${param0}`,
     {
       method: 'PUT',
@@ -81,16 +77,55 @@ export async function putAttributesId(
   );
 }
 
-/** 删除属性维度 根据ID删除规格属性维度 DELETE /api/v1/attributes/${param0} */
+/** 删除属性 DELETE /api/v1/attributes/${param0} */
 export async function deleteAttributesId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteAttributesIdParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response>(`/api/v1/attributes/${param0}`, {
-    method: 'DELETE',
-    params: { ...queryParams },
-    ...(options || {}),
-  });
+  return request<API.Response & { data?: Record<string, any> }>(
+    `/api/v1/attributes/${param0}`,
+    {
+      method: 'DELETE',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
+}
+
+/** 按类目查询可筛选项 GET /api/v1/attributes/searchable */
+export async function getAttributesSearchable(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getAttributesSearchableParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.Attribute[] }>(
+    '/api/v1/attributes/searchable',
+    {
+      method: 'GET',
+      params: {
+        ...params,
+      },
+      ...(options || {}),
+    },
+  );
+}
+
+/** 按类目查询 SKU 规格 GET /api/v1/attributes/sku-spec */
+export async function getAttributesSkuSpec(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getAttributesSkuSpecParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.Attribute[] }>(
+    '/api/v1/attributes/sku-spec',
+    {
+      method: 'GET',
+      params: {
+        ...params,
+      },
+      ...(options || {}),
+    },
+  );
 }
