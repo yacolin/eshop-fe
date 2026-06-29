@@ -2,34 +2,27 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** SKU列表查询 分页查询SKU列表，支持按产品ID/名称/SKU编码/价格范围筛选 GET /api/v1/skus */
+/** 获取产品的 SKU 列表 GET /api/v1/skus */
 export async function getSkus(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getSkusParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: API.SkuListResult }>('/api/v1/skus', {
+  return request<API.Response & { data?: API.SKU[] }>('/api/v1/skus', {
     method: 'GET',
     params: {
-      // page has a default value: 1
-      page: '1',
-      // size has a default value: 10
-      size: '10',
-
-      // order has a default value: asc
-      order: 'asc',
       ...params,
     },
     ...(options || {}),
   });
 }
 
-/** 创建SKU 创建一个新的SKU POST /api/v1/skus */
+/** 创建 SKU POST /api/v1/skus */
 export async function postSkus(
-  body: API.CreateSkuDTO,
+  body: API.CreateSKUReq,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: API.SkuResponse }>('/api/v1/skus', {
+  return request<API.Response & { data?: API.SKU }>('/api/v1/skus', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,46 +32,40 @@ export async function postSkus(
   });
 }
 
-/** 获取SKU详情 根据ID获取SKU详情 GET /api/v1/skus/${param0} */
+/** 获取 SKU 详情 GET /api/v1/skus/${param0} */
 export async function getSkusId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getSkusIdParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.SkuResponse }>(
-    `/api/v1/skus/${param0}`,
-    {
-      method: 'GET',
-      params: { ...queryParams },
-      ...(options || {}),
-    },
-  );
+  return request<API.Response & { data?: API.SKU }>(`/api/v1/skus/${param0}`, {
+    method: 'GET',
+    params: { ...queryParams },
+    ...(options || {}),
+  });
 }
 
-/** 更新SKU 根据ID更新SKU信息 PUT /api/v1/skus/${param0} */
+/** 更新 SKU PUT /api/v1/skus/${param0} */
 export async function putSkusId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.putSkusIdParams,
-  body: API.UpdateSkuDTO,
+  body: API.UpdateSKUReq,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.SkuResponse }>(
-    `/api/v1/skus/${param0}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      params: { ...queryParams },
-      data: body,
-      ...(options || {}),
+  return request<API.Response & { data?: API.SKU }>(`/api/v1/skus/${param0}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  );
+    params: { ...queryParams },
+    data: body,
+    ...(options || {}),
+  });
 }
 
-/** 删除SKU 根据ID删除SKU DELETE /api/v1/skus/${param0} */
+/** 删除 SKU DELETE /api/v1/skus/${param0} */
 export async function deleteSkusId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteSkusIdParams,
@@ -90,4 +77,21 @@ export async function deleteSkusId(
     params: { ...queryParams },
     ...(options || {}),
   });
+}
+
+/** 根据编码获取 SKU GET /api/v1/skus/code/${param0} */
+export async function getSkusCodeCode(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getSkusCodeCodeParams,
+  options?: { [key: string]: any },
+) {
+  const { code: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.SKU }>(
+    `/api/v1/skus/code/${param0}`,
+    {
+      method: 'GET',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
 }

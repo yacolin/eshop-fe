@@ -1,18 +1,13 @@
 declare namespace API {
-  type ActivityCursorResult = {
-    has_more?: boolean;
-    list?: FlashActivity[];
-    next_cursor?: number;
+  type AddItemReq = {
+    quantity: number;
+    sku_id: number;
   };
 
-  type AddressListResp = {
-    list?: AddressResp[];
-    total?: number;
-  };
-
-  type AddressResp = {
+  type Address = {
     city?: string;
     consignee?: string;
+    country?: string;
     created_at?: string;
     detail?: string;
     district?: string;
@@ -20,303 +15,288 @@ declare namespace API {
     is_default?: boolean;
     phone?: string;
     province?: string;
+    tag?: string;
     updated_at?: string;
     user_id?: number;
     zip_code?: string;
   };
 
-  type AddToCartDTO = {
-    quantity: number;
-    sku_id: number;
+  type AddressInfo = {
+    city?: string;
+    consignee: string;
+    detail_addr?: string;
+    district?: string;
+    phone: string;
+    province?: string;
+    zip_code?: string;
   };
 
-  type AttributeListResult = {
-    list?: AttributeResponse[];
+  type AddressListResult = {
+    list?: Address[];
     total?: number;
   };
 
-  type AttributeResponse = {
+  type Attribute = {
+    category_id?: number;
     created_at?: string;
     id?: number;
+    /** 1-文本 2-单选 3-多选 4-数字 */
+    input_type?: number;
+    is_sku_spec?: number;
+    name?: string;
+    required?: number;
+    searchable?: number;
+    sort_order?: number;
+    status?: number;
+    unit?: string;
+    updated_at?: string;
+    /** 可选值 JSON 数组 */
+    values?: string;
+  };
+
+  type Brand = {
+    created_at?: string;
+    description?: string;
+    english_name?: string;
+    first_letter?: string;
+    id?: number;
+    logo_url?: string;
     name?: string;
     sort_order?: number;
+    status?: number;
     updated_at?: string;
   };
 
-  type AttributeValueItem = {
-    value?: string;
-    value_id?: number;
+  type BrandListResult = {
+    list?: Brand[];
+    total?: number;
   };
 
-  type AttributeValueResponse = {
-    attribute_id?: number;
+  type Cart = {
     created_at?: string;
+    expired_at?: string;
     id?: number;
-    sort_order?: number;
+    item_count?: number;
+    session_id?: string;
+    total_amount?: number;
     updated_at?: string;
-    value?: string;
-  };
-
-  type BatchCreateInventoryDTO = {
-    /** 统一初始物理库存量 */
-    quantity: number;
-    sku_ids: number[];
-    /** 统一低库存预警阈值 */
-    threshold?: number;
-  };
-
-  type BatchCreateSkuDTO = {
-    skus: BatchCreateSkuItem[];
-  };
-
-  type BatchCreateSkuItem = {
-    attr_value_ids: number[];
-    image?: string;
-    name: string;
-    price: number;
-    sku_code: string;
-  };
-
-  type BatchCreateSkuResult = {
-    failed?: number;
-    skus?: SkuResponse[];
-    success?: number;
-    total?: number;
-  };
-
-  type CachedCategoryItem = {
-    id?: number;
-    name?: string;
-  };
-
-  type CachedCategoryListResult = {
-    list?: CachedCategoryItem[];
-    total?: number;
-  };
-
-  type CachedProductItem = {
-    id?: number;
-    min_price?: number;
-    name?: string;
-  };
-
-  type CartItemResponse = {
-    id?: number;
-    /** 商品单价，单位：分 */
-    price?: number;
-    product_id?: number;
-    product_name?: string;
-    quantity?: number;
-    sku?: string;
-    sku_id?: number;
-    /** 库存状态 */
-    stock?: number;
-  };
-
-  type CartResponse = {
-    id?: number;
-    items?: CartItemResponse[];
-    total_items?: number;
-    /** 总价，单位：分 */
-    total_price?: number;
     user_id?: number;
   };
 
   type Category = {
-    children?: Category[];
     created_at?: string;
-    description?: string;
+    icon_url?: string;
     id?: number;
+    level?: number;
     name?: string;
-    parent?: Category;
-    /** 父分类ID，支持层级结构 */
     parent_id?: number;
+    path?: string;
+    sort_order?: number;
+    status?: number;
     updated_at?: string;
   };
 
-  type CategoryAttributeResponse = {
-    attribute_id?: number;
-    attribute_name?: string;
+  type CategoryBrand = {
+    brand_id?: number;
+    category_id?: number;
+    created_at?: string;
+    id?: number;
+    sort_order?: number;
   };
 
   type CategoryDistDTO = {
-    /** 分类名称 */
     category?: string;
-    /** 商品数量 */
     value?: number;
   };
 
-  type CategoryListResult = {
-    list?: Category[];
-    total?: number;
+  type CheckPermissionsReq = {
+    permission_names: string[];
   };
 
-  type ClaimCouponDTO = {
-    coupon_id: number;
+  type CheckPermissionsResult = {
+    permissions?: Record<string, any>;
   };
 
-  type CouponListResult = {
-    list?: CouponResponse[];
-    total?: number;
-  };
-
-  type CouponResponse = {
-    coupon_type?: string;
-    created_at?: string;
-    description?: string;
-    end_time?: string;
-    id?: number;
-    max_discount?: number;
-    min_amount?: number;
-    name?: string;
-    remain_stock?: number;
-    scope?: string;
-    scope_value?: string;
-    start_time?: string;
-    status?: string;
-    total_stock?: number;
-    updated_at?: string;
-    user_limit?: number;
-    valid_days?: number;
-    value?: number;
+  type ClaimCouponReq = {
+    promotion_id: number;
   };
 
   type CreateAddressReq = {
     city: string;
     consignee: string;
+    country?: string;
     detail: string;
     district: string;
     is_default?: boolean;
     phone: string;
     province: string;
+    tag?: 'home' | 'office' | 'company' | 'other';
     zip_code?: string;
   };
 
-  type CreateAttributeDTO = {
+  type CreateAttributeReq = {
+    category_id: number;
+    input_type?: 1 | 2 | 3 | 4;
+    is_sku_spec?: 0 | 1;
+    name: string;
+    required?: 0 | 1;
+    searchable?: 0 | 1;
+    sort_order?: number;
+    unit?: string;
+    /** JSON */
+    values?: string;
+  };
+
+  type CreateBrandReq = {
+    description?: string;
+    english_name?: string;
+    first_letter?: string;
+    logo_url?: string;
     name: string;
     sort_order?: number;
+    status?: 0 | 1;
   };
 
-  type CreateAttributeValueDTO = {
-    attribute_id: number;
-    sort_order?: number;
-    value: string;
-  };
-
-  type CreateCategoryDTO = {
-    description?: string;
+  type CreateCategoryReq = {
+    icon_url?: string;
     name: string;
     parent_id?: number;
+    sort_order?: number;
   };
 
-  type CreateCouponDTO = {
-    coupon_type: 'fixed' | 'percentage' | 'voucher';
-    description?: string;
-    end_time: string;
-    max_discount?: number;
-    min_amount?: number;
-    name: string;
-    scope: 'global' | 'category' | 'product';
-    scope_value?: string;
-    start_time: string;
-    total_stock: number;
-    user_limit?: number;
-    valid_days?: number;
-    value: number;
-  };
-
-  type CreateInventoryDTO = {
-    /** 初始物理库存量 */
-    quantity: number;
-    sku_id: number;
-    /** 低库存预警阈值(默认0) */
-    threshold?: number;
-  };
-
-  type CreateOrderDTO = {
-    address_id: number;
-    /** 可选，默认 CNY */
-    currency?: string;
-    customer_id: string;
-    items: CreateOrderItemDTO[];
-    /** 可选，使用的用户优惠券ID */
-    user_coupon_id?: number;
-  };
-
-  type CreateOrderItemDTO = {
+  type CreateOrderItem = {
     quantity: number;
     sku_id: number;
   };
 
-  type CreatePaymentRequest = {
+  type CreateOrderReq = {
+    address: AddressInfo;
+    buyer_remark?: string;
+    coupon_id?: number;
+    items: CreateOrderItem[];
+    source?: string;
+  };
+
+  type CreatePaymentReq = {
     amount: number;
-    callback_url?: string;
-    currency: string;
-    metadata?: string;
+    channel?: string;
     order_id: number;
+    order_no: string;
+    order_type?: string;
     payment_method: string;
-    return_url?: string;
   };
 
-  type CreatePermissionRequest = {
+  type CreatePermissionReq = {
     action: string;
     category?: string;
     description?: string;
     display_name: string;
     name: string;
     resource: string;
-    sort?: number;
-  };
-
-  type CreateProductDTO = {
-    category_ids?: number[];
-    description?: string;
-    name: string;
-  };
-
-  type CreatePromotionDTO = {
-    description?: string;
-    end_time: string;
-    name: string;
-    promo_type: 'time_discount' | 'full_reduce';
-    rule: string;
-    scope: 'all' | 'category' | 'product';
-    scope_value?: string;
     sort_order?: number;
-    start_time: string;
   };
 
-  type CreateRefundRequest = {
-    order_id: number;
-    payment_id: number;
-    refund_amount: number;
-    refund_reason: string;
+  type CreateProductAttrItem = {
+    attribute_id: number;
+    value: string;
+  };
+
+  type CreatePromotionReq = {
+    benefit_type?: 1 | 2 | 3 | 4 | 5;
+    benefit_value?: number;
+    condition_type?: 1 | 2 | 3 | 4;
+    condition_value?: number;
+    end_time: string;
+    is_stackable?: 0 | 1;
+    per_user_limit?: number;
+    /** Products */
+    product_ids?: number[];
+    promo_code?: string;
+    promo_name: string;
+    promo_type: 1 | 2 | 3 | 4 | 5 | 6;
+    /** Rule */
+    rule_name?: string;
+    stack_priority?: number;
+    start_time: string;
+    total_quantity?: number;
+  };
+
+  type CreateRefundReq = {
+    amount: number;
+    payment_no: string;
+    reason?: string;
   };
 
   type CreateReviewReq = {
     content?: string;
-    media?: ReviewMedia[];
-    order_item_id: number;
-    product_id: number;
-    rating: number;
+    is_anonymous?: boolean;
+    logistics_rating?: number;
+    order_id: number;
+    order_item_id?: number;
+    overall_rating: number;
+    quality_rating?: number;
+    service_rating?: number;
+    sku_id?: number;
+    spu_id: number;
   };
 
-  type CreateRoleRequest = {
+  type CreateRoleReq = {
     description?: string;
     display_name: string;
     is_system?: boolean;
     name: string;
-    sort?: number;
-    status?: number;
+    sort_order?: number;
+    status?: 0 | 1;
   };
 
-  type CreateSkuDTO = {
+  type CreateSKUItem = {
+    barcode?: string;
+    cost_price?: number;
+    height?: number;
     image?: string;
-    name: string;
+    length?: number;
+    market_price?: number;
+    max_purchase_qty?: number;
+    min_purchase_qty?: number;
+    price: number;
+    sku_code: string;
+    spec?: Record<string, any>;
+    volume?: number;
+    weight?: number;
+    width?: number;
+  };
+
+  type CreateSKUReq = {
+    barcode?: string;
+    cost_price?: number;
+    height?: number;
+    image?: string;
+    length?: number;
+    market_price?: number;
     price: number;
     product_id: number;
     sku_code: string;
-    spec?: Record<string, any>;
+    spec: string;
+    volume?: number;
+    weight?: number;
+    width?: number;
+  };
+
+  type CreateSPUReq = {
+    attributes?: CreateProductAttrItem[];
+    brand_id?: number;
+    category_id: number;
+    created_by?: string;
+    description?: string;
+    images?: string[];
+    main_image: string;
+    mobile_description?: string;
+    name: string;
+    skus: CreateSKUItem[];
+    sort_order?: number;
+    subtitle?: string;
+    unit?: string;
+    video_url?: string;
   };
 
   type DashboardResponse = {
@@ -329,13 +309,20 @@ declare namespace API {
     top_products?: TopProductDTO[];
   };
 
+  type DeductStockReq = {
+    operator?: string;
+    quantity: number;
+    reference_id?: string;
+    sku_id: number;
+  };
+
   type deleteAddressesIdParams = {
     /** 地址ID */
     id: number;
   };
 
   type deleteAdminReviewsIdParams = {
-    /** 评论ID */
+    /** 评价ID */
     id: number;
   };
 
@@ -344,29 +331,18 @@ declare namespace API {
     id: number;
   };
 
-  type deleteAttributeValuesIdParams = {
-    /** 属性值ID */
+  type deleteBrandsIdParams = {
+    /** 品牌ID */
     id: number;
   };
 
-  type deleteCartsItemsItemIdParams = {
-    /** 用户ID */
-    user_id?: number;
-    /** 会话ID */
-    session_id?: string;
-    /** 购物车项ID */
-    item_id: number;
-  };
-
   type deleteCartsParams = {
-    /** 用户ID */
-    user_id?: number;
-    /** 会话ID */
-    session_id?: string;
+    /** SKU ID */
+    sku_id: number;
   };
 
   type deleteCategoriesIdParams = {
-    /** 分类ID */
+    /** 类目ID */
     id: number;
   };
 
@@ -375,34 +351,29 @@ declare namespace API {
     id: number;
   };
 
-  type deleteOrdersIdParams = {
-    /** 订单ID */
+  type deletePermissionsIdParams = {
+    /** 权限ID */
     id: number;
   };
 
-  type deletePermissionsIdParams = {
-    /** 权限ID */
-    id: string;
+  type deleteProductsIdParams = {
+    /** 商品ID */
+    id: number;
   };
 
-  type deleteProductsIdParams = {
-    /** 产品ID */
+  type deletePromotionsIdParams = {
+    /** 促销ID */
     id: number;
   };
 
   type deleteReviewsIdParams = {
-    /** 评论ID */
+    /** 评价ID */
     id: number;
   };
 
   type deleteRolesIdParams = {
     /** 角色ID */
-    id: string;
-  };
-
-  type deleteRolesIdPermissionsParams = {
-    /** 角色ID */
-    id: string;
+    id: number;
   };
 
   type deleteSkusIdParams = {
@@ -410,24 +381,16 @@ declare namespace API {
     id: number;
   };
 
-  type deleteUsersUserIdRolesRoleIdParams = {
-    /** 用户ID */
-    user_id: string;
-    /** 角色ID */
-    role_id: string;
+  type FlashBuyReq = {
+    product_id: number;
+    promotion_id: number;
+    quantity: number;
+    sku_id: number;
   };
 
-  type FlashActivity = {
-    created_at?: string;
-    end_time?: string;
-    flash_price?: number;
-    id?: number;
-    product_id?: number;
-    sold_stock?: number;
-    start_time?: string;
-    status?: string;
-    total_stock?: number;
-    updated_at?: string;
+  type FlashConfirmReq = {
+    address_id?: number;
+    token: string;
   };
 
   type getAddressesIdParams = {
@@ -447,119 +410,78 @@ declare namespace API {
     id: number;
   };
 
-  type getAttributesIdValuesParams = {
-    /** 属性ID */
+  type getAttributesParams = {
+    /** 类目ID */
+    category_id: number;
+  };
+
+  type getAttributesSearchableParams = {
+    /** 类目ID */
+    category_id: number;
+  };
+
+  type getAttributesSkuSpecParams = {
+    /** 类目ID */
+    category_id: number;
+  };
+
+  type getBrandsIdParams = {
+    /** 品牌ID */
     id: number;
   };
 
-  type getAttributesParams = {
+  type getBrandsParams = {
     /** 页码 */
     page?: number;
     /** 每页条数 */
     size?: number;
+    /** 品牌名称模糊搜索 */
+    name?: string;
+    /** 首字母筛选 */
+    first_letter?: string;
+    /** 状态 1-启用 0-禁用 */
+    status?: number;
   };
 
-  type getCartsParams = {
-    /** 用户ID */
-    user_id?: number;
-    /** 会话ID */
-    session_id?: string;
-  };
-
-  type getCategoriesCacheIdParams = {
-    /** 分类ID */
-    id: number;
-  };
-
-  type getCategoriesIdAttributesParams = {
-    /** 品类ID */
+  type getCategoriesIdBrandsParams = {
+    /** 类目ID */
     id: number;
   };
 
   type getCategoriesIdChildrenParams = {
-    /** 父分类ID */
+    /** 父类目ID */
     id: number;
   };
 
   type getCategoriesIdParams = {
-    /** 分类ID */
+    /** 类目ID */
     id: number;
   };
 
-  type getCategoriesParams = {
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    size?: number;
-    /** 分类名称模糊搜索 */
-    name?: string;
-  };
-
-  type getCouponsIdParams = {
-    /** 优惠券模板ID */
-    id: number;
-  };
-
-  type getCouponsMineParams = {
-    /** 状态过滤：unused/used/expired */
-    status?: string;
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    page_size?: number;
+  type getCategoriesLevelLevelParams = {
+    /** 层级（1-3） */
+    level: number;
   };
 
   type getCouponsMeParams = {
     /** 页码 */
     page?: number;
     /** 每页条数 */
-    page_size?: number;
-  };
-
-  type getFlashActivitiesCursorParams = {
-    /** 游标（上一页最后一条的 ID，首次查询传 0） */
-    cursor?: number;
-    /** 每页条数 */
     size?: number;
-    /** 筛选状态：pending/active/finished */
-    status?: string;
   };
 
-  type getInventoriesEnrichedParams = {
+  type getInventoriesLogsParams = {
+    /** SKU ID */
+    sku_id: number;
+    /** 变更类型 */
+    change_type?: string;
     /** 页码 */
     page?: number;
     /** 每页条数 */
     size?: number;
-    /** SKU名称模糊搜索 */
-    sku_name?: string;
-    /** SKU编码精确搜索 */
-    sku_code?: string;
-    /** 产品ID精确搜索 */
-    product_id?: number;
-    /** 产品名称模糊搜索 */
-    product_name?: string;
   };
 
-  type getInventoriesParams = {
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    size?: number;
-    /** 产品ID精确搜索 */
-    product_id?: number;
-    /** 产品名称模糊搜索 */
-    product_name?: string;
-    /** SKU编码精确搜索 */
-    sku_code?: string;
-    /** SKU名称模糊搜索 */
-    sku_name?: string;
-    /** 库存状态(instock/lowstock/outofstock) */
-    status?: string;
-    /** 是否低库存 */
-    low_stock?: boolean;
-  };
-
-  type getInventoriesSkuSkuIdParams = {
+  type getInventoriesStockParams = {
     /** SKU ID */
     sku_id: number;
   };
@@ -568,34 +490,12 @@ declare namespace API {
     /** 页码 */
     page?: number;
     /** 每页条数 */
-    page_size?: number;
-  };
-
-  type getOrdersIdItemsParams = {
-    /** 订单ID */
-    id: number;
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
     size?: number;
   };
 
-  type getOrdersIdParams = {
-    /** 订单ID */
-    id: number;
-  };
-
-  type getOrdersItemsParams = {
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    size?: number;
-    /** 订单号筛选 */
-    order_no?: string;
-    /** 排序字段 (id, order_id, amount) */
-    sort_by?: string;
-    /** 排序方向 (asc/desc) */
-    order?: string;
+  type getOrdersOrderNoParams = {
+    /** 订单号 */
+    order_no: string;
   };
 
   type getOrdersParams = {
@@ -603,28 +503,6 @@ declare namespace API {
     page?: number;
     /** 每页条数 */
     size?: number;
-    /** 用户ID过滤 */
-    customer_id?: number;
-    /** 订单号搜索 */
-    order_no?: string;
-    /** 订单状态过滤 */
-    status?: string;
-    /** 排序字段 (total_price, created_at) */
-    sort_by?: string;
-    /** 排序方向 (asc/desc) */
-    order?: string;
-  };
-
-  type getOrdersPaymentOrderIdParams = {
-    /** 订单ID */
-    order_id: number;
-  };
-
-  type getPaymentMethodsParams = {
-    /** 页码，默认1 */
-    page?: number;
-    /** 每页数量，默认20 */
-    page_size?: number;
   };
 
   type getPaymentsIdParams = {
@@ -632,136 +510,33 @@ declare namespace API {
     id: number;
   };
 
-  type getPaymentsParams = {
-    /** 订单ID */
-    order_id?: number;
-    /** 支付方式 */
-    payment_method?: string;
-    /** 支付状态 */
-    status?: string;
-    /** 开始日期 */
-    start_date?: string;
-    /** 结束日期 */
-    end_date?: string;
-    /** 页码，默认1 */
-    page?: number;
-    /** 每页数量，默认20 */
-    page_size?: number;
-    /** 排序字段，默认created_at */
-    sort_by?: string;
-    /** 排序方向，默认desc */
-    order?: string;
-  };
-
   type getPermissionsIdParams = {
     /** 权限ID */
-    id: string;
+    id: number;
   };
 
   type getPermissionsParams = {
-    /** 页码 */
-    page?: number;
-    /** 每页数量 */
-    size?: number;
-    /** 分类 */
     category?: string;
-    /** 资源 */
+    /** 页码，最小 1 */
+    page?: number;
     resource?: string;
-    /** 角色 */
-    role?: string;
-    /** 排序字段（sort/created_at/name） */
-    sort_by?: 'sort' | 'created_at' | 'name';
-    /** 排序方向 */
-    order?: 'asc' | 'desc';
-  };
-
-  type getProductsCacheCursorParams = {
-    /** 游标（上一页最后一条的 ID，首次查询传 0） */
-    cursor?: number;
-    /** 每页条数 */
+    role_id?: number;
+    /** 每页条数，范围 1..1000 */
     size?: number;
-    /** 分类ID筛选 */
-    category_id?: number;
   };
 
-  type getProductsCacheIdParams = {
+  type getProductsIdParams = {
     /** 商品ID */
     id: number;
   };
 
-  type getProductsCacheParams = {
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    size?: number;
-    /** 分类ID筛选 */
-    category_id?: number;
-    /** 排序字段 (id, name, price) */
-    sort_by?: string;
-    /** 排序方向 (asc, desc) */
-    order?: string;
-  };
-
-  type getProductsCategoryCategoryIdParams = {
-    /** 分类ID */
-    category_id: number;
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    size?: number;
-  };
-
-  type getProductsCursorParams = {
-    /** 游标（上一页最后一条的 ID，首次查询传 0） */
-    cursor?: number;
-    /** 每页条数 */
-    size?: number;
-    /** 产品名称模糊搜索 */
-    name?: string;
-    /** SKU精确搜索 */
-    sku?: string;
-    /** 分类ID筛选 */
-    category_id?: number;
-  };
-
-  type getProductsEnrichedParams = {
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    size?: number;
-    /** 产品名称模糊搜索 */
-    name?: string;
-    /** SKU精确搜索 */
-    sku?: string;
-  };
-
-  type getProductsIdAttributesParams = {
-    /** 产品ID */
-    id: number;
-  };
-
-  type getProductsIdDetailParams = {
-    /** 产品ID */
-    id: number;
-  };
-
-  type getProductsIdEnrichedParams = {
-    /** 产品ID */
-    id: number;
-  };
-
-  type getProductsIdParams = {
-    /** 产品ID */
-    id: number;
-  };
-
   type getProductsIdRatingParams = {
-    /** 产品ID */
+    /** 商品SPU ID */
     id: number;
   };
 
   type getProductsIdReviewsParams = {
-    /** 产品ID */
+    /** 商品SPU ID */
     id: number;
     /** 页码 */
     page?: number;
@@ -774,21 +549,22 @@ declare namespace API {
     page?: number;
     /** 每页条数 */
     size?: number;
-    /** 产品名称模糊搜索 */
+    /** 商品名称模糊搜索 */
     name?: string;
-    /** SKU精确搜索 */
-    sku?: string;
-    /** 分类ID筛选 */
+    /** 类目ID */
     category_id?: number;
+    /** 品牌ID */
+    brand_id?: number;
+    /** 状态 0-草稿 1-待审 2-上架 3-下架 4-封禁 */
+    status?: number;
+    /** 最低价格（分） */
+    price_min?: number;
+    /** 最高价格（分） */
+    price_max?: number;
   };
 
   type getPromotionsIdParams = {
-    /** 促销活动ID */
-    id: number;
-  };
-
-  type getPromotionsIdProductsParams = {
-    /** 促销活动ID */
+    /** 促销ID */
     id: number;
   };
 
@@ -796,28 +572,7 @@ declare namespace API {
     /** 页码 */
     page?: number;
     /** 每页条数 */
-    page_size?: number;
-  };
-
-  type getRefundsParams = {
-    /** 支付ID */
-    payment_id?: number;
-    /** 订单ID */
-    order_id?: number;
-    /** 退款状态 */
-    status?: string;
-    /** 开始日期 */
-    start_date?: string;
-    /** 结束日期 */
-    end_date?: string;
-    /** 页码，默认1 */
-    page?: number;
-    /** 每页数量，默认20 */
-    page_size?: number;
-    /** 排序字段，默认created_at */
-    sort_by?: string;
-    /** 排序方向，默认desc */
-    order?: string;
+    size?: number;
   };
 
   type getReviewsMeParams = {
@@ -829,19 +584,19 @@ declare namespace API {
 
   type getRolesIdParams = {
     /** 角色ID */
-    id: string;
-  };
-
-  type getRolesNameNameParams = {
-    /** 角色名称 */
-    name: string;
+    id: number;
   };
 
   type getRolesParams = {
     /** 页码 */
     page?: number;
-    /** 每页数量 */
-    page_size?: number;
+    /** 每页条数 */
+    size?: number;
+  };
+
+  type getSkusCodeCodeParams = {
+    /** SKU 编码 */
+    code: string;
   };
 
   type getSkusIdParams = {
@@ -850,43 +605,8 @@ declare namespace API {
   };
 
   type getSkusParams = {
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    size?: number;
-    /** 产品ID（可选） */
-    product_id?: number;
-    /** SKU名称模糊搜索 */
-    name?: string;
-    /** SKU编码精确搜索 */
-    sku_code?: string;
-    /** 最低价格（分） */
-    price_min?: number;
-    /** 最高价格（分） */
-    price_max?: number;
-    /** 排序字段 (id, name, price, created_at) */
-    sort_by?: string;
-    /** 排序方向 (asc, desc) */
-    order?: string;
-  };
-
-  type getUsersUserIdOrdersParams = {
-    /** 用户ID */
-    user_id: number;
-    /** 页码 */
-    page?: number;
-    /** 每页条数 */
-    size?: number;
-  };
-
-  type getUsersUserIdParams = {
-    /** 用户ID */
-    user_id: number;
-  };
-
-  type getUsersUserIdRolesParams = {
-    /** 用户ID */
-    user_id: string;
+    /** 产品 ID */
+    product_id: number;
   };
 
   type getWsParams = {
@@ -899,66 +619,50 @@ declare namespace API {
   type Inventory = {
     created_at?: string;
     id?: number;
-    /** 实际物理库存。卖出一件减一 */
+    in_transit?: number;
+    last_counted_at?: string;
+    last_counted_by?: string;
+    max_threshold?: number;
     quantity?: number;
-    /** 已预订(下单未支付)数量。下单+1, 支付/取消-1 */
     reserved?: number;
     sku_id?: number;
-    /** 库存状态: instock / lowstock / outofstock */
     status?: string;
-    /** 低库存预警阈值。quantity<=threshold 时自动标为 lowstock */
     threshold?: number;
     updated_at?: string;
+    warehouse_id?: number;
   };
 
-  type InventoryEnrichedItem = {
+  type InventoryLog = {
+    after_quantity?: number;
+    after_reserved?: number;
+    before_quantity?: number;
+    before_reserved?: number;
+    change_amount?: number;
+    change_type?: string;
     created_at?: string;
     id?: number;
-    product_id?: number;
-    product_name?: string;
-    quantity?: number;
-    reserved?: number;
-    sku_code?: string;
+    note?: string;
+    operator?: string;
+    reference_id?: string;
     sku_id?: number;
-    sku_name?: string;
-    status?: string;
-    threshold?: number;
-    updated_at?: string;
+    warehouse_id?: number;
   };
 
-  type InventoryEnrichedResult = {
-    list?: InventoryEnrichedItem[];
+  type InventoryLogListResult = {
+    list?: InventoryLog[];
     total?: number;
   };
 
-  type InventoryListResult = {
-    list?: Inventory[];
-    total?: number;
-  };
-
-  type LinkProductsDTO = {
-    discount: number;
-    product_ids: number[];
-  };
-
-  type ListPermissionsResponse = {
-    page?: number;
-    page_size?: number;
-    permissions?: Permission[];
-    total?: number;
-  };
-
-  type ListRolesResponse = {
-    page?: number;
-    page_size?: number;
-    roles?: Role[];
-    total?: number;
+  type LockStockReq = {
+    operator?: string;
+    quantity: number;
+    reference_id?: string;
+    sku_id: number;
   };
 
   type LoginResponse = {
     access_token?: string;
     expires_at?: number;
-    /** 是否新用户 */
     is_new_user?: boolean;
     refresh_token?: string;
     token_type?: string;
@@ -966,40 +670,45 @@ declare namespace API {
     username?: string;
   };
 
-  type MediaType = 'image' | 'video';
-
   type MethodDistDTO = {
-    /** 显示标签 */
     label?: string;
-    /** 支付方式编码 */
     method?: string;
-    /** 数量 */
     value?: number;
   };
 
   type ModerateReviewReq = {
-    /** 拒绝/隐藏原因（可选，记录用） */
     reason?: string;
-    status: 'approved' | 'rejected' | 'hidden';
+    status: 1 | 2;
   };
 
   type NotificationListResult = {
-    list?: NotificationResponse[];
+    list?: NotificationResp[];
     total?: number;
   };
 
-  type NotificationResponse = {
+  type NotificationResp = {
+    category?: number;
+    channel?: number;
     content?: string;
-    created_at?: string;
+    content_template?: string;
+    created_at?: number;
+    created_by?: number;
+    icon_url?: string;
     id?: number;
+    is_processed?: boolean;
     is_read?: boolean;
-    read_at?: string;
+    priority?: number;
+    process_result?: string;
+    processed_at?: number;
+    read_at?: number;
+    redirect_url?: string;
+    target_id?: number;
+    target_type?: string;
+    template_params?: string;
     title?: string;
-    type?: NotificationType;
+    updated_at?: number;
     user_id?: number;
   };
-
-  type NotificationType = 'system' | 'order' | 'payment' | 'flash' | 'admin';
 
   type OnlineStatsResponse = {
     /** 连接数 */
@@ -1008,325 +717,140 @@ declare namespace API {
     online_users?: number;
   };
 
-  type OrderItemListResult = {
-    list?: OrderItemResponse[];
-    total?: number;
-  };
-
-  type OrderItemResponse = {
-    /** 单项小计，单位：分 */
-    amount?: number;
-    id?: number;
-    order_id?: number;
-    order_no?: string;
-    product_id?: string;
-    quantity?: number;
-    sku_id?: number;
-    /** 单价，单位：分 */
-    unit_price?: number;
-  };
-
-  type OrderListResult = {
-    list?: OrderResponse[];
-    total?: number;
-  };
-
-  type OrderResponse = {
+  type Order = {
+    buyer_remark?: string;
     city?: string;
+    closed_at?: string;
+    completed_at?: string;
     consignee?: string;
-    /** 使用的优惠券模板ID */
     coupon_id?: number;
+    coupon_snapshot?: string;
     created_at?: string;
-    currency?: string;
-    customer_id?: string;
+    delivered_at?: string;
     detail_addr?: string;
-    /** 优惠金额，单位：分 */
     discount_amount?: number;
     district?: string;
     id?: number;
-    items?: OrderItemResponse[];
     order_no?: string;
+    paid_at?: string;
+    pay_amount?: number;
+    payment_method?: string;
+    payment_status?: string;
     phone?: string;
     province?: string;
+    seller_remark?: string;
+    shipped_at?: string;
+    shipping_fee?: number;
+    source?: string;
     status?: string;
-    /** 订单总金额（已扣优惠），单位：分 */
     total_amount?: number;
     updated_at?: string;
+    user_id?: number;
     zip_code?: string;
   };
 
+  type OrderListResult = {
+    list?: Order[];
+    total?: number;
+  };
+
   type OrderTrendDTO = {
-    /** 金额（分） */
     amount?: number;
-    /** 订单数 */
     count?: number;
-    /** 日期 (MM-DD) */
     date?: string;
   };
 
-  type PasswordLoginRequest = {
+  type PasswordLoginReq = {
     password: string;
     username: string;
   };
 
   type patchAdminReviewsIdModerateParams = {
-    /** 评论ID */
+    /** 评价ID */
     id: number;
   };
 
-  type patchOrdersIdStatusParams = {
-    /** 订单ID */
-    id: number;
-  };
-
-  type patchPaymentsIdStatusParams = {
-    /** 支付ID */
-    id: number;
-  };
-
-  type patchRefundsIdStatusParams = {
-    /** 退款ID */
-    id: number;
-  };
-
-  type PaymentListResponse = {
-    page?: number;
-    payments?: PaymentResponse[];
-    size?: number;
-    total?: number;
-  };
-
-  type PaymentMethodListResponse = {
-    page?: number;
-    page_size?: number;
-    payment_methods?: PaymentMethodResponse[];
-    total?: number;
-  };
-
-  type PaymentMethodResponse = {
-    code?: string;
-    created_at?: string;
-    description?: string;
-    id?: number;
-    name?: string;
-    status?: number;
-  };
-
-  type PaymentResponse = {
+  type Payment = {
     amount?: number;
+    channel?: string;
     created_at?: string;
     currency?: string;
+    failure_reason?: string;
     id?: number;
     order_id?: number;
+    order_no?: string;
+    order_type?: string;
     paid_at?: string;
     payment_method?: string;
-    payment_url?: string;
-    qrcode?: string;
+    payment_no?: string;
     status?: string;
     transaction_id?: string;
+    updated_at?: string;
+  };
+
+  type PaymentCallbackReq = {
+    channel?: string;
+    failure_reason?: string;
+    payment_no: string;
+    raw_body?: string;
+    status: 'success' | 'failed';
+    transaction_id: string;
   };
 
   type Permission = {
-    /** 操作：create, read, update, delete 等 */
     action?: string;
-    /** 分类：business, system, admin 等 */
     category?: string;
     created_at?: string;
-    /** 描述 */
     description?: string;
-    /** 显示名称，如：创建订单 */
     display_name?: string;
     id?: number;
-    /** 权限名称，如：order:create */
     name?: string;
-    /** 资源：order, product, user 等 */
     resource?: string;
-    /** 排序 */
-    sort?: number;
-    /** 1:启用 2:禁用 */
+    sort_order?: number;
     status?: number;
     updated_at?: string;
   };
 
-  type PhoneLoginRequest = {
-    phone: string;
-    verify_code: string;
-  };
-
-  type postAdminPromotionsIdProductsParams = {
-    /** 促销活动ID */
-    id: number;
+  type PermissionListResult = {
+    list?: Permission[];
+    total?: number;
   };
 
   type postAdminReviewsIdReplyParams = {
-    /** 评论ID */
+    /** 评价ID */
     id: number;
   };
 
-  type postCartsItemsParams = {
-    /** 用户ID */
-    user_id?: number;
+  type postCartsClearParams = {
     /** 会话ID */
     session_id?: string;
   };
 
-  type postOrdersIdCancelParams = {
-    /** 订单ID */
-    id: number;
-  };
-
-  type postProductsIdSkusBatchParams = {
-    /** 产品ID */
-    id: number;
-  };
-
-  type postRolesIdPermissionsParams = {
-    /** 角色ID */
-    id: string;
-  };
-
-  type postUsersUserIdRolesParams = {
-    /** 用户ID */
-    user_id: string;
-  };
-
-  type Product = {
+  type Promotion = {
     created_at?: string;
-    description?: string;
+    created_by?: number;
+    end_time?: string;
     id?: number;
-    min_price?: number;
-    name?: string;
+    per_user_limit?: number;
+    promo_code?: string;
+    promo_name?: string;
+    promo_type?: number;
+    rule_id?: number;
+    start_time?: string;
+    status?: number;
+    total_quantity?: number;
     updated_at?: string;
-  };
-
-  type ProductAttributeItem = {
-    attribute_id?: number;
-    attribute_name?: string;
-    values?: AttributeValueItem[];
-  };
-
-  type ProductAttributeUpdateItem = {
-    attribute_id: number;
-    value_ids: number[];
-  };
-
-  type ProductCacheCursorResult = {
-    has_more?: boolean;
-    list?: CachedProductItem[];
-    next_cursor?: number;
-  };
-
-  type ProductCategoryBrief = {
-    id?: number;
-    name?: string;
-  };
-
-  type ProductCursorResult = {
-    /** 是否还有更多数据 */
-    has_more?: boolean;
-    list?: Product[];
-    /** 下一页游标值（无更多数据时为 0） */
-    next_cursor?: number;
-  };
-
-  type ProductDetailDTO = {
-    categories?: ProductCategoryBrief[];
-    created_at?: string;
-    description?: string;
-    id?: number;
-    min_price?: number;
-    name?: string;
-    quantity?: number;
-    reserved?: number;
-    skus?: SkuResponse[];
-    status?: string;
-    threshold?: number;
-    updated_at?: string;
-  };
-
-  type ProductListResult = {
-    list?: Product[];
-    total?: number;
-  };
-
-  type ProductRatingResp = {
-    average_rating?: number;
-    product_id?: number;
-    rating_1_count?: number;
-    rating_2_count?: number;
-    rating_3_count?: number;
-    rating_4_count?: number;
-    rating_5_count?: number;
-    review_count?: number;
-  };
-
-  type ProductResponse = {
-    created_at?: string;
-    description?: string;
-    id?: number;
-    min_price?: number;
-    name?: string;
-    updated_at?: string;
-  };
-
-  type ProductWithCategoryDTO = {
-    categories?: ProductCategoryBrief[];
-    created_at?: string;
-    description?: string;
-    id?: number;
-    min_price?: number;
-    name?: string;
-    updated_at?: string;
-  };
-
-  type ProductWithCategoryListResult = {
-    list?: ProductWithCategoryDTO[];
-    total?: number;
-  };
-
-  type ProductWithSkusResponse = {
-    product?: ProductResponse;
-    skus?: SkuDetailResponse[];
+    updated_by?: number;
+    used_quantity?: number;
   };
 
   type PromotionListResult = {
-    list?: PromotionResponse[];
+    list?: Promotion[];
     total?: number;
-  };
-
-  type PromotionResponse = {
-    created_at?: string;
-    description?: string;
-    end_time?: string;
-    id?: number;
-    name?: string;
-    promo_type?: string;
-    rule?: string;
-    scope?: string;
-    scope_value?: string;
-    sort_order?: number;
-    start_time?: string;
-    status?: string;
-    updated_at?: string;
   };
 
   type putAddressesIdParams = {
     /** 地址ID */
-    id: number;
-  };
-
-  type putAdminCouponsIdParams = {
-    /** 优惠券模板ID */
-    id: number;
-  };
-
-  type putAdminPromotionsIdParams = {
-    /** 促销活动ID */
-    id: number;
-  };
-
-  type putAdminPromotionsIdStatusParams = {
-    /** 促销活动ID */
     id: number;
   };
 
@@ -1335,32 +859,18 @@ declare namespace API {
     id: number;
   };
 
-  type putAttributeValuesIdParams = {
-    /** 属性值ID */
+  type putBrandsIdParams = {
+    /** 品牌ID */
     id: number;
   };
 
-  type putCartsItemsItemIdParams = {
-    /** 用户ID */
-    user_id?: number;
-    /** 会话ID */
-    session_id?: string;
-    /** 购物车项ID */
-    item_id: number;
-  };
-
-  type putCategoriesIdAttributesParams = {
-    /** 品类ID */
+  type putCategoriesIdBrandsParams = {
+    /** 类目ID */
     id: number;
   };
 
   type putCategoriesIdParams = {
-    /** 分类ID */
-    id: number;
-  };
-
-  type putInventoriesIdParams = {
-    /** 库存ID */
+    /** 类目ID */
     id: number;
   };
 
@@ -1369,29 +879,29 @@ declare namespace API {
     id: number;
   };
 
-  type putOrdersIdParams = {
-    /** 订单ID */
-    id: number;
+  type putOrdersOrderNoStatusParams = {
+    /** 订单号 */
+    order_no: string;
   };
 
   type putPermissionsIdParams = {
     /** 权限ID */
-    id: string;
-  };
-
-  type putProductsIdAttributesParams = {
-    /** 产品ID */
     id: number;
   };
 
   type putProductsIdParams = {
-    /** 产品ID */
+    /** 商品ID */
+    id: number;
+  };
+
+  type putPromotionsIdParams = {
+    /** 促销ID */
     id: number;
   };
 
   type putRolesIdParams = {
     /** 角色ID */
-    id: string;
+    id: number;
   };
 
   type putSkusIdParams = {
@@ -1427,49 +937,20 @@ declare namespace API {
     status?: string;
   };
 
-  type RefreshTokenRequest = {
+  type RefreshTokenReq = {
     refresh_token: string;
   };
 
-  type RefundListResult = {
-    list?: RefundResponse[];
-    total?: number;
-  };
-
-  type RefundResponse = {
-    created_at?: string;
-    id?: number;
-    order_id?: number;
-    payment_id?: number;
-    refund_amount?: number;
-    refund_reason?: string;
-    status?: string;
-    transaction_id?: string;
-  };
-
-  type RegisterRequest = {
+  type RegisterReq = {
     email?: string;
     password?: string;
     phone?: string;
-    /** 注册方式：password, phone, email */
     provider: string;
     username?: string;
   };
 
-  type ReleaseInventoryDTO = {
-    /** 释放数量 */
-    quantity: number;
-    sku_id: number;
-  };
-
   type ReplyReviewReq = {
-    reply: string;
-  };
-
-  type ReserveInventoryDTO = {
-    /** 预占数量 */
-    quantity: number;
-    sku_id: number;
+    content: string;
   };
 
   type Response = {
@@ -1479,45 +960,56 @@ declare namespace API {
     trace_id?: string;
   };
 
-  type ReviewListResp = {
+  type RestockReq = {
+    note?: string;
+    operator?: string;
+    quantity: number;
+    reference_id?: string;
+    sku_id: number;
+    warehouse_id?: number;
+  };
+
+  type ReviewListResult = {
     list?: ReviewResp[];
     total?: number;
   };
 
-  type ReviewMedia = {
-    /** 缩略图地址（视频封面/图片缩略） */
-    thumbnail?: string;
-    /** 媒体类型 */
-    type?: MediaType;
-    /** 资源地址 */
-    url?: string;
-  };
-
-  type ReviewMediaDTO = {
-    thumbnail?: string;
-    type?: MediaType;
-    url?: string;
+  type ReviewRatingResp = {
+    avg_logistics_rating?: number;
+    avg_overall_rating?: number;
+    avg_quality_rating?: number;
+    avg_service_rating?: number;
+    rating_1_count?: number;
+    rating_2_count?: number;
+    rating_3_count?: number;
+    rating_4_count?: number;
+    rating_5_count?: number;
+    spu_id?: number;
+    total_reviews?: number;
+    with_media_count?: number;
   };
 
   type ReviewResp = {
     content?: string;
-    created_at?: string;
+    created_at?: number;
+    helpful_count?: number;
     id?: number;
-    media?: ReviewMediaDTO[];
+    is_anonymous?: boolean;
+    like_count?: number;
+    logistics_rating?: number;
+    order_id?: number;
     order_item_id?: number;
-    order_no?: string;
-    product_id?: number;
-    rating?: number;
-    reply?: string;
-    reply_at?: string;
-    status?: ReviewStatus;
-    updated_at?: string;
-    user_avatar?: string;
+    overall_rating?: number;
+    quality_rating?: number;
+    reject_reason?: string;
+    reply_count?: number;
+    service_rating?: number;
+    sku_id?: number;
+    spu_id?: number;
+    status?: number;
+    updated_at?: number;
     user_id?: number;
-    user_name?: string;
   };
-
-  type ReviewStatus = 'pending' | 'approved' | 'rejected' | 'hidden';
 
   type Role = {
     created_at?: string;
@@ -1526,16 +1018,19 @@ declare namespace API {
     id?: number;
     is_system?: boolean;
     name?: string;
-    permissions?: Permission[];
-    sort?: number;
+    sort_order?: number;
     status?: number;
     updated_at?: string;
   };
 
-  type SendSystemNotificationDTO = {
+  type RoleListResult = {
+    list?: Role[];
+    total?: number;
+  };
+
+  type SendSystemNotificationReq = {
     content: string;
     title: string;
-    /** 0 表示全体 */
     user_id?: number;
   };
 
@@ -1554,58 +1049,73 @@ declare namespace API {
     user_id?: number;
   };
 
-  type SetCategoryAttributesDTO = {
-    attribute_ids: number[];
+  type SetCategoryBrandsReq = {
+    brand_ids: number[];
+    sort_order?: number;
   };
 
-  type SkuDetailResponse = {
-    available_quantity?: number;
+  type SKU = {
+    barcode?: string;
+    cost_price?: number;
     created_at?: string;
+    height?: number;
     id?: number;
     image?: string;
-    inventory_status?: string;
-    name?: string;
+    length?: number;
+    market_price?: number;
+    max_purchase_qty?: number;
+    min_purchase_qty?: number;
     price?: number;
     product_id?: number;
     sku_code?: string;
-    spec?: Record<string, any>;
+    spec?: string;
+    status?: number;
     updated_at?: string;
+    volume?: number;
+    weight?: number;
+    width?: number;
   };
 
-  type SkuListResult = {
-    list?: SkuResponse[];
+  type SPU = {
+    brand_id?: number;
+    category_id?: number;
+    created_at?: string;
+    created_by?: string;
+    has_description?: number;
+    id?: number;
+    images?: string;
+    main_image?: string;
+    max_price?: number;
+    min_price?: number;
+    name?: string;
+    rating_average?: number;
+    rating_count?: number;
+    sales_count?: number;
+    sort_order?: number;
+    status?: number;
+    subtitle?: string;
+    total_stock?: number;
+    unit?: string;
+    updated_at?: string;
+    updated_by?: string;
+    video_url?: string;
+  };
+
+  type SPUListResult = {
+    list?: SPU[];
     total?: number;
   };
 
-  type SkuResponse = {
-    created_at?: string;
-    id?: number;
-    image?: string;
-    name?: string;
-    price?: number;
-    product_id?: number;
-    sku_code?: string;
-    spec?: Record<string, any>;
-    updated_at?: string;
-  };
-
   type StatusDistDTO = {
-    /** 显示标签 */
     label?: string;
-    /** 状态编码 */
     status?: string;
-    /** 数量 */
     value?: number;
   };
 
   type SummaryDTO = {
-    /** 库存告警数 */
     low_stock_count?: number;
-    /** 总订单数 */
     total_orders?: number;
-    /** 商品总数 */
     total_products?: number;
-    /** 总营收（分） */
     total_revenue?: number;
   };
 
@@ -1620,145 +1130,146 @@ declare namespace API {
     title: string;
   };
 
+  type TokenResponse = {
+    access_token?: string;
+    expires_at?: number;
+    refresh_token?: string;
+    token_type?: string;
+  };
+
   type TopProductDTO = {
-    /** 销售额（分） */
     amount?: number;
-    /** 销量 */
     count?: number;
-    /** 商品名称 */
     name?: string;
   };
 
-  type UnreadCountResponse = {
+  type UnlockStockReq = {
+    operator?: string;
+    quantity: number;
+    reference_id?: string;
+    sku_id: number;
+  };
+
+  type UnreadCountResp = {
     count?: number;
   };
 
   type UpdateAddressReq = {
     city?: string;
     consignee?: string;
+    country?: string;
     detail?: string;
     district?: string;
     is_default?: boolean;
     phone?: string;
     province?: string;
+    tag?: 'home' | 'office' | 'company' | 'other';
     zip_code?: string;
   };
 
-  type UpdateAttributeDTO = {
+  type UpdateAttributeReq = {
+    input_type?: 1 | 2 | 3 | 4;
+    is_sku_spec?: 0 | 1;
+    name?: string;
+    required?: 0 | 1;
+    searchable?: 0 | 1;
+    sort_order?: number;
+    status?: 0 | 1;
+    unit?: string;
+    values?: string;
+  };
+
+  type UpdateBrandReq = {
+    description?: string;
+    english_name?: string;
+    first_letter?: string;
+    logo_url?: string;
     name?: string;
     sort_order?: number;
+    status?: 0 | 1;
   };
 
-  type UpdateAttributeValueDTO = {
+  type UpdateCategoryReq = {
+    icon_url?: string;
+    name?: string;
     sort_order?: number;
-    value?: string;
+    status?: 0 | 1;
   };
 
-  type UpdateCartItemDTO = {
-    quantity: number;
-  };
-
-  type UpdateCategoryDTO = {
-    description?: string;
-    name?: string;
-    parent_id?: number;
-  };
-
-  type UpdateCouponDTO = {
-    description?: string;
-    end_time?: string;
-    max_discount?: number;
-    min_amount?: number;
-    name?: string;
-    scope?: 'global' | 'category' | 'product';
-    scope_value?: string;
-    start_time?: string;
-    status?: 'active' | 'inactive';
-    user_limit?: number;
-    valid_days?: number;
-    value?: number;
-  };
-
-  type UpdateInventoryDTO = {
-    /** 调整后物理库存 */
+  type UpdateItemReq = {
     quantity?: number;
-    /** 调整后预占量(谨慎使用) */
-    reserved?: number;
-    /** 调整后预警阈值 */
-    threshold?: number;
+    sku_id: number;
   };
 
-  type UpdateOrderDTO = {
-    product_id?: number;
-    quantity?: number;
-    status?: string;
-    total_price?: number;
-    user_id?: number;
+  type UpdateOrderStatusReq = {
+    note?: string;
+    status: 'cancelled' | 'shipped' | 'delivered' | 'completed';
   };
 
-  type UpdateOrderStatusDTO = {
-    status: string;
-  };
-
-  type UpdatePaymentStatusRequest = {
-    failure_reason?: string;
-    status: string;
-    transaction_id?: string;
-  };
-
-  type UpdatePermissionRequest = {
+  type UpdatePermissionReq = {
     category?: string;
     description?: string;
     display_name?: string;
-    sort?: number;
-    status?: number;
-  };
-
-  type UpdateProductAttributesDTO = {
-    attributes: ProductAttributeUpdateItem[];
-  };
-
-  type UpdateProductDTO = {
-    category_ids?: number[];
-    description?: string;
-    name?: string;
-  };
-
-  type UpdatePromotionDTO = {
-    description?: string;
-    end_time?: string;
-    name?: string;
-    rule?: string;
-    scope?: 'all' | 'category' | 'product';
-    scope_value?: string;
     sort_order?: number;
-    start_time?: string;
-    status?: 'pending' | 'active' | 'cancelled';
+    status?: 0 | 1;
   };
 
-  type UpdateRoleRequest = {
+  type UpdatePromotionReq = {
+    benefit_type?: 1 | 2 | 3 | 4 | 5;
+    benefit_value?: number;
+    condition_type?: 1 | 2 | 3 | 4;
+    condition_value?: number;
+    end_time?: string;
+    is_stackable?: 0 | 1;
+    per_user_limit?: number;
+    promo_name?: string;
+    rule_name?: string;
+    stack_priority?: number;
+    start_time?: string;
+    status?: 1 | 2 | 3 | 4;
+    total_quantity?: number;
+  };
+
+  type UpdateRoleReq = {
     description?: string;
     display_name?: string;
-    sort?: number;
-    status?: number;
+    sort_order?: number;
+    status?: 0 | 1;
   };
 
-  type UpdateSkuDTO = {
+  type UpdateSKUReq = {
+    barcode?: string;
+    cost_price?: number;
+    height?: number;
     image?: string;
-    name?: string;
+    length?: number;
+    market_price?: number;
     price?: number;
-    sku_code?: string;
-    spec?: Record<string, any>;
+    status?: 0 | 1;
+    volume?: number;
+    weight?: number;
+    width?: number;
   };
 
-  type UpdateUserInfoRequest = {
-    address?: string;
+  type UpdateSPUReq = {
+    images?: string[];
+    main_image?: string;
+    name?: string;
+    sort_order?: number;
+    status?: 0 | 1 | 2 | 3 | 4;
+    subtitle?: string;
+    unit?: string;
+    updated_by?: string;
+    video_url?: string;
+  };
+
+  type UpdateUserInfoReq = {
     avatar?: string;
     bio?: string;
     birthday?: string;
     city?: string;
     country?: string;
-    gender?: number;
+    gender?: 0 | 1 | 2;
     language?: string;
     nickname?: string;
     province?: string;
@@ -1766,66 +1277,54 @@ declare namespace API {
     zip_code?: string;
   };
 
-  type UseCouponDTO = {
-    order_amount: number;
-    order_no: string;
-    user_coupon_id: number;
+  type UseCouponReq = {
+    order_id: number;
+    user_promotion_id: number;
   };
 
-  type User = {
-    created_at?: string;
+  type UserInfoResponse = {
+    bio?: string;
+    birthday?: string;
+    city?: string;
+    country?: string;
+    gender?: number;
+    language?: string;
+    province?: string;
+    timezone?: string;
+    zip_code?: string;
+  };
+
+  type UserProfileResponse = {
+    avatar?: string;
+    email?: string;
+    email_verified?: boolean;
     id?: number;
+    nickname?: string;
+    phone?: string;
+    phone_verified?: boolean;
+    status?: number;
+    user_info?: UserInfoResponse;
+    username?: string;
+  };
+
+  type UserPromotion = {
+    acquire_time?: string;
+    created_at?: string;
+    created_by?: number;
+    expire_time?: string;
+    id?: number;
+    order_id?: number;
+    promotion_id?: number;
+    queue_token?: string;
     status?: number;
     updated_at?: string;
-    user_info?: UserInfo;
+    updated_by?: number;
+    used_time?: string;
+    user_id?: number;
   };
 
-  type UserCouponListResult = {
-    list?: UserCouponResponse[];
+  type UserPromotionListResult = {
+    list?: UserPromotion[];
     total?: number;
-  };
-
-  type UserCouponResponse = {
-    coupon_code?: string;
-    coupon_description?: string;
-    coupon_id?: number;
-    coupon_min_amount?: number;
-    /** 冗余展示优惠券信息 */
-    coupon_name?: string;
-    coupon_type?: string;
-    coupon_value?: number;
-    created_at?: string;
-    expire_at?: string;
-    id?: number;
-    order_no?: string;
-    status?: string;
-    used_at?: string;
-    user_id?: number;
-  };
-
-  type UserInfo = {
-    address?: string;
-    avatar?: string;
-    bio?: string;
-    birthday?: string;
-    city?: string;
-    country?: string;
-    created_at?: string;
-    /** 0:未知 1:男 2:女 */
-    gender?: number;
-    id?: number;
-    language?: string;
-    nickname?: string;
-    province?: string;
-    timezone?: string;
-    updated_at?: string;
-    user_id?: number;
-    zip_code?: string;
-  };
-
-  type WechatLoginRequest = {
-    appid: string;
-    code: string;
-    source?: string;
   };
 }
