@@ -4,7 +4,7 @@ import { request } from '@umijs/max';
 
 /** 地址列表 GET /api/v1/addresses */
 export async function getAddresses(options?: { [key: string]: any }) {
-  return request<API.Response & { data?: API.AddressListResp }>(
+  return request<API.Response & { data?: API.AddressListResult }>(
     '/api/v1/addresses',
     {
       method: 'GET',
@@ -18,17 +18,14 @@ export async function postAddresses(
   body: API.CreateAddressReq,
   options?: { [key: string]: any },
 ) {
-  return request<API.Response & { data?: API.AddressResp }>(
-    '/api/v1/addresses',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: body,
-      ...(options || {}),
+  return request<API.Response & { data?: API.Address }>('/api/v1/addresses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  );
+    data: body,
+    ...(options || {}),
+  });
 }
 
 /** 获取地址详情 GET /api/v1/addresses/${param0} */
@@ -38,7 +35,7 @@ export async function getAddressesId(
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.AddressResp }>(
+  return request<API.Response & { data?: API.Address }>(
     `/api/v1/addresses/${param0}`,
     {
       method: 'GET',
@@ -56,7 +53,7 @@ export async function putAddressesId(
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.AddressResp }>(
+  return request<API.Response & { data?: API.Address }>(
     `/api/v1/addresses/${param0}`,
     {
       method: 'PUT',
@@ -88,7 +85,7 @@ export async function deleteAddressesId(
 export async function getAddressesOpenApiDefault(options?: {
   [key: string]: any;
 }) {
-  return request<API.Response & { data?: API.AddressResp }>(
+  return request<API.Response & { data?: API.Address }>(
     '/api/v1/addresses/default',
     {
       method: 'GET',
