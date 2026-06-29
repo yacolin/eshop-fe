@@ -1,27 +1,24 @@
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { PageContainer, ProCard } from '@ant-design/pro-components';
 import {
-  PageContainer,
-  ProDescriptions,
-  ProTable,
-} from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Select, Tag } from 'antd';
-import React, { useMemo, useRef, useState } from 'react';
-
-import Auth from '@/components/Auth';
-import { useRouteFilter } from '@/hooks/useRouteFilter';
-import useProductOptions from '@/pages/Sku/hooks/useProductOptions';
+  Button,
+  Card,
+  Descriptions,
+  Form,
+  Input,
+  message,
+  Modal,
+  Space,
+  Statistic,
+  Table,
+  Tag,
+} from 'antd';
+import React, { useState } from 'react';
 
 import {
-  getInventoriesEnriched,
-  postInventories,
-  postInventoriesBatch,
-  putInventoriesId,
+  getInventoriesLogs,
+  getInventoriesStock,
+  postInventoriesRestock,
 } from '@/services/api/inventories';
-import BatchCreateForm from './components/BatchCreateForm';
-import CreateForm from './components/CreateForm';
-import UpdateForm from './components/UpdateForm';
-
-import type { FormValueType } from './components/UpdateForm';
 
 const statusMap: Record<string, { text: string; color: string }> = {
   instock: { text: '有货', color: '#52c41a' },
@@ -29,206 +26,74 @@ const statusMap: Record<string, { text: string; color: string }> = {
   outofstock: { text: '缺货', color: '#ff4d4f' },
 };
 
-const handleAdd = async (fields: API.CreateInventoryDTO) => {
-  const hide = message.loading('正在创建');
-  try {
-    await postInventories(fields);
-    hide();
-    message.success('创建成功');
-    return true;
-  } catch {
-    hide();
-    message.error('创建失败，请重试');
-    return false;
-  }
-};
+const InventoryPage: React.FC = () => {
+  const [searchText, setSearchText] = useState('');
+  const [inventory, setInventory] = useState<API.Inventory | null>(null);
+  const [logs, setLogs] = useState<API.InventoryLog[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [restockModalOpen, setRestockModalOpen] = useState(false);
+  const [restockQty, setRestockQty] = useState(0);
+  const [restockNote, setRestockNote] = useState('');
 
-const handleBatchAdd = async (fields: {
-  sku_ids: number[];
-  quantity: number;
-  threshold?: number;
-}) => {
-  const hide = message.loading('正在批量创建');
-  try {
-    const res = await postInventoriesBatch(fields);
-    const data = ((res as any).data as API.Inventory[]) || [];
-    hide();
-    message.success(`批量创建成功，共 ${data.length} 条记录`);
-    return true;
-  } catch {
-    hide();
-    message.error('批量创建失败，请重试');
-    return false;
-  }
-};
+  const handleSearch = async () => {
+    if (!searchText.trim()) {
+      message.warning('请输入 SKU ID');
+      return;
+    }
+    const skuId = parseInt(searchText.trim(), 10);
+    if (isNaN(skuId)) {
+      message.warning('请输入有效的 SKU ID');
+      return;
+    }
 
-const handleUpdate = async (fields: FormValueType) => {
-  const hide = message.loading('正在更新');
-  try {
-    await putInventoriesId(
-      { id: fields.id || 0 },
-      {
-        quantity: fields.quantity,
-        threshold: fields.threshold,
-      },
-    );
-    hide();
-    message.success('更新成功');
-    return true;
-  } catch {
-    hide();
-    message.error('更新失败，请重试');
-    return false;
-  }
-};
+    setLoading(true);
+    try {
+      const [stockRes, logsRes] = await Promise.all([
+        getInventoriesStock({ sku_id: skuId }),
+        getInventoriesLogs({ sku_id: skuId, page: 1, size: 20 }),
+      ]);
+      setInventory((stockRes as any).data || null);
+      const logsData = (logsRes as any).data || {};
+      setLogs(logsData.list || []);
+    } catch {
+      message.error('查询库存失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const InventoryList: React.FC = () => {
-  const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  const [batchModalVisible, handleBatchModalVisible] = useState<boolean>(false);
-  const [updateModalVisible, handleUpdateModalVisible] =
-    useState<boolean>(false);
-  const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
-  const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<API.InventoryEnrichedItem>();
+  const handleRestock = async () => {
+    if (!inventory) return;
+    const hide = message.loading('正在补货');
+    try {
+      await postInventoriesRestock({
+        sku_id: inventory.sku_id || 0,
+        quantity: restockQty,
+        note: restockNote || undefined,
+      });
+      hide();
+      message.success('补货成功');
+      setRestockModalOpen(false);
+      handleSearch();
+    } catch {
+      hide();
+      message.error('补货失败，请重试');
+    }
+  };
 
-  const formRef = useRef<any>(null);
-  const products = useProductOptions(true);
-  const productOptions = useMemo(
-    () => products.map((p) => ({ ...p })),
-    [products],
-  );
-  const { getFilter, markApplied } = useRouteFilter<{
-    sku_name: string;
-  }>(formRef, ['sku_name']);
-
-  const columns: ProColumns<API.InventoryEnrichedItem>[] = [
+  const logColumns = [
+    { title: 'ID', dataIndex: 'id', width: 60 },
+    { title: '变更类型', dataIndex: 'change_type', width: 120 },
+    { title: '变更数量', dataIndex: 'change_amount', width: 100 },
+    { title: '操作前', dataIndex: 'before_quantity', width: 80 },
+    { title: '操作后', dataIndex: 'after_quantity', width: 80 },
+    { title: '备注', dataIndex: 'note', ellipsis: true },
+    { title: '操作人', dataIndex: 'operator', width: 100 },
     {
-      title: 'ID',
-      dataIndex: 'id',
-      hideInForm: true,
-      hideInSearch: true,
-      width: 80,
-      fixed: 'left',
-    },
-    {
-      title: '所属产品',
-      dataIndex: 'product_name',
-      width: 200,
-      ellipsis: true,
-      hideInSearch: true,
-    },
-    {
-      title: '所属产品',
-      dataIndex: 'product_id',
-      hideInTable: true,
-      renderFormItem: () => (
-        <Select
-          allowClear
-          showSearch
-          placeholder="搜索并选择产品"
-          options={productOptions}
-          filterOption={(input, option) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
-        />
-      ),
-    },
-    {
-      title: 'SKU 名称',
-      dataIndex: 'sku_name',
-      width: 280,
-      ellipsis: true,
-      copyable: true,
-    },
-    {
-      title: 'SKU 编码',
-      dataIndex: 'sku_code',
-      width: 160,
-      ellipsis: true,
-      copyable: true,
-      hideInSearch: true,
-    },
-    {
-      title: '库存数量',
-      dataIndex: 'quantity',
-      hideInSearch: true,
-      width: 80,
-    },
-    {
-      title: '已预订',
-      dataIndex: 'reserved',
-      hideInSearch: true,
-      width: 80,
-    },
-    {
-      title: '可用库存',
-      dataIndex: 'quantity',
-      hideInSearch: true,
-      width: 80,
-      render: (_, record) => {
-        const available = (record.quantity || 0) - (record.reserved || 0);
-        return available;
-      },
-    },
-    {
-      title: '预警阈值',
-      dataIndex: 'threshold',
-      hideInSearch: true,
-      width: 80,
-    },
-    {
-      title: '库存状态',
-      dataIndex: 'status',
-      valueEnum: {
-        instock: { text: '有货', status: 'Success' },
-        lowstock: { text: '低库存', status: 'Warning' },
-        outofstock: { text: '缺货', status: 'Error' },
-      },
-      valueType: 'select',
-      width: 100,
-      render: (_, record) => {
-        const status = statusMap[record.status || ''];
-        return status ? <Tag color={status.color}>{status.text}</Tag> : '-';
-      },
-    },
-    {
-      title: '创建时间',
+      title: '时间',
       dataIndex: 'created_at',
-      hideInForm: true,
-      hideInSearch: true,
-      valueType: 'dateTime',
       width: 160,
-    },
-    {
-      title: '更新时间',
-      dataIndex: 'updated_at',
-      hideInForm: true,
-      hideInSearch: true,
-      valueType: 'dateTime',
-      width: 160,
-    },
-    {
-      title: '操作',
-      dataIndex: 'option',
-      valueType: 'option',
-      width: 120,
-      fixed: 'right',
-      render: (_, record) => (
-        <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
-          <a onClick={() => setRow(record)}>查看</a>
-          <Auth permission="canUpdateInventory">
-            <Divider type="vertical" />
-            <a
-              onClick={() => {
-                setStepFormValues(record as FormValueType);
-                handleUpdateModalVisible(true);
-              }}
-            >
-              编辑
-            </a>
-          </Auth>
-        </div>
-      ),
+      render: (v: string) => v || '-',
     },
   ];
 
@@ -236,135 +101,111 @@ const InventoryList: React.FC = () => {
     <PageContainer
       header={{
         title: '库存管理',
-        breadcrumb: {
-          items: [{ title: '首页' }, { title: '库存管理' }],
-        },
+        breadcrumb: { items: [{ title: '首页' }, { title: '库存管理' }] },
       }}
     >
-      <ProTable<API.InventoryEnrichedItem>
-        headerTitle="库存列表"
-        actionRef={actionRef}
-        formRef={formRef}
-        rowKey="id"
-        scroll={{ x: 1600 }}
-        search={{
-          labelWidth: 100,
-          defaultCollapsed: false,
-        }}
-        toolBarRender={() => [
-          <Auth key="create" permission="canCreateInventory">
-            <Button type="primary" onClick={() => handleModalVisible(true)}>
-              新建库存
-            </Button>
-          </Auth>,
-          <Auth key="batchCreate" permission="canCreateInventory">
-            <Button onClick={() => handleBatchModalVisible(true)}>
-              批量新建库存
-            </Button>
-          </Auth>,
-        ]}
-        request={async (params) => {
-          const {
-            current,
-            pageSize,
-            product_id,
-            sku_name: formSkuName,
-            ...rest
-          } = params;
-          const skuName = getFilter('sku_name', formSkuName);
-          markApplied();
-
-          const res = await getInventoriesEnriched({
-            page: current || 1,
-            size: pageSize || 10,
-            sku_name: skuName,
-            product_id,
-            ...rest,
-          });
-          const data = (res as any).data || {};
-          return {
-            data: data.list || [],
-            total: data.total || 0,
-            success: true,
-          };
-        }}
-        columns={columns}
-        pagination={{
-          defaultPageSize: 10,
-          showSizeChanger: true,
-          showQuickJumper: true,
-          pageSizeOptions: ['10', '20', '50'],
-          showTotal: (total) => `共 ${total} 条`,
-        }}
-      />
-
-      <CreateForm
-        onCancel={() => handleModalVisible(false)}
-        modalVisible={createModalVisible}
-        onSubmit={async (value) => {
-          const success = await handleAdd(value);
-          if (success) {
-            handleModalVisible(false);
-            actionRef.current?.reload();
-          }
-          return success;
-        }}
-      />
-
-      <BatchCreateForm
-        onCancel={() => handleBatchModalVisible(false)}
-        modalVisible={batchModalVisible}
-        onSubmit={async (value) => {
-          const success = await handleBatchAdd(value);
-          if (success) {
-            handleBatchModalVisible(false);
-            actionRef.current?.reload();
-          }
-          return success;
-        }}
-      />
-
-      {stepFormValues && Object.keys(stepFormValues).length ? (
-        <UpdateForm
-          onSubmit={async (value) => {
-            const success = await handleUpdate({
-              ...value,
-              id: stepFormValues.id,
-            });
-            if (success) {
-              handleUpdateModalVisible(false);
-              setStepFormValues({});
-              actionRef.current?.reload();
-            }
-          }}
-          onCancel={() => {
-            handleUpdateModalVisible(false);
-            setStepFormValues({});
-          }}
-          updateModalVisible={updateModalVisible}
-          values={stepFormValues as API.Inventory}
-        />
-      ) : null}
-
-      <Drawer
-        width={600}
-        open={!!row}
-        onClose={() => setRow(undefined)}
-        closable
-        title={row?.id ? `库存 #${row.id}` : '库存详情'}
-      >
-        {row && (
-          <ProDescriptions<API.InventoryEnrichedItem>
-            column={2}
-            title={`SKU ID: ${row.sku_id}`}
-            request={async () => ({ data: row || {} })}
-            params={{ id: row.id }}
-            columns={columns as any}
+      <ProCard>
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Input.Search
+            placeholder="输入 SKU ID 查询库存"
+            enterButton="查询"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onSearch={handleSearch}
+            loading={loading}
+            style={{ maxWidth: 400 }}
           />
-        )}
-      </Drawer>
+
+          {inventory && (
+            <>
+              <Card size="small" title="当前库存">
+                <Descriptions column={3} size="small">
+                  <Descriptions.Item label="SKU ID">
+                    {inventory.sku_id}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="库存数量">
+                    <Statistic
+                      value={inventory.quantity || 0}
+                      suffix="件"
+                      valueStyle={{ fontSize: 18 }}
+                    />
+                  </Descriptions.Item>
+                  <Descriptions.Item label="已预订">
+                    {inventory.reserved || 0} 件
+                  </Descriptions.Item>
+                  <Descriptions.Item label="可用库存">
+                    {(inventory.quantity || 0) - (inventory.reserved || 0)} 件
+                  </Descriptions.Item>
+                  <Descriptions.Item label="预警阈值">
+                    {inventory.threshold ?? '-'} 件
+                  </Descriptions.Item>
+                  <Descriptions.Item label="库存状态">
+                    {(() => {
+                      const s = statusMap[inventory.status || ''];
+                      return s ? (
+                        <Tag color={s.color}>{s.text}</Tag>
+                      ) : (
+                        inventory.status || '-'
+                      );
+                    })()}
+                  </Descriptions.Item>
+                </Descriptions>
+                <Button
+                  type="primary"
+                  style={{ marginTop: 16 }}
+                  onClick={() => setRestockModalOpen(true)}
+                >
+                  补货
+                </Button>
+              </Card>
+
+              <Card size="small" title="库存变更记录">
+                <Table
+                  rowKey="id"
+                  dataSource={logs}
+                  columns={logColumns}
+                  pagination={{ pageSize: 10, showTotal: (t) => `共 ${t} 条` }}
+                  size="small"
+                  scroll={{ x: 800 }}
+                />
+              </Card>
+            </>
+          )}
+
+          {!inventory && !loading && searchText && (
+            <Card>
+              <span style={{ color: '#999' }}>未找到库存记录</span>
+            </Card>
+          )}
+        </Space>
+      </ProCard>
+
+      <Modal
+        title="补货"
+        open={restockModalOpen}
+        onCancel={() => setRestockModalOpen(false)}
+        onOk={handleRestock}
+      >
+        <Form layout="vertical">
+          <Form.Item label="补货数量" required>
+            <Input.Number
+              min={1}
+              style={{ width: '100%' }}
+              value={restockQty}
+              onChange={(v) => setRestockQty(v || 0)}
+            />
+          </Form.Item>
+          <Form.Item label="备注">
+            <Input.TextArea
+              value={restockNote}
+              onChange={(e) => setRestockNote(e.target.value)}
+              placeholder="可选"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </PageContainer>
   );
 };
 
-export default InventoryList;
+export default InventoryPage;
