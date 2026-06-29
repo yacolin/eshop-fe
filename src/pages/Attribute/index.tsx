@@ -1,5 +1,6 @@
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import {
+  Button,
   Divider,
   Drawer,
   message,
@@ -305,18 +306,12 @@ const AttributeList: React.FC = () => {
           selectedCategory
             ? [
                 <Auth key="create" permission="canCreateAttribute">
-                  <Typography.Link onClick={() => handleModalVisible(true)}>
-                    <Tag
-                      color="blue"
-                      style={{
-                        cursor: 'pointer',
-                        fontSize: 14,
-                        padding: '4px 12px',
-                      }}
-                    >
-                      新建属性
-                    </Tag>
-                  </Typography.Link>
+                  <Button
+                    type="primary"
+                    onClick={() => handleModalVisible(true)}
+                  >
+                    新建属性
+                  </Button>
                 </Auth>,
               ]
             : []
