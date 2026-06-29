@@ -75,6 +75,8 @@ const InventoryPage: React.FC = () => {
       hide();
       message.success('补货成功');
       setRestockModalOpen(false);
+      setRestockQty(0);
+      setRestockNote('');
       handleSearch();
     } catch {
       hide();
@@ -184,8 +186,13 @@ const InventoryPage: React.FC = () => {
       <Modal
         title="补货"
         open={restockModalOpen}
-        onCancel={() => setRestockModalOpen(false)}
+        onCancel={() => {
+          setRestockModalOpen(false);
+          setRestockQty(0);
+          setRestockNote('');
+        }}
         onOk={handleRestock}
+        destroyOnHidden
       >
         <Form layout="vertical">
           <Form.Item label="补货数量" required>
