@@ -1,97 +1,64 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import {
-  FooterToolbar,
-  PageContainer,
-  ProDescriptions,
-  ProTable,
-} from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
-import React, { useRef, useState } from 'react';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
+import { Tag } from 'antd';
+import React, { useRef } from 'react';
 
-import Auth from '@/components/Auth';
-import CreateForm from './components/CreateForm';
-import UpdateForm from './components/UpdateForm';
-
-import type { FormValueType } from './components/UpdateForm';
+import { getCoupons } from '@/services/api/coupons';
 
 const statusMap: Record<number, { text: string; color: string }> = {
-  1: { text: '启用', color: '#52c41a' },
-  0: { text: '禁用', color: '#ff4d4f' },
+  0: { text: '未使用', color: 'blue' },
+  1: { text: '已使用', color: '#999' },
+  2: { text: '已过期', color: '#999' },
+  3: { text: '已冻结', color: 'orange' },
 };
 
 const CouponList: React.FC = () => {
-  const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  const [updateModalVisible, handleUpdateModalVisible] =
-    useState<boolean>(false);
-  const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<any>();
-  const [selectedRowsState, setSelectedRows] = useState<any[]>([]);
 
-  const columns: ProColumns<any>[] = [
+  const columns: ProColumns<API.UserPromotion>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
-      hideInForm: true,
       hideInSearch: true,
       width: 60,
-      fixed: 'left',
     },
     {
-      title: '优惠券名称',
-      dataIndex: 'name',
-      width: 200,
-      formItemProps: { rules: [{ required: true, message: '请输入名称' }] },
-    },
-    {
-      title: '类型',
-      dataIndex: 'type',
-      width: 100,
-      render: (_, record) => {
-        const map: Record<string, string> = {
-          fixed: '固定金额',
-          percentage: '折扣',
-          shipping: '免邮',
-        };
-        return <Tag>{map[record.type] || record.type}</Tag>;
-      },
-    },
-    {
-      title: '面值',
-      dataIndex: 'value',
-      width: 100,
-      hideInSearch: true,
-    },
-    {
-      title: '满减门槛',
-      dataIndex: 'min_amount',
-      width: 120,
-      hideInSearch: true,
-    },
-    {
-      title: '库存',
-      dataIndex: 'stock',
+      title: '用户ID',
+      dataIndex: 'user_id',
       width: 80,
       hideInSearch: true,
     },
     {
-      title: '已领',
-      dataIndex: 'claimed',
+      title: '促销ID',
+      dataIndex: 'promotion_id',
       width: 80,
+    },
+    {
+      title: '获取时间',
+      dataIndex: 'acquire_time',
       hideInSearch: true,
+      valueType: 'dateTime',
+      width: 160,
+    },
+    {
+      title: '过期时间',
+      dataIndex: 'expire_time',
+      hideInSearch: true,
+      valueType: 'dateTime',
+      width: 160,
     },
     {
       title: '状态',
       dataIndex: 'status',
-      width: 80,
+      width: 100,
       render: (_, record) => {
         const cfg = statusMap[record.status ?? -1];
         return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
       },
     },
     {
-      title: '有效期',
-      dataIndex: 'valid_end',
+      title: '使用时间',
+      dataIndex: 'used_time',
       hideInSearch: true,
       valueType: 'dateTime',
       width: 160,
@@ -99,47 +66,9 @@ const CouponList: React.FC = () => {
     {
       title: '创建时间',
       dataIndex: 'created_at',
-      hideInForm: true,
       hideInSearch: true,
       valueType: 'dateTime',
       width: 160,
-    },
-    {
-      title: '操作',
-      dataIndex: 'option',
-      valueType: 'option',
-      width: 160,
-      fixed: 'right',
-      render: (_, record) => (
-        <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
-          <a onClick={() => setRow(record)}>查看</a>
-          <Auth permission="canUpdateCoupon">
-            <Divider type="vertical" />
-            <a
-              onClick={() => {
-                setStepFormValues(record);
-                handleUpdateModalVisible(true);
-              }}
-            >
-              编辑
-            </a>
-          </Auth>
-          <Auth permission="canDeleteCoupon">
-            <Divider type="vertical" />
-            <Popconfirm
-              title="确认删除"
-              description={`确定要删除「${record.name}」吗？`}
-              onConfirm={() => {
-                actionRef.current?.reloadAndRest?.();
-                setSelectedRows([]);
-                message.success('删除成功');
-              }}
-            >
-              <a style={{ color: '#ff4d4f' }}>删除</a>
-            </Popconfirm>
-          </Auth>
-        </div>
-      ),
     },
   ];
 
@@ -150,32 +79,27 @@ const CouponList: React.FC = () => {
         breadcrumb: { items: [{ title: '首页' }, { title: '优惠券管理' }] },
       }}
     >
-      <ProTable<any>
-        headerTitle="优惠券列表"
+      <ProTable<API.UserPromotion>
+        headerTitle="用户优惠券"
         actionRef={actionRef}
         rowKey="id"
-        scroll={{ x: 1300 }}
+        scroll={{ x: 1100 }}
         search={{ labelWidth: 100, defaultCollapsed: false }}
-        toolBarRender={() => [
-          <Auth key="create" permission="canCreateCoupon">
-            <Button type="primary" onClick={() => handleModalVisible(true)}>
-              新建优惠券
-            </Button>
-          </Auth>,
-        ]}
         request={async (params) => {
           const { current, pageSize, ...rest } = params;
-          console.log('TODO: 接入优惠券API', {
-            page: current,
-            size: pageSize,
+          const res = await getCoupons({
+            page: current || 1,
+            size: pageSize || 10,
             ...rest,
           });
-          return { data: [], total: 0, success: true };
+          const data = (res as any).data || {};
+          return {
+            data: data.list || [],
+            total: data.total || 0,
+            success: true,
+          };
         }}
         columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-        }}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
@@ -184,61 +108,6 @@ const CouponList: React.FC = () => {
           showTotal: (total) => `共 ${total} 条`,
         }}
       />
-      {selectedRowsState?.length > 0 && (
-        <Auth permission="canDeleteCoupon">
-          <FooterToolbar
-            extra={
-              <div>
-                已选择{' '}
-                <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a> 项
-              </div>
-            }
-          >
-            <Popconfirm
-              title="确认删除"
-              description="确定要删除选中的优惠券吗？"
-              onConfirm={() => {}}
-            >
-              <Button danger>批量删除</Button>
-            </Popconfirm>
-          </FooterToolbar>
-        </Auth>
-      )}
-      <CreateForm
-        onCancel={() => handleModalVisible(false)}
-        modalVisible={createModalVisible}
-        onSubmit={async () => true}
-      />
-      {stepFormValues && Object.keys(stepFormValues).length ? (
-        <UpdateForm
-          onSubmit={async () => {
-            handleUpdateModalVisible(false);
-            setStepFormValues({});
-            actionRef.current?.reload();
-          }}
-          onCancel={() => {
-            handleUpdateModalVisible(false);
-            setStepFormValues({});
-          }}
-          updateModalVisible={updateModalVisible}
-          values={stepFormValues}
-        />
-      ) : null}
-      <Drawer
-        width={600}
-        open={!!row}
-        onClose={() => setRow(undefined)}
-        closable
-        title={row?.name || '详情'}
-      >
-        {row?.name && (
-          <ProDescriptions
-            column={2}
-            request={async () => ({ data: row || {} })}
-            columns={columns as any}
-          />
-        )}
-      </Drawer>
     </PageContainer>
   );
 };

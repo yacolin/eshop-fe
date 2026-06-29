@@ -95,6 +95,11 @@ export default [
         component: './Market/Coupon',
       },
       {
+        name: '订单管理',
+        path: '/market/order',
+        component: './Trade',
+      },
+      {
         name: '促销活动',
         path: '/market/promotion',
         component: './Market/Promotion',

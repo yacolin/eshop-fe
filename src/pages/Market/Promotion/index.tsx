@@ -9,14 +9,97 @@ import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
+
+import {
+  deletePromotionsId,
+  getPromotions,
+  postPromotions,
+  putPromotionsId,
+} from '@/services/api/promotions';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
 
+const promoTypeMap: Record<number, { text: string; color: string }> = {
+  1: { text: '满减', color: 'blue' },
+  2: { text: '折扣', color: 'green' },
+  3: { text: '秒杀', color: 'volcano' },
+  4: { text: '优惠券', color: 'purple' },
+  5: { text: '包邮', color: 'cyan' },
+  6: { text: '赠品', color: 'orange' },
+};
+
 const statusMap: Record<number, { text: string; color: string }> = {
-  1: { text: '启用', color: '#52c41a' },
-  0: { text: '禁用', color: '#ff4d4f' },
+  1: { text: '未开始', color: '#999' },
+  2: { text: '进行中', color: '#52c41a' },
+  3: { text: '已结束', color: '#ff4d4f' },
+  4: { text: '已关闭', color: '#999' },
+};
+
+/**
+ * 新增促销
+ */
+const handleAdd = async (fields: API.CreatePromotionReq): Promise<boolean> => {
+  const hide = message.loading('正在创建');
+  try {
+    await postPromotions(fields);
+    hide();
+    message.success('创建成功');
+    return true;
+  } catch {
+    hide();
+    message.error('创建失败，请重试');
+    return false;
+  }
+};
+
+/**
+ * 更新促销
+ */
+const handleUpdate = async (fields: FormValueType): Promise<boolean> => {
+  const hide = message.loading('正在更新');
+  try {
+    await putPromotionsId(
+      { id: fields.id || 0 },
+      {
+        promo_name: fields.promo_name,
+        start_time: fields.start_time,
+        end_time: fields.end_time,
+        status: fields.status as 1 | 2 | 3 | 4,
+        total_quantity: fields.total_quantity,
+      },
+    );
+    hide();
+    message.success('更新成功');
+    return true;
+  } catch {
+    hide();
+    message.error('更新失败，请重试');
+    return false;
+  }
+};
+
+/**
+ * 删除促销
+ */
+const handleRemove = async (
+  selectedRows: API.Promotion[],
+): Promise<boolean> => {
+  const hide = message.loading('正在删除');
+  if (!selectedRows.length) return true;
+  try {
+    await Promise.all(
+      selectedRows.map((row) => deletePromotionsId({ id: row.id || 0 })),
+    );
+    hide();
+    message.success('删除成功');
+    return true;
+  } catch {
+    hide();
+    message.error('删除失败，请重试');
+    return false;
+  }
 };
 
 const PromotionList: React.FC = () => {
@@ -25,10 +108,10 @@ const PromotionList: React.FC = () => {
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<any>();
-  const [selectedRowsState, setSelectedRows] = useState<any[]>([]);
+  const [row, setRow] = useState<API.Promotion>();
+  const [selectedRowsState, setSelectedRows] = useState<API.Promotion[]>([]);
 
-  const columns: ProColumns<any>[] = [
+  const columns: ProColumns<API.Promotion>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -39,37 +122,42 @@ const PromotionList: React.FC = () => {
     },
     {
       title: '活动名称',
-      dataIndex: 'name',
+      dataIndex: 'promo_name',
       width: 200,
-      formItemProps: {
-        rules: [{ required: true, message: '请输入活动名称' }],
-      },
+      formItemProps: { rules: [{ required: true, message: '请输入活动名称' }] },
     },
     {
       title: '类型',
       dataIndex: 'promo_type',
       width: 100,
       render: (_, record) => {
-        const map: Record<string, string> = {
-          flash_sale: '秒杀',
-          coupon: '优惠券',
-          full_reduction: '满减',
-        };
-        return <Tag>{map[record.promo_type] || record.promo_type}</Tag>;
+        const cfg = promoTypeMap[record.promo_type ?? -1];
+        return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
       },
     },
     {
-      title: '折扣比例',
-      dataIndex: 'discount',
-      width: 100,
+      title: '优惠码',
+      dataIndex: 'promo_code',
+      width: 120,
       hideInSearch: true,
-      render: (_, record) =>
-        record.discount ? `${(record.discount * 100).toFixed(0)}%` : '-',
+      copyable: true,
+    },
+    {
+      title: '总量',
+      dataIndex: 'total_quantity',
+      width: 60,
+      hideInSearch: true,
+    },
+    {
+      title: '已用',
+      dataIndex: 'used_quantity',
+      width: 60,
+      hideInSearch: true,
     },
     {
       title: '状态',
       dataIndex: 'status',
-      width: 80,
+      width: 100,
       render: (_, record) => {
         const cfg = statusMap[record.status ?? -1];
         return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
@@ -121,13 +209,12 @@ const PromotionList: React.FC = () => {
             <Divider type="vertical" />
             <Popconfirm
               title="确认删除"
-              description={`确定要删除活动「${record.name}」吗？`}
+              description={`确定要删除「${record.promo_name}」吗？`}
               onConfirm={async () => {
-                const success = true;
+                const success = await handleRemove([record]);
                 if (success) {
                   actionRef.current?.reloadAndRest?.();
                   setSelectedRows([]);
-                  message.success('删除成功');
                 }
               }}
             >
@@ -152,7 +239,7 @@ const PromotionList: React.FC = () => {
         },
       }}
     >
-      <ProTable<any>
+      <ProTable<API.Promotion>
         headerTitle="活动列表"
         actionRef={actionRef}
         rowKey="id"
@@ -167,12 +254,17 @@ const PromotionList: React.FC = () => {
         ]}
         request={async (params) => {
           const { current, pageSize, ...rest } = params;
-          console.log('TODO: 接入促销API', {
-            page: current,
-            size: pageSize,
+          const res = await getPromotions({
+            page: current || 1,
+            size: pageSize || 10,
             ...rest,
           });
-          return { data: [], total: 0, success: true };
+          const data = (res as any).data || {};
+          return {
+            data: data.list || [],
+            total: data.total || 0,
+            success: true,
+          };
         }}
         columns={columns}
         rowSelection={{
@@ -186,7 +278,6 @@ const PromotionList: React.FC = () => {
           showTotal: (total) => `共 ${total} 条`,
         }}
       />
-
       {selectedRowsState?.length > 0 && (
         <Auth permission="canDeletePromotion">
           <FooterToolbar
@@ -199,34 +290,50 @@ const PromotionList: React.FC = () => {
             }
           >
             <Popconfirm
-              title="确认批量删除"
+              title="确认删除"
               description="确定要删除选中的活动吗？"
-              onConfirm={() => {}}
+              onConfirm={async () => {
+                await handleRemove(selectedRowsState);
+                setSelectedRows([]);
+                actionRef.current?.reloadAndRest?.();
+              }}
             >
               <Button danger>批量删除</Button>
             </Popconfirm>
           </FooterToolbar>
         </Auth>
       )}
-
       <CreateForm
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
-        onSubmit={async () => true}
+        onSubmit={async (value) => {
+          const success = await handleAdd(value);
+          if (success) {
+            handleModalVisible(false);
+            actionRef.current?.reload();
+          }
+          return success;
+        }}
       />
       {stepFormValues && Object.keys(stepFormValues).length ? (
         <UpdateForm
-          onSubmit={async () => {
-            handleUpdateModalVisible(false);
-            setStepFormValues({});
-            actionRef.current?.reload();
+          onSubmit={async (value) => {
+            const success = await handleUpdate({
+              ...value,
+              id: stepFormValues.id,
+            });
+            if (success) {
+              handleUpdateModalVisible(false);
+              setStepFormValues({});
+              actionRef.current?.reload();
+            }
           }}
           onCancel={() => {
             handleUpdateModalVisible(false);
             setStepFormValues({});
           }}
           updateModalVisible={updateModalVisible}
-          values={stepFormValues}
+          values={stepFormValues as API.Promotion}
         />
       ) : null}
       <Drawer
@@ -234,14 +341,14 @@ const PromotionList: React.FC = () => {
         open={!!row}
         onClose={() => setRow(undefined)}
         closable
-        title={row?.name || '活动详情'}
+        title={row?.promo_name || '活动详情'}
       >
-        {row?.name && (
-          <ProDescriptions
+        {row?.promo_name && (
+          <ProDescriptions<API.Promotion>
             column={2}
-            title={row?.name}
+            title={row?.promo_name}
             request={async () => ({ data: row || {} })}
-            params={{ id: row?.name }}
+            params={{ id: row?.id }}
             columns={columns as any}
           />
         )}
