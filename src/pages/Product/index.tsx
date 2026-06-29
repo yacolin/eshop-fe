@@ -75,7 +75,7 @@ const handleUpdate = async (fields: FormValueType) => {
 /**
  * 删除商品
  */
-const handleRemove = async (selectedRows: API.Product[]) => {
+const handleRemove = async (selectedRows: API.SPU[]) => {
   const hide = message.loading('正在删除');
   if (!selectedRows.length) return true;
 
@@ -198,13 +198,7 @@ const ProductList: React.FC = () => {
             <Divider type="vertical" />
             <a
               onClick={() => {
-                setStepFormValues({
-                  ...record,
-                  category_ids:
-                    record.categories
-                      ?.map((c) => c.id)
-                      .filter((id): id is number => id !== undefined) ?? [],
-                });
+                setStepFormValues(record);
                 handleUpdateModalVisible(true);
               }}
             >
