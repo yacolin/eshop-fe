@@ -3,7 +3,7 @@ import { PageContainer, ProTable } from '@ant-design/pro-components';
 import { Tag } from 'antd';
 import React, { useRef } from 'react';
 
-import { getCoupons } from '@/services/api/coupons';
+import { getCouponsMe } from '@/services/api/coupons';
 
 const statusMap: Record<number, { text: string; color: string }> = {
   0: { text: '未使用', color: 'blue' },
@@ -87,7 +87,7 @@ const CouponList: React.FC = () => {
         search={{ labelWidth: 100, defaultCollapsed: false }}
         request={async (params) => {
           const { current, pageSize, ...rest } = params;
-          const res = await getCoupons({
+          const res = await getCouponsMe({
             page: current || 1,
             size: pageSize || 10,
             ...rest,
