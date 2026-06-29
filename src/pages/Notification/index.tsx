@@ -15,29 +15,33 @@ import {
   putNotificationsIdRead,
   putNotificationsReadall,
 } from '@/services/api/notifications';
-import dayjs from 'dayjs';
 import CreateForm from './components/CreateForm';
 
-const notificationTypeMap: Record<string, { text: string; color: string }> = {
-  system: { text: '系统', color: 'blue' },
-  order: { text: '订单', color: 'cyan' },
-  payment: { text: '支付', color: 'green' },
-  flash: { text: '秒杀', color: 'volcano' },
-  admin: { text: '管理员', color: 'purple' },
+const notificationTypeMap: Record<number, { text: string; color: string }> = {
+  1: { text: '系统', color: 'blue' },
+  2: { text: '订单', color: 'cyan' },
+  3: { text: '支付', color: 'green' },
+  4: { text: '秒杀', color: 'volcano' },
+  5: { text: '管理员', color: 'purple' },
 };
 
-const formatTime = (t?: string | number) => {
-  if (t === undefined || t === null) return '-';
-  if (typeof t === 'number') return dayjs(t).format('YYYY-MM-DD HH:mm');
-  if (!t || typeof t !== 'string') return '-';
-  return t.slice(0, 16).replace('T', ' ');
+const formatTime = (t?: number) => {
+  if (!t) return '-';
+  const d = new Date(t * 1000);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    '0',
+  )}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(
+    2,
+    '0',
+  )}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
 const NotificationList: React.FC = () => {
   const [createModalVisible, handleCreateModalVisible] =
     useState<boolean>(false);
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<API.NotificationResponse>();
+  const [row, setRow] = useState<API.NotificationResp>();
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const fetchUnread = async () => {
@@ -96,7 +100,7 @@ const NotificationList: React.FC = () => {
     }
   };
 
-  const columns: ProColumns<API.NotificationResponse>[] = [
+  const columns: ProColumns<API.NotificationResp>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -110,18 +114,18 @@ const NotificationList: React.FC = () => {
     },
     {
       title: '类型',
-      dataIndex: 'type',
+      dataIndex: 'category',
       width: 100,
       valueType: 'select',
       valueEnum: {
-        system: { text: '系统' },
-        order: { text: '订单' },
-        payment: { text: '支付' },
-        flash: { text: '秒杀' },
-        admin: { text: '管理员' },
+        1: { text: '系统' },
+        2: { text: '订单' },
+        3: { text: '支付' },
+        4: { text: '秒杀' },
+        5: { text: '管理员' },
       },
       render: (_, record) => {
-        const cfg = notificationTypeMap[record.type || ''];
+        const cfg = notificationTypeMap[record.category || 0];
         return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
       },
     },
@@ -194,7 +198,7 @@ const NotificationList: React.FC = () => {
         },
       }}
     >
-      <ProTable<API.NotificationResponse>
+      <ProTable<API.NotificationResp>
         headerTitle={`通知列表${
           unreadCount > 0 ? `（${unreadCount} 条未读）` : ''
         }`}
@@ -222,7 +226,7 @@ const NotificationList: React.FC = () => {
           const { current, pageSize, ...rest } = params;
           const res = await getNotifications({
             page: current || 1,
-            page_size: pageSize || 10,
+            size: pageSize || 10,
             ...rest,
           });
           const data = (res as any).data || {};
@@ -265,7 +269,7 @@ const NotificationList: React.FC = () => {
         title={row?.title || '通知详情'}
       >
         {row?.id && (
-          <ProDescriptions<API.NotificationResponse>
+          <ProDescriptions<API.NotificationResp>
             column={2}
             title={row.title}
             request={async () => ({ data: row || {} })}
