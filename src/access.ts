@@ -74,6 +74,7 @@ export default (initialState: {
       roles.includes('admin') || permissions.includes('user:update'),
 
     // ── SKU ──
+    canCreateSku: roles.includes('admin') || permissions.includes('sku:create'),
     canUpdateSku: roles.includes('admin') || permissions.includes('sku:update'),
     canDeleteSku: roles.includes('admin') || permissions.includes('sku:delete'),
 

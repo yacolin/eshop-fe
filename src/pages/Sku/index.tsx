@@ -1,6 +1,7 @@
 import type { ProColumns } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import {
+  Button,
   Divider,
   Drawer,
   Input,
@@ -16,7 +17,8 @@ import React, { useEffect, useState } from 'react';
 import Auth from '@/components/Auth';
 
 import { getProducts } from '@/services/api/products';
-import { deleteSkusId, getSkus } from '@/services/api/skus';
+import { deleteSkusId, getSkus, postSkus } from '@/services/api/skus';
+import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
@@ -34,7 +36,26 @@ const formatPrice = (price?: number) => {
   return `¥${(price / 100).toFixed(2)}`;
 };
 
+/**
+ * 新增 SKU
+ */
+const handleAdd = async (fields: API.CreateSKUReq): Promise<boolean> => {
+  const hide = message.loading('正在创建');
+  try {
+    await postSkus(fields);
+    hide();
+    message.success('创建成功');
+    return true;
+  } catch {
+    hide();
+    message.error('创建失败，请重试');
+    return false;
+  }
+};
+
 const SkuList: React.FC = () => {
+  const [createModalVisible, handleCreateModalVisible] =
+    useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
@@ -283,12 +304,38 @@ const SkuList: React.FC = () => {
         scroll={{ x: 1200 }}
         search={false}
         options={false}
+        toolBarRender={() => [
+          <Auth key="create" permission="canCreateSku">
+            <Button
+              type="primary"
+              onClick={() => handleCreateModalVisible(true)}
+              disabled={!selectedProduct}
+            >
+              新建 SKU
+            </Button>
+          </Auth>,
+        ]}
         columns={columns}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
           pageSizeOptions: ['10', '20', '50'],
           showTotal: (total) => `共 ${total} 条`,
+        }}
+      />
+
+      {/* 新建弹窗 */}
+      <CreateForm
+        modalVisible={createModalVisible}
+        onCancel={() => handleCreateModalVisible(false)}
+        productId={selectedProduct}
+        onSubmit={async (value) => {
+          const success = await handleAdd(value);
+          if (success) {
+            handleCreateModalVisible(false);
+            if (selectedProduct) fetchSkus(selectedProduct);
+          }
+          return success;
         }}
       />
 

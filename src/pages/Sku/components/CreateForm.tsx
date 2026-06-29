@@ -1,162 +1,49 @@
 import {
   ProForm,
   ProFormDigit,
-  ProFormSelect,
   ProFormText,
+  ProFormTextArea,
 } from '@ant-design/pro-components';
 import { Modal } from 'antd';
-import React, { useEffect, useRef, useState } from 'react';
-
-import useNonRootCategoryOptions from '@/pages/Category/hooks/useNonRootCategoryOptions';
-import { getProductsIdAttributes } from '@/services/api/products';
-import useProductOptionsByCategory from '../hooks/useProductOptionsByCategory';
+import React from 'react';
 
 interface CreateFormProps {
   modalVisible: boolean;
   onCancel: () => void;
-  onSubmit: (values: API.CreateSkuDTO & { price: number }) => Promise<boolean>;
+  productId?: number;
+  onSubmit: (values: API.CreateSKUReq) => Promise<boolean>;
 }
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
-  const { modalVisible, onCancel, onSubmit } = props;
-  const formRef = useRef<any>(null);
-  const [categoryId, setCategoryId] = useState<number>();
-  const categories = useNonRootCategoryOptions(modalVisible);
-  const products = useProductOptionsByCategory(modalVisible, categoryId);
-  const [attributes, setAttributes] = useState<API.ProductAttributeItem[]>([]);
-  const [selectedAttrs, setSelectedAttrs] = useState<
-    Record<number, { valueId: number; value: string }>
-  >({});
-
-  const handleProductChange = async (productId: number | undefined) => {
-    setSelectedAttrs({});
-    if (!productId) {
-      setAttributes([]);
-      return;
-    }
-    try {
-      const res = await getProductsIdAttributes({ id: productId });
-      setAttributes((res as any).data || []);
-    } catch {
-      setAttributes([]);
-    }
-  };
-
-  const handleAttrChange =
-    (attrId: number) => (valueId: number | undefined) => {
-      if (!valueId) {
-        setSelectedAttrs((prev) => {
-          const next = { ...prev };
-          delete next[attrId];
-          return next;
-        });
-        return;
-      }
-      const attr = attributes.find((a) => a.attribute_id === attrId);
-      const v = attr?.values?.find((v) => v.value_id === valueId);
-      setSelectedAttrs((prev) => ({
-        ...prev,
-        [attrId]: { valueId, value: v?.value || '' },
-      }));
-    };
-
-  // 属性选择变化时自动填充 SKU 名称和编码（仅当用户未手动编辑时覆盖）
-  const autoName = Object.values(selectedAttrs)
-    .map((s) => s.value)
-    .filter(Boolean)
-    .join('-');
-  const prevAutoNameRef = useRef('');
-  const prevAutoCodeRef = useRef('');
-
-  const generateSkuCode = () => {
-    const productId = formRef.current?.getFieldValue?.('product_id');
-    if (!productId) return '';
-    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const valueIds = Object.values(selectedAttrs)
-      .map((s) => s.valueId)
-      .join('');
-    return `SKU-P${productId}${valueIds}-${suffix}`;
-  };
-
-  const allAttrsSelected =
-    attributes.length > 0 &&
-    Object.keys(selectedAttrs).length === attributes.length;
-
-  useEffect(() => {
-    if (autoName) {
-      const currentName = formRef.current?.getFieldValue?.('name');
-      if (!currentName || currentName === prevAutoNameRef.current) {
-        formRef.current?.setFieldsValue?.({ name: autoName });
-      }
-      prevAutoNameRef.current = autoName;
-    }
-  }, [autoName]);
-
-  useEffect(() => {
-    if (allAttrsSelected) {
-      const code = generateSkuCode();
-      const currentCode = formRef.current?.getFieldValue?.('sku_code');
-      if (!currentCode || currentCode === prevAutoCodeRef.current) {
-        formRef.current?.setFieldsValue?.({ sku_code: code });
-      }
-      prevAutoCodeRef.current = code;
-    } else {
-      formRef.current?.setFieldsValue?.({ sku_code: undefined });
-      prevAutoCodeRef.current = '';
-    }
-  }, [allAttrsSelected]);
-
-  const buildSpec = () => {
-    const spec: Record<string, any> = {};
-    for (const attr of attributes) {
-      const sel = selectedAttrs[attr.attribute_id || 0];
-      if (sel) {
-        spec[attr.attribute_name || ''] = sel.value;
-      }
-    }
-    return Object.keys(spec).length > 0 ? spec : undefined;
-  };
+  const { modalVisible, onCancel, productId, onSubmit } = props;
 
   return (
     <Modal
       title="新建 SKU"
       width={600}
       open={modalVisible}
-      onCancel={() => {
-        setCategoryId(undefined);
-        setAttributes([]);
-        setSelectedAttrs({});
-        onCancel();
-      }}
+      onCancel={() => onCancel()}
       footer={null}
-      destroyOnHidden
+      destroyOnClose
     >
-      <ProForm<API.CreateSkuDTO & { price: number }>
-        formRef={formRef}
+      <ProForm<{ sku_code: string; price: number; barcode?: string }>
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
         style={{ width: '90%', margin: '0 auto' }}
-        onReset={() => {
-          setCategoryId(undefined);
-          setAttributes([]);
-          setSelectedAttrs({});
-        }}
         onFinish={async (values) => {
           const success = await onSubmit({
-            ...(values as any),
-            spec: buildSpec(),
+            ...values,
+            product_id: productId || 0,
+            price: Math.round(values.price * 100),
           });
-          if (success) {
-            setAttributes([]);
-            setSelectedAttrs({});
-            onCancel();
-          }
+          if (success) onCancel();
         }}
         submitter={{
           render: (_, dom) => (
             <div
               style={{
+                width: '90%',
                 display: 'flex',
                 justifyContent: 'flex-end',
                 gap: 8,
@@ -167,85 +54,40 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           ),
         }}
       >
-        <ProFormSelect
-          name="category_id"
-          label="分类筛选"
-          showSearch
-          options={categories}
-          placeholder="选择分类"
-          fieldProps={{
-            allowClear: true,
-            filterOption: (input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
-            onChange: (val: number | undefined) => {
-              setCategoryId(val);
-              formRef.current?.setFieldsValue?.({ product_id: undefined });
-            },
-          }}
-        />
-        <ProFormSelect
-          name="product_id"
-          label="所属产品"
-          showSearch
-          rules={[{ required: true, message: '请选择所属产品' }]}
-          options={products}
-          placeholder="搜索并选择产品"
-          fieldProps={{
-            filterOption: (input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
-            onChange: handleProductChange,
-          }}
-        />
-
-        {attributes.map((attr) => (
-          <ProFormSelect
-            key={attr.attribute_id}
-            name={`attr_${attr.attribute_id}`}
-            label={attr.attribute_name}
-            showSearch
-            rules={[
-              { required: true, message: `请选择${attr.attribute_name}` },
-            ]}
-            placeholder={`请选择${attr.attribute_name}`}
-            options={(attr.values || []).map((v) => ({
-              label: v.value || '',
-              value: v.value_id || 0,
-            }))}
-            fieldProps={{
-              filterOption: (input, option) =>
-                (option?.label ?? '')
-                  .toLowerCase()
-                  .includes(input.toLowerCase()),
-              onChange: handleAttrChange(attr.attribute_id!),
-            }}
-          />
-        ))}
-
-        <ProFormText
-          name="name"
-          label="SKU 名称"
-          rules={[{ required: true, message: '请输入 SKU 名称' }]}
-          placeholder="如：红色-128G"
-          tooltip="选择属性后自动生成，可手动修改"
-        />
         <ProFormText
           name="sku_code"
           label="SKU 编码"
+          width="md"
           rules={[{ required: true, message: '请输入 SKU 编码' }]}
-          placeholder="如：R-128G-BLACK"
         />
         <ProFormDigit
           name="price"
-          label="价格（元）"
+          label="售价（元）"
+          width="md"
           min={0}
-          rules={[{ required: true, message: '请输入价格' }]}
+          rules={[{ required: true, message: '请输入售价' }]}
           fieldProps={{ precision: 2, prefix: '¥' }}
-          placeholder="0.00"
         />
-        <ProFormText
-          name="image"
-          label="图片 URL"
-          placeholder="https://example.com/image.png"
+        <ProFormDigit
+          name="cost_price"
+          label="成本价（元）"
+          width="md"
+          min={0}
+          fieldProps={{ precision: 2, prefix: '¥' }}
+        />
+        <ProFormDigit
+          name="market_price"
+          label="市场价（元）"
+          width="md"
+          min={0}
+          fieldProps={{ precision: 2, prefix: '¥' }}
+        />
+        <ProFormText name="barcode" label="条码" width="md" />
+        <ProFormTextArea
+          name="spec"
+          label="规格"
+          width="md"
+          placeholder='JSON 格式，如 {"颜色":"红","尺寸":"L"}'
         />
       </ProForm>
     </Modal>
