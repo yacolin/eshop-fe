@@ -1,10 +1,11 @@
-import { PageContainer, ProCard } from '@ant-design/pro-components';
+import { PageContainer } from '@ant-design/pro-components';
 import {
   Button,
   Card,
   Descriptions,
   Form,
   Input,
+  InputNumber,
   message,
   Modal,
   Space,
@@ -104,7 +105,7 @@ const InventoryPage: React.FC = () => {
         breadcrumb: { items: [{ title: '首页' }, { title: '库存管理' }] },
       }}
     >
-      <ProCard>
+      <Card>
         <Space direction="vertical" style={{ width: '100%' }} size="large">
           <Input.Search
             placeholder="输入 SKU ID 查询库存"
@@ -178,7 +179,7 @@ const InventoryPage: React.FC = () => {
             </Card>
           )}
         </Space>
-      </ProCard>
+      </Card>
 
       <Modal
         title="补货"
@@ -188,7 +189,7 @@ const InventoryPage: React.FC = () => {
       >
         <Form layout="vertical">
           <Form.Item label="补货数量" required>
-            <Input.Number
+            <InputNumber
               min={1}
               style={{ width: '100%' }}
               value={restockQty}
