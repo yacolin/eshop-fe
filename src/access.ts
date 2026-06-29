@@ -66,6 +66,14 @@ export default (initialState: {
     canUpdateSku: roles.includes('admin') || permissions.includes('sku:update'),
     canDeleteSku: roles.includes('admin') || permissions.includes('sku:delete'),
 
+    // ── Attribute ──
+    canCreateAttribute:
+      roles.includes('admin') || permissions.includes('attribute:create'),
+    canUpdateAttribute:
+      roles.includes('admin') || permissions.includes('attribute:update'),
+    canDeleteAttribute:
+      roles.includes('admin') || permissions.includes('attribute:delete'),
+
     // ── Brand ──
     canCreateBrand:
       roles.includes('admin') || permissions.includes('brand:create'),
