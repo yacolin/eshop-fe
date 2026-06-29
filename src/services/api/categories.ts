@@ -2,6 +2,29 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
+/** 类目列表 GET /api/v1/categories */
+export async function getCategories(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getCategoriesParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.Response & { data?: API.CategoryListResult }>(
+    '/api/v1/categories',
+    {
+      method: 'GET',
+      params: {
+        // page has a default value: 1
+        page: '1',
+        // size has a default value: 10
+        size: '10',
+
+        ...params,
+      },
+      ...(options || {}),
+    },
+  );
+}
+
 /** 创建类目 POST /api/v1/categories */
 export async function postCategories(
   body: API.CreateCategoryReq,

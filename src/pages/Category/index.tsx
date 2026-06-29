@@ -5,13 +5,14 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Popconfirm } from 'antd';
+import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
 
 import {
   deleteCategoriesId,
+  getCategories,
   getCategoriesAll,
   postCategories,
   putCategoriesId,
@@ -19,7 +20,6 @@ import {
 import CreateForm from './components/CreateForm';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-import useRootCategory from './hooks/useRootCategories';
 
 /**
  * 新增分类
@@ -30,6 +30,7 @@ const handleAdd = async (fields: API.CreateCategoryReq) => {
     await postCategories({
       name: fields.name,
       parent_id: fields.parent_id,
+      sort_order: fields.sort_order,
     });
     hide();
     message.success('创建成功');
@@ -51,7 +52,8 @@ const handleUpdate = async (fields: FormValueType) => {
       { id: fields.id || 0 },
       {
         name: fields.name,
-        parent_id: fields.parent_id,
+        sort_order: fields.sort_order,
+        status: fields.status as 0 | 1,
       },
     );
     hide();
@@ -85,6 +87,17 @@ const handleRemove = async (selectedRows: API.Category[]) => {
   }
 };
 
+const levelMap: Record<number, { text: string; color: string }> = {
+  1: { text: '一级', color: 'blue' },
+  2: { text: '二级', color: 'green' },
+  3: { text: '三级', color: 'orange' },
+};
+
+const statusMap: Record<number, { text: string; color: string }> = {
+  1: { text: '启用', color: '#52c41a' },
+  0: { text: '禁用', color: '#ff4d4f' },
+};
+
 const CategoryList: React.FC = () => {
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
@@ -93,8 +106,19 @@ const CategoryList: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [row, setRow] = useState<API.Category>();
   const [selectedRowsState, setSelectedRows] = useState<API.Category[]>([]);
+  const [categoryMap, setCategoryMap] = useState<Record<number, string>>({});
 
-  const rootCategories = useRootCategory(true);
+  // 加载全部分类用于父分类名称展示
+  React.useEffect(() => {
+    getCategoriesAll().then((res) => {
+      const list = (res as any).data || [];
+      const map: Record<number, string> = {};
+      list.forEach((c: API.Category) => {
+        if (c.id && c.name) map[c.id] = c.name;
+      });
+      setCategoryMap(map);
+    });
+  }, []);
 
   const columns: ProColumns<API.Category>[] = [
     {
@@ -115,18 +139,48 @@ const CategoryList: React.FC = () => {
       },
     },
     {
+      title: '层级',
+      dataIndex: 'level',
+      width: 80,
+      hideInForm: true,
+      render: (_, record) => {
+        const cfg = levelMap[record.level ?? -1];
+        return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
+      },
+      valueType: 'select',
+      valueEnum: {
+        1: { text: '一级', status: 'Default' },
+        2: { text: '二级', status: 'Processing' },
+        3: { text: '三级', status: 'Warning' },
+      },
+    },
+    {
       title: '父分类',
       dataIndex: 'parent_id',
       width: 150,
+      hideInSearch: true,
       render: (_, record) => {
-        const parent = rootCategories.find((c) => c.value === record.parent_id);
-        return parent ? parent.label : '-';
+        return record.parent_id && categoryMap[record.parent_id]
+          ? categoryMap[record.parent_id]
+          : '-';
       },
-      valueType: 'select',
-      valueEnum: rootCategories.reduce((acc, cat) => {
-        acc[cat.value] = cat.label;
-        return acc;
-      }, {} as Record<number, string>),
+    },
+    {
+      title: '排序',
+      dataIndex: 'sort_order',
+      hideInSearch: true,
+      width: 60,
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      width: 70,
+      hideInForm: true,
+      hideInSearch: true,
+      render: (_, record) => {
+        const cfg = statusMap[record.status ?? -1];
+        return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
+      },
     },
     {
       title: '创建时间',
@@ -211,21 +265,23 @@ const CategoryList: React.FC = () => {
           </Auth>,
         ]}
         request={async (params) => {
-          const { current, pageSize, name, parent_id } = params;
-          const res = await getCategoriesAll();
-          const data = (res as any).data || [];
-          let list = data;
-          if (name) {
-            list = list.filter((c: API.Category) => c.name?.includes(name));
-          }
-          if (parent_id) {
-            list = list.filter((c: API.Category) => c.parent_id === parent_id);
-          }
-          const total = list.length;
-          const start = ((current || 1) - 1) * (pageSize || 10);
+          const { current, pageSize } = params;
+          const { name, level } = params as {
+            name?: string;
+            level?: number;
+          };
+          const res = await getCategories({
+            page: current || 1,
+            size: pageSize || 10,
+            ...(name ? { name } : {}),
+            ...(level ? { level: Number(level) } : {}),
+          });
+          const result = (res as any).data as
+            | { list?: API.Category[]; total?: number }
+            | undefined;
           return {
-            data: list.slice(start, start + (pageSize || 10)),
-            total,
+            data: result?.list || [],
+            total: result?.total || 0,
             success: true,
           };
         }}

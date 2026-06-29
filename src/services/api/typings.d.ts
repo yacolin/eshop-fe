@@ -109,6 +109,11 @@ declare namespace API {
     value?: number;
   };
 
+  type CategoryListResult = {
+    list?: Category[];
+    total?: number;
+  };
+
   type CheckPermissionsReq = {
     permission_names: string[];
   };
@@ -461,6 +466,19 @@ declare namespace API {
   type getCategoriesLevelLevelParams = {
     /** 层级（1-3） */
     level: number;
+  };
+
+  type getCategoriesParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+    /** 类目名称模糊搜索 */
+    name?: string;
+    /** 状态 1-启用 0-禁用 */
+    status?: number;
+    /** 层级 1-3 */
+    level?: number;
   };
 
   type getCouponsMeParams = {

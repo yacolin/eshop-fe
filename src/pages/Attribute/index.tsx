@@ -1,3 +1,4 @@
+import type { ActionType } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import {
   Button,
@@ -10,7 +11,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
 
@@ -116,52 +117,30 @@ const AttributeList: React.FC = () => {
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const [row, setRow] = useState<API.Attribute>();
-  const [dataSource, setDataSource] = useState<API.Attribute[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<
     number | undefined
   >();
   const [categoryOptions, setCategoryOptions] = useState<
     { label: string; value: number }[]
   >([]);
+  const actionRef = useRef<ActionType>();
 
-  useEffect(() => {
-    getCategoriesAll().then((res) => {
-      const list = (res as any).data || [];
-      setCategoryOptions(
-        list.map((c: API.Category) => ({
-          label: c.name || '',
-          value: c.id || 0,
-        })),
-      );
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!selectedCategory) {
-      setDataSource([]);
-      return;
-    }
-    setLoading(true);
-    getAttributes({ category_id: selectedCategory })
-      .then((res) => {
-        const list = (res as any).data || [];
-        setDataSource(list);
-      })
-      .catch(() => message.error('获取属性列表失败'))
-      .finally(() => setLoading(false));
-  }, [selectedCategory]);
-
-  const reload = () => {
-    if (selectedCategory) {
-      getAttributes({ category_id: selectedCategory })
-        .then((res) => {
-          const list = (res as any).data || [];
-          setDataSource(list);
-        })
-        .catch(() => {});
-    }
+  // 加载分类选项
+  const loadCategoryOptions = async () => {
+    const res = await getCategoriesAll();
+    const list = (res as any).data || [];
+    setCategoryOptions(
+      list.map((c: API.Category) => ({
+        label: c.name || '',
+        value: c.id || 0,
+      })),
+    );
   };
+
+  // 初始化分类选项
+  React.useEffect(() => {
+    loadCategoryOptions();
+  }, []);
 
   const columns = [
     {
@@ -262,7 +241,7 @@ const AttributeList: React.FC = () => {
               onConfirm={async () => {
                 const success = await handleRemove([record]);
                 if (success) {
-                  reload();
+                  actionRef.current?.reload();
                 }
               }}
             >
@@ -289,19 +268,31 @@ const AttributeList: React.FC = () => {
             showSearch
             style={{ width: 300 }}
             value={selectedCategory}
-            onChange={(val) => setSelectedCategory(val)}
+            onChange={(val) => {
+              setSelectedCategory(val);
+              actionRef.current?.reload();
+            }}
             options={categoryOptions}
             filterOption={(input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
           />
         }
+        actionRef={actionRef}
         rowKey="id"
-        dataSource={dataSource}
-        loading={loading}
         scroll={{ x: 1200 }}
         search={false}
         options={false}
+        params={{ category_id: selectedCategory }}
+        request={async (params) => {
+          const { category_id } = params as { category_id?: number };
+          if (!category_id) {
+            return { data: [], total: 0, success: true };
+          }
+          const res = await getAttributes({ category_id });
+          const list = (res as any).data || [];
+          return { data: list, total: list.length, success: true };
+        }}
         toolBarRender={() =>
           selectedCategory
             ? [
@@ -333,7 +324,7 @@ const AttributeList: React.FC = () => {
           const success = await handleAdd(value);
           if (success) {
             handleModalVisible(false);
-            reload();
+            actionRef.current?.reload();
           }
           return success;
         }}
@@ -349,7 +340,7 @@ const AttributeList: React.FC = () => {
             if (success) {
               handleUpdateModalVisible(false);
               setStepFormValues({});
-              reload();
+              actionRef.current?.reload();
             }
           }}
           onCancel={() => {
