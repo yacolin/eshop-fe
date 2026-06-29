@@ -98,6 +98,12 @@ export default (initialState: {
     canDeleteCoupon:
       roles.includes('admin') || permissions.includes('coupon:delete'),
 
+    // ── Address ──
+    canCreateAddress:
+      roles.includes('admin') || permissions.includes('address:create'),
+    canDeleteAddress:
+      roles.includes('admin') || permissions.includes('address:delete'),
+
     // ── Notification ──
     canCreateNotification:
       roles.includes('admin') || permissions.includes('notification:create'),

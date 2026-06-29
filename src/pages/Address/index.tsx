@@ -1,14 +1,10 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import {
-  FooterToolbar,
-  PageContainer,
-  ProDescriptions,
-  ProTable,
-} from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
+import { Button, Divider, message, Popconfirm, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
+
 import {
   deleteAddressesId,
   getAddresses,
@@ -16,15 +12,20 @@ import {
   putAddressesId,
 } from '@/services/api/addresses';
 import CreateForm from './components/CreateForm';
-import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
 
-const formatFullAddress = (record: API.AddressResp) => {
-  return [record.province, record.city, record.district, record.detail]
-    .filter(Boolean)
-    .join(' ');
+import type { FormValueType } from './components/UpdateForm';
+
+const tagColorMap: Record<string, string> = {
+  home: 'blue',
+  office: 'green',
+  company: 'purple',
+  other: 'default',
 };
 
+/**
+ * 新增地址
+ */
 const handleAdd = async (fields: API.CreateAddressReq): Promise<boolean> => {
   const hide = message.loading('正在创建');
   try {
@@ -39,6 +40,9 @@ const handleAdd = async (fields: API.CreateAddressReq): Promise<boolean> => {
   }
 };
 
+/**
+ * 更新地址
+ */
 const handleUpdate = async (fields: FormValueType): Promise<boolean> => {
   const hide = message.loading('正在更新');
   try {
@@ -52,6 +56,7 @@ const handleUpdate = async (fields: FormValueType): Promise<boolean> => {
         district: fields.district,
         detail: fields.detail,
         zip_code: fields.zip_code,
+        tag: fields.tag as 'home' | 'office' | 'company' | 'other',
         is_default: fields.is_default,
       },
     );
@@ -65,9 +70,10 @@ const handleUpdate = async (fields: FormValueType): Promise<boolean> => {
   }
 };
 
-const handleRemove = async (
-  selectedRows: API.AddressResp[],
-): Promise<boolean> => {
+/**
+ * 删除地址
+ */
+const handleRemove = async (selectedRows: API.Address[]): Promise<boolean> => {
   const hide = message.loading('正在删除');
   if (!selectedRows.length) return true;
   try {
@@ -89,23 +95,21 @@ const AddressList: React.FC = () => {
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
-  const [row, setRow] = useState<API.AddressResp>();
-  const [selectedRowsState, setSelectedRows] = useState<API.AddressResp[]>([]);
   const actionRef = useRef<ActionType>();
 
-  const columns: ProColumns<API.AddressResp>[] = [
+  const columns: ProColumns<API.Address>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
       hideInForm: true,
       hideInSearch: true,
       width: 60,
-      fixed: 'left',
     },
     {
       title: '收货人',
       dataIndex: 'consignee',
       width: 100,
+      formItemProps: { rules: [{ required: true, message: '请输入收货人' }] },
     },
     {
       title: '手机号',
@@ -113,67 +117,72 @@ const AddressList: React.FC = () => {
       width: 130,
     },
     {
+      title: '所在地区',
+      dataIndex: 'province',
+      width: 200,
+      hideInSearch: true,
+      render: (_, record) =>
+        [record.province, record.city, record.district]
+          .filter(Boolean)
+          .join(' '),
+    },
+    {
       title: '详细地址',
       dataIndex: 'detail',
+      ellipsis: true,
       hideInSearch: true,
-      width: 280,
-      render: (_, record) => formatFullAddress(record),
     },
     {
-      title: '邮编',
-      dataIndex: 'zip_code',
-      hideInSearch: true,
-      width: 100,
+      title: '标签',
+      dataIndex: 'tag',
+      width: 80,
+      render: (_, record) => {
+        const color = tagColorMap[record.tag || ''] || 'default';
+        return record.tag ? <Tag color={color}>{record.tag}</Tag> : '-';
+      },
     },
     {
-      title: '默认地址',
+      title: '默认',
       dataIndex: 'is_default',
-      hideInSearch: true,
-      width: 100,
+      width: 60,
       render: (_, record) =>
-        record.is_default ? <Tag color="#52c41a">默认</Tag> : <Tag>否</Tag>,
+        record.is_default ? <Tag color="blue">是</Tag> : '-',
     },
     {
       title: '创建时间',
       dataIndex: 'created_at',
-      valueType: 'dateTime',
       hideInForm: true,
       hideInSearch: true,
+      valueType: 'dateTime',
       width: 160,
     },
     {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
-      width: 180,
+      width: 160,
       fixed: 'right',
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
-          <a onClick={() => setRow(record)}>查看</a>
-          <Auth permission="canUpdateAddress">
-            <Divider type="vertical" />
-            <a
-              onClick={() => {
-                handleUpdateModalVisible(true);
-                setStepFormValues(record as FormValueType);
-              }}
-            >
-              编辑
-            </a>
-          </Auth>
+          <a
+            onClick={() => {
+              setStepFormValues(record);
+              handleUpdateModalVisible(true);
+            }}
+          >
+            编辑
+          </a>
           <Auth permission="canDeleteAddress">
             <Divider type="vertical" />
             <Popconfirm
               title="确认删除"
-              description={`确定要删除「${record.consignee}」的地址吗？`}
-              onConfirm={() =>
-                handleRemove([record]).then((ok) => {
-                  if (ok) {
-                    actionRef.current?.reloadAndRest?.();
-                    setSelectedRows([]);
-                  }
-                })
-              }
+              description={`确定要删除该地址吗？`}
+              onConfirm={async () => {
+                const success = await handleRemove([record]);
+                if (success) {
+                  actionRef.current?.reloadAndRest?.();
+                }
+              }}
             >
               <a style={{ color: '#ff4d4f' }}>删除</a>
             </Popconfirm>
@@ -187,20 +196,15 @@ const AddressList: React.FC = () => {
     <PageContainer
       header={{
         title: '地址管理',
-        breadcrumb: {
-          items: [{ title: '首页' }, { title: '地址管理' }],
-        },
+        breadcrumb: { items: [{ title: '首页' }, { title: '地址管理' }] },
       }}
     >
-      <ProTable<API.AddressResp>
+      <ProTable<API.Address>
         headerTitle="地址列表"
         actionRef={actionRef}
         rowKey="id"
         scroll={{ x: 1100 }}
-        search={{
-          labelWidth: 100,
-          defaultCollapsed: false,
-        }}
+        search={false}
         toolBarRender={() => [
           <Auth key="create" permission="canCreateAddress">
             <Button type="primary" onClick={() => handleModalVisible(true)}>
@@ -208,11 +212,8 @@ const AddressList: React.FC = () => {
             </Button>
           </Auth>,
         ]}
-        request={async (params) => {
-          const { current, pageSize, ...rest } = params;
-          const res = await getAddresses({
-            params: { page: current || 1, size: pageSize || 10, ...rest },
-          });
+        request={async () => {
+          const res = await getAddresses();
           const data = (res as any).data || {};
           return {
             data: data.list || [],
@@ -221,39 +222,13 @@ const AddressList: React.FC = () => {
           };
         }}
         columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-        }}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
-          showQuickJumper: true,
           pageSizeOptions: ['10', '20', '50'],
           showTotal: (total) => `共 ${total} 条`,
         }}
       />
-
-      {selectedRowsState?.length > 0 && (
-        <Auth permission="canDeleteAddress">
-          <FooterToolbar extra={`已选择 ${selectedRowsState.length} 项`}>
-            <Popconfirm
-              title="确认删除"
-              description="确定要删除选中的地址吗？"
-              onConfirm={() => {
-                handleRemove(selectedRowsState).then((ok) => {
-                  if (ok) {
-                    actionRef.current?.reloadAndRest?.();
-                    setSelectedRows([]);
-                  }
-                });
-              }}
-            >
-              <Button danger>批量删除</Button>
-            </Popconfirm>
-          </FooterToolbar>
-        </Auth>
-      )}
-
       <CreateForm
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
@@ -266,44 +241,27 @@ const AddressList: React.FC = () => {
           return success;
         }}
       />
-
-      {stepFormValues && Object.keys(stepFormValues).length && (
+      {stepFormValues && Object.keys(stepFormValues).length ? (
         <UpdateForm
-          onCancel={() => {
-            handleUpdateModalVisible(false);
-            setStepFormValues({});
-          }}
           onSubmit={async (value) => {
-            const success = await handleUpdate(value);
+            const success = await handleUpdate({
+              ...value,
+              id: stepFormValues.id,
+            });
             if (success) {
               handleUpdateModalVisible(false);
               setStepFormValues({});
               actionRef.current?.reload();
             }
-            return success;
+          }}
+          onCancel={() => {
+            handleUpdateModalVisible(false);
+            setStepFormValues({});
           }}
           updateModalVisible={updateModalVisible}
-          values={stepFormValues}
+          values={stepFormValues as API.Address}
         />
-      )}
-
-      <Drawer
-        width={600}
-        open={!!row}
-        onClose={() => setRow(undefined)}
-        closable
-        title={row ? `地址 #${row.id}` : '地址详情'}
-      >
-        {row?.id && (
-          <ProDescriptions<API.AddressResp>
-            column={2}
-            title={`地址 #${row.id}`}
-            request={async () => ({ data: row || {} })}
-            params={{ id: row?.id }}
-            columns={columns as any}
-          />
-        )}
-      </Drawer>
+      ) : null}
     </PageContainer>
   );
 };
