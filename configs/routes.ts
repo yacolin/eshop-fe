@@ -16,15 +16,9 @@ export default [
     path: '/home',
     component: './Home',
   },
-  // {
-  //   name: ' CRUD 示例',
-  //   path: '/table',
-  //   icon: 'TableOutlined',
-  //   component: './Table',
-  // },
   {
-    name: 'INVENTORY',
-    icon: 'UserOutlined',
+    name: '库存管理',
+    icon: 'DatabaseOutlined',
     path: '/inventory',
     routes: [
       {
@@ -32,78 +26,43 @@ export default [
         path: '/inventory/inventory',
         component: './Inventory',
       },
+    ],
+  },
+  {
+    name: '商品管理',
+    icon: 'ShopOutlined',
+    path: '/product',
+    routes: [
       {
         name: '产品',
-        path: '/inventory/product',
+        path: '/product/product',
         icon: 'ProductOutlined',
         component: './Product',
       },
       {
-        name: 'SKU',
-        path: '/inventory/sku',
-        component: './Sku',
-      },
-      {
         name: '分类',
-        path: '/inventory/category',
+        path: '/product/category',
         component: './Category',
       },
       {
-        name: '属性管理',
-        path: '/inventory/attribute',
+        name: '品牌',
+        path: '/product/brand',
+        component: './Brand',
+      },
+      {
+        name: 'SKU',
+        path: '/product/sku',
+        component: './Sku',
+      },
+      {
+        name: '属性',
+        path: '/product/attribute',
         component: './Attribute',
       },
     ],
   },
   {
-    name: 'SALES',
-    icon: 'ShoppingCartOutlined',
-    path: '/sales',
-    routes: [
-      {
-        name: '订单',
-        path: '/sales/order',
-        component: './Order',
-      },
-      {
-        name: '地址管理',
-        path: '/sales/address',
-        component: './Address',
-      },
-      {
-        name: '购物车',
-        path: '/sales/cart',
-        component: './Cart',
-      },
-      {
-        name: '秒杀活动',
-        path: '/sales/flash-sale',
-        component: './FlashSale',
-      },
-      {
-        name: '支付管理',
-        path: '/sales/payment',
-        component: './Payment',
-      },
-      {
-        name: '退款管理',
-        path: '/sales/refund',
-        component: './Refund',
-      },
-      {
-        name: '优惠券管理',
-        path: '/sales/coupon',
-        component: './Coupon',
-      },
-      {
-        name: '促销管理',
-        path: '/sales/promotion',
-        component: './Promotion',
-      },
-    ],
-  },
-  {
-    name: 'REVIEW',
+    name: '评论管理',
     icon: 'StarOutlined',
     path: '/review',
     access: 'canManageReviews',
@@ -116,10 +75,38 @@ export default [
     ],
   },
   {
-    name: 'USER',
+    name: '运营管理',
+    icon: 'BarChartOutlined',
+    path: '/market',
+    routes: [
+      {
+        name: '订单管理',
+        path: '/market/order',
+        component: './Trade',
+      },
+      {
+        name: '促销活动',
+        path: '/market/promotion',
+        component: './Market/Promotion',
+      },
+      {
+        name: '优惠券管理',
+        path: '/market/coupon',
+        component: './Market/Coupon',
+      },
+    ],
+  },
+  {
+    name: '用户中心',
     icon: 'TeamOutlined',
     path: '/user',
     routes: [
+      {
+        name: '地址管理',
+        path: '/user/address',
+        component: './Address',
+        access: 'isLoggedIn',
+      },
       {
         name: '通知管理',
         path: '/user/notification',
@@ -142,11 +129,6 @@ export default [
         name: '角色管理',
         path: '/user/role',
         component: './Role',
-        access: 'canManageRoles',
-      },
-      {
-        path: '/user/role/assign-permission',
-        component: './Role/AssignPermission',
         access: 'canManageRoles',
       },
       {
