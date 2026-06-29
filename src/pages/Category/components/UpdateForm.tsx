@@ -2,7 +2,6 @@ import {
   ProForm,
   ProFormSelect,
   ProFormText,
-  ProFormTextArea,
 } from '@ant-design/pro-components';
 import { Modal } from 'antd';
 import React from 'react';
@@ -11,7 +10,6 @@ import useCategoryOptions from '../hooks/useCategoryOptions';
 
 export type FormValueType = {
   name?: string;
-  description?: string;
   parent_id?: number;
 } & Partial<API.Category>;
 
@@ -43,7 +41,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         onFinish={props.onSubmit}
         initialValues={{
           name: values.name,
-          description: values.description,
           parent_id: values.parent_id,
         }}
         submitter={{
@@ -66,12 +63,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           label="分类名称"
           width="md"
           rules={[{ required: true, message: '请输入分类名称' }]}
-        />
-        <ProFormTextArea
-          name="description"
-          label="分类描述"
-          width="md"
-          placeholder="请输入分类描述"
         />
         <ProFormSelect
           name="parent_id"

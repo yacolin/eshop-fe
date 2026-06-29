@@ -13,7 +13,7 @@ import CacheWarmup from '@/components/CacheWarmup';
 
 import {
   deleteCategoriesId,
-  getCategories,
+  getCategoriesAll,
   postCategories,
   postCategoriesCacheWarmup,
   putCategoriesId,
@@ -28,12 +28,11 @@ import useRootCategory from './hooks/useRootCategories';
 /**
  * 新增分类
  */
-const handleAdd = async (fields: API.CreateCategoryDTO) => {
+const handleAdd = async (fields: API.CreateCategoryReq) => {
   const hide = message.loading('正在创建');
   try {
     await postCategories({
       name: fields.name,
-      description: fields.description,
       parent_id: fields.parent_id,
     });
     hide();
@@ -56,7 +55,6 @@ const handleUpdate = async (fields: FormValueType) => {
       { id: fields.id || 0 },
       {
         name: fields.name,
-        description: fields.description,
         parent_id: fields.parent_id,
       },
     );
@@ -122,13 +120,6 @@ const CategoryList: React.FC = () => {
       formItemProps: {
         rules: [{ required: true, message: '分类名称为必填项' }],
       },
-    },
-    {
-      title: '描述',
-      dataIndex: 'description',
-      hideInSearch: true,
-      ellipsis: true,
-      width: 300,
     },
     {
       title: '父分类',
@@ -244,18 +235,21 @@ const CategoryList: React.FC = () => {
           </Auth>,
         ]}
         request={async (params) => {
-          const { current, pageSize, name, parent_id, ...rest } = params;
-          const res = await getCategories({
-            page: current || 1,
-            size: pageSize || 10,
-            name,
-            parent_id,
-            ...rest,
-          } as API.getCategoriesParams & { parent_id?: number });
-          const data = (res as any).data || {};
+          const { current, pageSize, name, parent_id } = params;
+          const res = await getCategoriesAll();
+          const data = (res as any).data || [];
+          let list = data;
+          if (name) {
+            list = list.filter((c: API.Category) => c.name?.includes(name));
+          }
+          if (parent_id) {
+            list = list.filter((c: API.Category) => c.parent_id === parent_id);
+          }
+          const total = list.length;
+          const start = ((current || 1) - 1) * (pageSize || 10);
           return {
-            data: data.list || [],
-            total: data.total || 0,
+            data: list.slice(start, start + (pageSize || 10)),
+            total,
             success: true,
           };
         }}

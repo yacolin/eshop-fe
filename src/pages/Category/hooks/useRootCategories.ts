@@ -20,8 +20,7 @@ export default function useRootCategories(
     const fetchCategories = async () => {
       try {
         const res = await getCategoriesRoot();
-        const data = (res as any).data || {};
-        const list = data.list || [];
+        const list = (res as any).data || [];
         setCategories(
           list
             .filter((c: API.Category) => c.id !== excludeId)

@@ -1,4 +1,4 @@
-import { getCategories } from '@/services/api/categories';
+import { getCategoriesAll } from '@/services/api/categories';
 import { useEffect, useState } from 'react';
 
 /**
@@ -19,9 +19,8 @@ export default function useCategoryOptions(
 
     const fetchCategories = async () => {
       try {
-        const res = await getCategories({ page: 1, size: 100 });
-        const data = (res as any).data || {};
-        const list = data.list || [];
+        const res = await getCategoriesAll();
+        const list = (res as any).data || [];
         setCategories(
           list
             .filter((c: API.Category) => c.id !== excludeId)
