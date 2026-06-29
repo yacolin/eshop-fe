@@ -62,6 +62,14 @@ export default (initialState: {
     // ── User ──
     canUpdateUser: permissions.includes('user:update'),
 
+    // ── Brand ──
+    canCreateBrand:
+      roles.includes('admin') || permissions.includes('brand:create'),
+    canUpdateBrand:
+      roles.includes('admin') || permissions.includes('brand:update'),
+    canDeleteBrand:
+      roles.includes('admin') || permissions.includes('brand:delete'),
+
     // ── Notification ──
     canCreateNotification:
       roles.includes('admin') || permissions.includes('notification:create'),
