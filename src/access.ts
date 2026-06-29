@@ -25,18 +25,26 @@ export default (initialState: {
     permissions,
 
     // ── Product ──
-    canCreateProduct: permissions.includes('product:create'),
-    canUpdateProduct: permissions.includes('product:update'),
-    canDeleteProduct: permissions.includes('product:delete'),
+    canCreateProduct:
+      roles.includes('admin') || permissions.includes('product:create'),
+    canUpdateProduct:
+      roles.includes('admin') || permissions.includes('product:update'),
+    canDeleteProduct:
+      roles.includes('admin') || permissions.includes('product:delete'),
 
     // ── Inventory ──
-    canCreateInventory: permissions.includes('inventory:create'),
-    canUpdateInventory: permissions.includes('inventory:update'),
+    canCreateInventory:
+      roles.includes('admin') || permissions.includes('inventory:create'),
+    canUpdateInventory:
+      roles.includes('admin') || permissions.includes('inventory:update'),
 
     // ── Category ──
-    canCreateCategory: permissions.includes('category:create'),
-    canUpdateCategory: permissions.includes('category:update'),
-    canDeleteCategory: permissions.includes('category:delete'),
+    canCreateCategory:
+      roles.includes('admin') || permissions.includes('category:create'),
+    canUpdateCategory:
+      roles.includes('admin') || permissions.includes('category:update'),
+    canDeleteCategory:
+      roles.includes('admin') || permissions.includes('category:delete'),
 
     // ── Role（admin 角色自动拥有所有角色管理能力）──
     canCreateRole:
@@ -56,11 +64,14 @@ export default (initialState: {
 
     // ── Review ──
     // 审核/回复统一使用 review:moderate（数据库权限定义）
-    canModerateReview: permissions.includes('review:moderate'),
-    canDeleteReview: permissions.includes('review:delete'),
+    canModerateReview:
+      roles.includes('admin') || permissions.includes('review:moderate'),
+    canDeleteReview:
+      roles.includes('admin') || permissions.includes('review:delete'),
 
     // ── User ──
-    canUpdateUser: permissions.includes('user:update'),
+    canUpdateUser:
+      roles.includes('admin') || permissions.includes('user:update'),
 
     // ── SKU ──
     canUpdateSku: roles.includes('admin') || permissions.includes('sku:update'),
