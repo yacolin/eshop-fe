@@ -5,16 +5,7 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import {
-  Button,
-  Divider,
-  Drawer,
-  message,
-  Modal,
-  Popconfirm,
-  Tag,
-  Tooltip,
-} from 'antd';
+import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
@@ -22,18 +13,14 @@ import LinkText from '@/components/LinkText';
 
 import {
   deleteProductsId,
-  getProductsEnriched,
+  getProducts,
   postProducts,
-  postProductsCacheWarmup,
   putProductsId,
 } from '@/services/api/products';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
-import CacheWarmup from '@/components/CacheWarmup';
-import SkuMatrixEditor from '@/pages/Sku/components/SkuMatrixEditor';
-import useNonRootCategoryOptions from '../Category/hooks/useNonRootCategoryOptions';
-import AttributeConfigModal from './components/AttributeConfigModal';
+import useCategoryOptions from '../Category/hooks/useCategoryOptions';
 import type { FormValueType } from './components/UpdateForm';
 
 /**
@@ -47,7 +34,7 @@ const formatPrice = (price?: number) => {
 /**
  * 新增商品
  */
-const handleAdd = async (fields: API.CreateProductDTO) => {
+const handleAdd = async (fields: API.CreateSPUReq) => {
   const hide = message.loading('正在创建');
   try {
     await postProducts(fields);
@@ -71,8 +58,8 @@ const handleUpdate = async (fields: FormValueType) => {
       { id: fields.id || 0 },
       {
         name: fields.name,
-        description: fields.description,
-        category_ids: fields.category_ids,
+        sort_order: fields.sort_order,
+        status: fields.status,
       },
     );
     hide();
@@ -112,16 +99,12 @@ const ProductList: React.FC = () => {
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<API.ProductWithCategoryDTO>();
-  const [selectedRowsState, setSelectedRows] = useState<
-    API.ProductWithCategoryDTO[]
-  >([]);
-  const [attrModalVisible, setAttrModalVisible] = useState(false);
-  const [skuModalVisible, setSkuModalVisible] = useState(false);
+  const [row, setRow] = useState<API.SPU>();
+  const [selectedRowsState, setSelectedRows] = useState<API.SPU[]>([]);
 
-  const categories = useNonRootCategoryOptions(true);
+  const categories = useCategoryOptions(true);
 
-  const columns: ProColumns<API.ProductWithCategoryDTO>[] = [
+  const columns: ProColumns<API.SPU>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -138,8 +121,8 @@ const ProductList: React.FC = () => {
       render: (_, record) => (
         <LinkText
           value={record.name}
-          path="/inventory/sku"
-          state={{ product_id: record.id }}
+          path="/inventory/inventory"
+          state={{ product_name: record.name }}
         />
       ),
       formItemProps: {
@@ -147,50 +130,27 @@ const ProductList: React.FC = () => {
       },
     },
     {
-      title: '最低价格',
+      title: '价格区间',
       dataIndex: 'min_price',
       hideInSearch: true,
-      width: 120,
-      render: (_, record) => formatPrice(record.min_price),
+      width: 150,
+      render: (_, record) => {
+        if (record.min_price === record.max_price) {
+          return formatPrice(record.min_price);
+        }
+        return `${formatPrice(record.min_price)} ~ ${formatPrice(
+          record.max_price,
+        )}`;
+      },
     },
     {
       title: '分类',
-      dataIndex: 'categories',
+      dataIndex: 'category_id',
       hideInSearch: true,
-      width: 300,
+      width: 150,
       render: (_, record) => {
-        if (!record.categories || record.categories.length === 0) {
-          return <Tag color="default">未分类</Tag>;
-        }
-        const COLORS = [
-          'blue',
-          'gold',
-          'green',
-          'purple',
-          'red',
-          'cyan',
-          'magenta',
-        ];
-        const isSingle = record.categories.length === 1;
-        return record.categories.map((cat, index) => (
-          <Tooltip key={cat.id} title={cat.name}>
-            <Tag
-              color={COLORS[index % COLORS.length]}
-              style={
-                isSingle
-                  ? undefined
-                  : {
-                      maxWidth: 80,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }
-              }
-            >
-              {cat.name}
-            </Tag>
-          </Tooltip>
-        ));
+        const cat = categories.find((c) => c.value === record.category_id);
+        return cat ? <Tag>{cat.label}</Tag> : <Tag color="default">未分类</Tag>;
       },
     },
     {
@@ -281,7 +241,7 @@ const ProductList: React.FC = () => {
         },
       }}
     >
-      <ProTable<API.ProductWithCategoryDTO>
+      <ProTable<API.SPU>
         headerTitle="商品列表"
         actionRef={actionRef}
         rowKey="id"
@@ -291,11 +251,6 @@ const ProductList: React.FC = () => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => [
-          <CacheWarmup
-            key="warmup"
-            label="预热商品"
-            request={postProductsCacheWarmup}
-          />,
           <Auth key="create" permission="canCreateProduct">
             <Button type="primary" onClick={() => handleModalVisible(true)}>
               新建商品
@@ -304,7 +259,7 @@ const ProductList: React.FC = () => {
         ]}
         request={async (params) => {
           const { current, pageSize, name, ...rest } = params;
-          const res = await getProductsEnriched({
+          const res = await getProducts({
             page: current || 1,
             size: pageSize || 10,
             name,
@@ -391,7 +346,7 @@ const ProductList: React.FC = () => {
             setStepFormValues({});
           }}
           updateModalVisible={updateModalVisible}
-          values={stepFormValues as API.ProductWithCategoryDTO}
+          values={stepFormValues as API.SPU}
         />
       ) : null}
 
@@ -404,60 +359,15 @@ const ProductList: React.FC = () => {
         title={row?.name || '商品详情'}
       >
         {row?.name && (
-          <>
-            <ProDescriptions<API.ProductWithCategoryDTO>
-              column={2}
-              title={row?.name}
-              request={async () => ({ data: row || {} })}
-              params={{ id: row?.name }}
-              columns={columns as any}
-            />
-            <Divider />
-            <div
-              style={{
-                textAlign: 'center',
-                display: 'flex',
-                gap: 12,
-                justifyContent: 'center',
-              }}
-            >
-              <Button onClick={() => setAttrModalVisible(true)}>
-                配置属性
-              </Button>
-              <Auth permission="canCreateSku">
-                <Button type="primary" onClick={() => setSkuModalVisible(true)}>
-                  SKU 管理
-                </Button>
-              </Auth>
-            </div>
-          </>
-        )}
-      </Drawer>
-
-      {/* 属性配置弹窗 */}
-      <AttributeConfigModal
-        productId={row?.id || 0}
-        visible={attrModalVisible}
-        onCancel={() => setAttrModalVisible(false)}
-      />
-
-      {/* SKU 批量创建弹窗 */}
-      <Modal
-        title={`SKU 管理 - ${row?.name || ''}`}
-        width={900}
-        open={skuModalVisible}
-        onCancel={() => setSkuModalVisible(false)}
-        footer={null}
-        destroyOnHidden
-      >
-        {row?.id && (
-          <SkuMatrixEditor
-            productId={row.id}
-            defaultPrice={row.min_price}
-            onSuccess={() => setSkuModalVisible(false)}
+          <ProDescriptions<API.SPU>
+            column={2}
+            title={row?.name}
+            request={async () => ({ data: row || {} })}
+            params={{ id: row?.name }}
+            columns={columns as any}
           />
         )}
-      </Modal>
+      </Drawer>
     </PageContainer>
   );
 };

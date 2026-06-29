@@ -12,7 +12,7 @@ import useNonRootCategoryOptions from '@/pages/Category/hooks/useNonRootCategory
 interface CreateFormProps {
   modalVisible: boolean;
   onCancel: () => void;
-  onSubmit: (values: API.CreateProductDTO) => Promise<boolean>;
+  onSubmit: (values: API.CreateSPUReq) => Promise<boolean>;
 }
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
@@ -26,15 +26,20 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       open={modalVisible}
       onCancel={() => onCancel()}
       footer={null}
-      destroyOnHidden={true}
+      destroyOnHidden
     >
-      <ProForm<API.CreateProductDTO>
+      <ProForm<{ name: string; category_id: number; description?: string }>
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
         style={{ width: '90%', margin: '0 auto' }}
         onFinish={async (values) => {
-          const success = await onSubmit(values);
+          const success = await onSubmit({
+            name: values.name,
+            category_id: values.category_id,
+            description: values.description,
+            skus: [],
+          } as API.CreateSPUReq);
           if (success) {
             onCancel();
           }
@@ -61,13 +66,13 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           rules={[{ required: true, message: '请输入商品名称' }]}
         />
         <ProFormSelect
-          name="category_ids"
+          name="category_id"
           label="所属分类"
           width="md"
-          mode="multiple"
           showSearch
           options={categories}
-          placeholder="选择分类（可多选）"
+          placeholder="选择分类"
+          rules={[{ required: true, message: '请选择分类' }]}
           fieldProps={{
             filterOption: (input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
