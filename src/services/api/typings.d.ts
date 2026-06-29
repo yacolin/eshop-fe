@@ -509,7 +509,7 @@ declare namespace API {
     page_size?: number;
   };
 
-  type getCouponsParams = {
+  type getCouponsMeParams = {
     /** 页码 */
     page?: number;
     /** 每页条数 */
