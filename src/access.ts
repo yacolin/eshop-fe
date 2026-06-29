@@ -82,6 +82,22 @@ export default (initialState: {
     canDeleteBrand:
       roles.includes('admin') || permissions.includes('brand:delete'),
 
+    // ── Promotion ──
+    canCreatePromotion:
+      roles.includes('admin') || permissions.includes('promotion:create'),
+    canUpdatePromotion:
+      roles.includes('admin') || permissions.includes('promotion:update'),
+    canDeletePromotion:
+      roles.includes('admin') || permissions.includes('promotion:delete'),
+
+    // ── Coupon ──
+    canCreateCoupon:
+      roles.includes('admin') || permissions.includes('coupon:create'),
+    canUpdateCoupon:
+      roles.includes('admin') || permissions.includes('coupon:update'),
+    canDeleteCoupon:
+      roles.includes('admin') || permissions.includes('coupon:delete'),
+
     // ── Notification ──
     canCreateNotification:
       roles.includes('admin') || permissions.includes('notification:create'),

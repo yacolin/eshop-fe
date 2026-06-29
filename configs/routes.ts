@@ -94,6 +94,16 @@ export default [
         path: '/market/coupon',
         component: './Market/Coupon',
       },
+      {
+        name: '促销活动',
+        path: '/market/promotion',
+        component: './Market/Promotion',
+      },
+      {
+        name: '优惠券管理',
+        path: '/market/coupon',
+        component: './Market/Coupon',
+      },
     ],
   },
   {
