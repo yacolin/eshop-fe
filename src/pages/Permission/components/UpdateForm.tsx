@@ -12,7 +12,7 @@ export type FormValueType = {
   display_name?: string;
   category?: string;
   description?: string;
-  sort?: number;
+  sort_order?: number;
   status?: number;
 } & Partial<API.Permission>;
 
@@ -45,7 +45,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           display_name: values.display_name,
           category: values.category,
           description: values.description,
-          sort: values.sort,
+          sort_order: values.sort_order,
           status: values.status,
         }}
         submitter={{
@@ -80,7 +80,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           ]}
         />
         <ProFormDigit
-          name="sort"
+          name="sort_order"
           label="排序"
           width="md"
           fieldProps={{ min: 0 }}
@@ -91,7 +91,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           width="md"
           options={[
             { label: '启用', value: 1 },
-            { label: '禁用', value: 2 },
+            { label: '禁用', value: 0 },
           ]}
         />
         <ProFormTextArea name="description" label="描述" width="md" />

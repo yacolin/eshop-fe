@@ -49,13 +49,13 @@ const PermissionList: React.FC = () => {
     const hide = message.loading('正在更新');
     try {
       await putPermissionsId(
-        { id: String(fields.id) },
+        { id: Number(fields.id) },
         {
           display_name: fields.display_name,
           category: fields.category,
           description: fields.description,
-          sort: fields.sort,
-          status: fields.status,
+          sort_order: fields.sort_order,
+          status: fields.status as 0 | 1,
         },
       );
       hide();
@@ -75,7 +75,7 @@ const PermissionList: React.FC = () => {
 
     try {
       await Promise.all(
-        selectedRows.map((row) => deletePermissionsId({ id: String(row.id) })),
+        selectedRows.map((row) => deletePermissionsId({ id: row.id || 0 })),
       );
       hide();
       message.success('删除成功');
@@ -99,7 +99,7 @@ const PermissionList: React.FC = () => {
     },
     {
       title: '排序',
-      dataIndex: 'sort',
+      dataIndex: 'sort_order',
       hideInSearch: true,
       width: 60,
     },
@@ -138,7 +138,7 @@ const PermissionList: React.FC = () => {
       valueType: 'select',
       valueEnum: {
         1: { text: '启用', status: 'Success' },
-        2: { text: '禁用', status: 'Error' },
+        0: { text: '禁用', status: 'Error' },
       },
     },
     {
@@ -228,13 +228,11 @@ const PermissionList: React.FC = () => {
           const res = await getPermissions({
             page: current || 1,
             size: pageSize || 10,
-            sort_by: 'sort',
-            order: 'asc',
             ...rest,
           });
           const data = (res as any).data || {};
           return {
-            data: data.permissions || [],
+            data: data.list || [],
             total: data.total || 0,
             success: true,
           };

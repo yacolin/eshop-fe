@@ -11,7 +11,7 @@ import React from 'react';
 interface CreateFormProps {
   modalVisible: boolean;
   onCancel: () => void;
-  onSubmit: (values: API.CreatePermissionRequest) => Promise<boolean>;
+  onSubmit: (values: API.CreatePermissionReq) => Promise<boolean>;
 }
 
 const CreateForm: React.FC<CreateFormProps> = (props) => {
@@ -25,7 +25,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       onCancel={() => onCancel()}
       footer={null}
     >
-      <ProForm<API.CreatePermissionRequest>
+      <ProForm<API.CreatePermissionReq>
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
@@ -91,7 +91,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           ]}
         />
         <ProFormDigit
-          name="sort"
+          name="sort_order"
           label="排序"
           width="md"
           placeholder="输入排序值（可选）"
