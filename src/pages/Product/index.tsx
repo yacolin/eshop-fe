@@ -58,8 +58,11 @@ const handleUpdate = async (fields: FormValueType) => {
       { id: fields.id || 0 },
       {
         name: fields.name,
+        subtitle: fields.subtitle,
+        main_image: fields.main_image,
+        unit: fields.unit,
         sort_order: fields.sort_order,
-        status: fields.status,
+        status: fields.status as 0 | 1 | 2 | 3 | 4,
       },
     );
     hide();

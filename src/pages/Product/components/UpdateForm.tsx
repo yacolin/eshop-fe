@@ -1,12 +1,22 @@
-import { ProForm, ProFormDigit, ProFormText } from '@ant-design/pro-components';
+import {
+  ProForm,
+  ProFormDigit,
+  ProFormSelect,
+  ProFormText,
+  ProFormTextArea,
+} from '@ant-design/pro-components';
 import { Modal } from 'antd';
 import React from 'react';
 
 export type FormValueType = {
+  id?: number;
   name?: string;
+  subtitle?: string;
+  main_image?: string;
+  description?: string;
+  unit?: string;
   sort_order?: number;
   status?: number;
-  id?: number;
 };
 
 export interface UpdateFormProps {
@@ -16,13 +26,21 @@ export interface UpdateFormProps {
   values: Partial<API.SPU>;
 }
 
+const statusOptions = [
+  { label: '草稿', value: 0 },
+  { label: '待审', value: 1 },
+  { label: '上架', value: 2 },
+  { label: '下架', value: 3 },
+  { label: '封禁', value: 4 },
+];
+
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const { values } = props;
 
   return (
     <Modal
       title="编辑商品"
-      width={600}
+      width={640}
       destroyOnHidden
       open={props.updateModalVisible}
       onCancel={() => props.onCancel()}
@@ -36,6 +54,10 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         onFinish={props.onSubmit}
         initialValues={{
           name: values.name,
+          subtitle: values.subtitle,
+          main_image: values.main_image,
+          description: values.description,
+          unit: values.unit,
           sort_order: values.sort_order,
           status: values.status,
         }}
@@ -60,6 +82,9 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           width="md"
           rules={[{ required: true, message: '请输入商品名称' }]}
         />
+        <ProFormText name="subtitle" label="副标题" width="md" />
+        <ProFormText name="main_image" label="主图 URL" width="md" />
+        <ProFormText name="unit" label="单位" width="md" />
         <ProFormDigit
           name="sort_order"
           label="排序"
@@ -67,6 +92,13 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           min={0}
           fieldProps={{ precision: 0 }}
         />
+        <ProFormSelect
+          name="status"
+          label="状态"
+          width="md"
+          options={statusOptions}
+        />
+        <ProFormTextArea name="description" label="商品描述" width="md" />
       </ProForm>
     </Modal>
   );
