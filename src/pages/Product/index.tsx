@@ -21,6 +21,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Auth from '@/components/Auth';
 import LinkText from '@/components/LinkText';
 
+import { getCategoriesIdBrands } from '@/services/api/categories';
 import {
   deleteProductsId,
   getProducts,
@@ -110,6 +111,12 @@ const handleRemove = async (selectedRows: API.SPU[]) => {
 interface SearchFilters {
   name?: string;
   category_id?: number;
+  brand_id?: number;
+}
+
+interface BrandOption {
+  label: string;
+  value: number;
 }
 
 const ProductList: React.FC = () => {
@@ -122,6 +129,10 @@ const ProductList: React.FC = () => {
   const [selectedRowsState, setSelectedRows] = useState<API.SPU[]>([]);
 
   const categories = useCategoryOptions(true);
+
+  // 品牌筛选联动：选中类目后加载对应品牌的选项
+  const [brandOptions, setBrandOptions] = useState<BrandOption[]>([]);
+  const [brandLoading, setBrandLoading] = useState(false);
 
   // 游标分页状态
   const [dataSource, setDataSource] = useState<API.SPU[]>([]);
@@ -214,9 +225,36 @@ const ProductList: React.FC = () => {
     fetchData(undefined, searchFilters, true);
   }, [searchFilters, fetchData]);
 
+  /** 类目变化时加载关联品牌选项，并清除已选品牌 */
+  useEffect(() => {
+    const catId = searchFilters.category_id;
+    if (!catId) {
+      setBrandOptions([]);
+      setSearchFilters((prev) => ({ ...prev, brand_id: undefined }));
+      return;
+    }
+    setBrandLoading(true);
+    getCategoriesIdBrands({ id: catId })
+      .then((res) => {
+        const list = (res as any).data || [];
+        setBrandOptions(
+          list.map((b: API.CategoryBrandDetail) => ({
+            label: b.brand_name || '',
+            value: b.brand_id || 0,
+          })),
+        );
+      })
+      .catch(() => setBrandOptions([]))
+      .finally(() => setBrandLoading(false));
+  }, [searchFilters.category_id]);
+
   /** 搜索 */
   const handleSearch = (val: any, key: keyof SearchFilters) => {
-    setSearchFilters((prev) => ({ ...prev, [key]: val || undefined }));
+    setSearchFilters((prev) => ({
+      ...prev,
+      [key]: val || undefined,
+      ...(key === 'category_id' ? { brand_id: undefined } : {}),
+    }));
   };
 
   /** 刷新（重置到第一页） */
@@ -366,6 +404,16 @@ const ProductList: React.FC = () => {
                 style={{ width: 150 }}
                 options={categories}
                 onChange={(val) => handleSearch(val, 'category_id')}
+              />
+              <Select
+                placeholder="品牌筛选"
+                allowClear
+                style={{ width: 150 }}
+                loading={brandLoading}
+                options={brandOptions}
+                disabled={!searchFilters.category_id}
+                value={searchFilters.brand_id}
+                onChange={(val) => handleSearch(val, 'brand_id')}
               />
             </Space>
           }

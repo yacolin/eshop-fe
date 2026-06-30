@@ -1,3 +1,4 @@
+import type { ProFormInstance } from '@ant-design/pro-components';
 import {
   ProForm,
   ProFormDigit,
@@ -6,10 +7,10 @@ import {
   ProFormTextArea,
 } from '@ant-design/pro-components';
 import { Modal } from 'antd';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import useCategoryOptions from '@/pages/Category/hooks/useCategoryOptions';
-import useBrandOptions from '../hooks/useBrandOptions';
+import { getCategoriesIdBrands } from '@/services/api/categories';
 
 interface CreateFormProps {
   modalVisible: boolean;
@@ -20,7 +21,43 @@ interface CreateFormProps {
 const CreateForm: React.FC<CreateFormProps> = (props) => {
   const { modalVisible, onCancel, onSubmit } = props;
   const categories = useCategoryOptions(modalVisible);
-  const brands = useBrandOptions(modalVisible);
+  const formRef = useRef<ProFormInstance>();
+  const [brandOptions, setBrandOptions] = useState<
+    { label: string; value: number }[]
+  >([]);
+  const [brandLoading, setBrandLoading] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<
+    number | undefined
+  >();
+
+  // 类目变化时加载关联品牌
+  useEffect(() => {
+    if (!selectedCategoryId) {
+      setBrandOptions([]);
+      return;
+    }
+    setBrandLoading(true);
+    getCategoriesIdBrands({ id: selectedCategoryId })
+      .then((res) => {
+        const list = (res as any).data || [];
+        setBrandOptions(
+          list.map((b: API.CategoryBrandDetail) => ({
+            label: b.brand_name || '',
+            value: b.brand_id || 0,
+          })),
+        );
+      })
+      .catch(() => setBrandOptions([]))
+      .finally(() => setBrandLoading(false));
+  }, [selectedCategoryId]);
+
+  // 弹窗关闭时重置品牌选项
+  useEffect(() => {
+    if (!modalVisible) {
+      setSelectedCategoryId(undefined);
+      setBrandOptions([]);
+    }
+  }, [modalVisible]);
 
   return (
     <Modal
@@ -32,6 +69,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
       destroyOnHidden
     >
       <ProForm<API.CreateSPUReq>
+        formRef={formRef}
         layout="horizontal"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
@@ -42,6 +80,11 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
             skus: [],
           });
           if (success) onCancel();
+        }}
+        onValuesChange={(changedValues) => {
+          if ('category_id' in changedValues) {
+            formRef.current?.setFieldsValue({ brand_id: undefined });
+          }
         }}
         submitter={{
           render: (_, dom) => (
@@ -79,6 +122,7 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           options={categories}
           placeholder="选择分类"
           fieldProps={{
+            onChange: (val: number) => setSelectedCategoryId(val),
             filterOption: (input: any, option: any) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
           }}
@@ -88,9 +132,11 @@ const CreateForm: React.FC<CreateFormProps> = (props) => {
           label="品牌"
           width="md"
           showSearch
-          options={brands}
-          placeholder="选择品牌（可选）"
+          options={brandOptions}
+          placeholder={selectedCategoryId ? '选择品牌（可选）' : '请先选择分类'}
+          disabled={!selectedCategoryId}
           fieldProps={{
+            loading: brandLoading,
             filterOption: (input: any, option: any) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
           }}

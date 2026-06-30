@@ -96,11 +96,12 @@ declare namespace API {
     updated_at?: string;
   };
 
-  type CategoryBrand = {
+  type CategoryBrandDetail = {
     brand_id?: number;
-    category_id?: number;
-    created_at?: string;
-    id?: number;
+    brand_name?: string;
+    english_name?: string;
+    first_letter?: string;
+    logo_url?: string;
     sort_order?: number;
   };
 

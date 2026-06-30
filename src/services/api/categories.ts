@@ -96,14 +96,14 @@ export async function deleteCategoriesId(
   );
 }
 
-/** 查类目下的品牌 GET /api/v1/categories/${param0}/brands */
+/** 查类目下的品牌列表 GET /api/v1/categories/${param0}/brands */
 export async function getCategoriesIdBrands(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getCategoriesIdBrandsParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.CategoryBrand[] }>(
+  return request<API.Response & { data?: API.CategoryBrandDetail[] }>(
     `/api/v1/categories/${param0}/brands`,
     {
       method: 'GET',
