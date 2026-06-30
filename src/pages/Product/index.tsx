@@ -2,13 +2,11 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
   FooterToolbar,
   PageContainer,
-  ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
 import {
   Button,
   Divider,
-  Drawer,
   Input,
   message,
   Popconfirm,
@@ -25,10 +23,12 @@ import { getCategoriesIdBrands } from '@/services/api/categories';
 import {
   deleteProductsId,
   getProducts,
+  getProductsId,
   postProducts,
   putProductsId,
 } from '@/services/api/products';
 import CreateForm from './components/CreateForm';
+import DetailForm from './components/DetailForm';
 import UpdateForm from './components/UpdateForm';
 
 import useCategoryOptions from '../Category/hooks/useCategoryOptions';
@@ -126,6 +126,7 @@ const ProductList: React.FC = () => {
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
   const actionRef = useRef<ActionType>();
   const [row, setRow] = useState<API.SPU>();
+  const [detailData, setDetailData] = useState<API.SPUDetailResponse>();
   const [selectedRowsState, setSelectedRows] = useState<API.SPU[]>([]);
 
   const categories = useCategoryOptions(true);
@@ -200,9 +201,14 @@ const ProductList: React.FC = () => {
   useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
+    let prevScrollTop = 0;
 
     const onScroll = (e: Event) => {
       const target = e.target as HTMLElement;
+      // 过滤横向滚动：scrollTop 未变化时跳过
+      if (target.scrollTop === prevScrollTop) return;
+      prevScrollTop = target.scrollTop;
+
       const s = stateRef.current;
       if (!s.hasMore || loadingRef.current) return;
       if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
@@ -256,6 +262,17 @@ const ProductList: React.FC = () => {
       ...(key === 'category_id' ? { brand_id: undefined } : {}),
     }));
   };
+
+  /** 打开详情抽屉时拉取完整数据 */
+  useEffect(() => {
+    if (!row?.id) {
+      setDetailData(undefined);
+      return;
+    }
+    getProductsId({ id: row.id }).then((res) => {
+      setDetailData((res as any).data);
+    });
+  }, [row?.id]);
 
   /** 刷新（重置到第一页） */
   const handleRefresh = (resetSelected = true) => {
@@ -315,12 +332,6 @@ const ProductList: React.FC = () => {
         const cat = categories.find((c) => c.value === record.category_id);
         return cat ? <Tag>{cat.label}</Tag> : <Tag color="default">未分类</Tag>;
       },
-    },
-    {
-      title: '描述',
-      dataIndex: 'description',
-      ellipsis: true,
-      hideInSearch: true,
     },
     {
       title: '创建时间',
@@ -521,23 +532,11 @@ const ProductList: React.FC = () => {
       ) : null}
 
       {/* 查看详情抽屉 */}
-      <Drawer
-        width={600}
+      <DetailForm
         open={!!row}
+        data={detailData}
         onClose={() => setRow(undefined)}
-        closable
-        title={row?.name || '商品详情'}
-      >
-        {row?.name && (
-          <ProDescriptions<API.SPU>
-            column={2}
-            title={row?.name}
-            request={async () => ({ data: row || {} })}
-            params={{ id: row?.name }}
-            columns={columns as any}
-          />
-        )}
-      </Drawer>
+      />
     </PageContainer>
   );
 };

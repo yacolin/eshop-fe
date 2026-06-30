@@ -45,7 +45,7 @@ export async function getProductsId(
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.SPU }>(
+  return request<API.Response & { data?: API.SPUDetailResponse }>(
     `/api/v1/products/${param0}`,
     {
       method: 'GET',

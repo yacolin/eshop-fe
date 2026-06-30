@@ -387,6 +387,15 @@ declare namespace API {
     id: number;
   };
 
+  type Description = {
+    created_at?: string;
+    description?: string;
+    id?: number;
+    mobile_description?: string;
+    product_id?: number;
+    updated_at?: string;
+  };
+
   type FlashBuyReq = {
     product_id: number;
     promotion_id: number;
@@ -847,6 +856,13 @@ declare namespace API {
     session_id?: string;
   };
 
+  type ProductAttrResponse = {
+    attribute_id?: number;
+    attribute_name?: string;
+    sort_order?: number;
+    value?: string;
+  };
+
   type Promotion = {
     created_at?: string;
     created_by?: number;
@@ -1102,6 +1118,33 @@ declare namespace API {
     category_id?: number;
     created_at?: string;
     created_by?: string;
+    has_description?: number;
+    id?: number;
+    images?: string;
+    main_image?: string;
+    max_price?: number;
+    min_price?: number;
+    name?: string;
+    rating_average?: number;
+    rating_count?: number;
+    sales_count?: number;
+    sort_order?: number;
+    status?: number;
+    subtitle?: string;
+    total_stock?: number;
+    unit?: string;
+    updated_at?: string;
+    updated_by?: string;
+    video_url?: string;
+  };
+
+  type SPUDetailResponse = {
+    attributes?: ProductAttrResponse[];
+    brand_id?: number;
+    category_id?: number;
+    created_at?: string;
+    created_by?: string;
+    description?: Description;
     has_description?: number;
     id?: number;
     images?: string;
