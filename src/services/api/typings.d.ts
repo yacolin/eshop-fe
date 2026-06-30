@@ -779,6 +779,58 @@ declare namespace API {
     zip_code?: string;
   };
 
+  type OrderDetailResponse = {
+    buyer_remark?: string;
+    city?: string;
+    closed_at?: string;
+    completed_at?: string;
+    consignee?: string;
+    coupon_id?: number;
+    coupon_snapshot?: string;
+    created_at?: string;
+    delivered_at?: string;
+    detail_addr?: string;
+    discount_amount?: number;
+    district?: string;
+    id?: number;
+    items?: OrderItem[];
+    order_no?: string;
+    paid_at?: string;
+    pay_amount?: number;
+    payment_method?: string;
+    payment_status?: string;
+    phone?: string;
+    province?: string;
+    seller_remark?: string;
+    shipped_at?: string;
+    shipping_fee?: number;
+    source?: string;
+    status?: string;
+    total_amount?: number;
+    updated_at?: string;
+    user_id?: number;
+    zip_code?: string;
+  };
+
+  type OrderItem = {
+    created_at?: string;
+    id?: number;
+    image?: string;
+    order_id?: number;
+    order_no?: string;
+    price?: number;
+    product_id?: number;
+    product_name?: string;
+    quantity?: number;
+    refund_amount?: number;
+    refund_status?: string;
+    sku_code?: string;
+    sku_id?: number;
+    sku_spec?: string;
+    subtotal?: number;
+    updated_at?: string;
+  };
+
   type OrderListResult = {
     list?: Order[];
     total?: number;
@@ -860,7 +912,7 @@ declare namespace API {
     attribute_id?: number;
     attribute_name?: string;
     sort_order?: number;
-    value?: string;
+    values?: string[];
   };
 
   type Promotion = {
@@ -1138,13 +1190,6 @@ declare namespace API {
     video_url?: string;
   };
 
-  type SkuDetailItem = {
-    id?: number;
-    sku_code?: string;
-    spec?: Record<string, string>;
-    price?: number;
-  };
-
   type SPUDetailResponse = {
     attributes?: ProductAttrResponse[];
     brand_id?: number;
@@ -1162,7 +1207,7 @@ declare namespace API {
     rating_average?: number;
     rating_count?: number;
     sales_count?: number;
-    skus?: SkuDetailItem[];
+    skus?: SKU[];
     sort_order?: number;
     status?: number;
     subtitle?: string;

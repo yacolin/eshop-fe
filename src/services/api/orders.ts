@@ -46,7 +46,7 @@ export async function getOrdersOrderNo(
   options?: { [key: string]: any },
 ) {
   const { order_no: param0, ...queryParams } = params;
-  return request<API.Response & { data?: API.Order }>(
+  return request<API.Response & { data?: API.OrderDetailResponse }>(
     `/api/v1/orders/${param0}`,
     {
       method: 'GET',
