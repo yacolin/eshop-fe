@@ -5,7 +5,15 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
+import {
+  Button,
+  Divider,
+  Drawer,
+  message,
+  Popconfirm,
+  Select,
+  Tag,
+} from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
@@ -171,13 +179,18 @@ const PromotionList: React.FC = () => {
         const cfg = statusMap[record.status ?? -1];
         return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
       },
-      valueType: 'select',
-      valueEnum: {
-        1: { text: '未开始', status: 'Default' },
-        2: { text: '进行中', status: 'Success' },
-        3: { text: '已结束', status: 'Error' },
-        4: { text: '已关闭', status: 'Default' },
-      },
+      renderFormItem: () => (
+        <Select
+          allowClear
+          placeholder="选择状态"
+          options={[
+            { label: '未开始', value: 1 },
+            { label: '进行中', value: 2 },
+            { label: '已结束', value: 3 },
+            { label: '已关闭', value: 4 },
+          ]}
+        />
+      ),
     },
     {
       title: '开始时间',

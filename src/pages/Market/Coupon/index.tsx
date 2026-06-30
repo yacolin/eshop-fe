@@ -1,6 +1,6 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
-import { Tag } from 'antd';
+import { Select, Tag } from 'antd';
 import React, { useRef } from 'react';
 
 import { getCouponsMe } from '@/services/api/coupons';
@@ -55,6 +55,18 @@ const CouponList: React.FC = () => {
         const cfg = statusMap[record.status ?? -1];
         return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
       },
+      renderFormItem: () => (
+        <Select
+          allowClear
+          placeholder="选择状态"
+          options={[
+            { label: '未使用', value: 0 },
+            { label: '已使用', value: 1 },
+            { label: '已过期', value: 2 },
+            { label: '已冻结', value: 3 },
+          ]}
+        />
+      ),
     },
     {
       title: '使用时间',
