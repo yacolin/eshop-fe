@@ -134,6 +134,15 @@ const PromotionList: React.FC = () => {
         const cfg = promoTypeMap[record.promo_type ?? -1];
         return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
       },
+      valueType: 'select',
+      valueEnum: {
+        1: { text: '满减', status: 'Default' },
+        2: { text: '折扣', status: 'Processing' },
+        3: { text: '秒杀', status: 'Warning' },
+        4: { text: '优惠券', status: 'Default' },
+        5: { text: '包邮', status: 'Default' },
+        6: { text: '赠品', status: 'Default' },
+      },
     },
     {
       title: '优惠码',
@@ -161,6 +170,13 @@ const PromotionList: React.FC = () => {
       render: (_, record) => {
         const cfg = statusMap[record.status ?? -1];
         return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
+      },
+      valueType: 'select',
+      valueEnum: {
+        1: { text: '未开始', status: 'Default' },
+        2: { text: '进行中', status: 'Success' },
+        3: { text: '已结束', status: 'Error' },
+        4: { text: '已关闭', status: 'Default' },
       },
     },
     {
