@@ -2,7 +2,7 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 获取产品的 SKU 列表 GET /api/v1/skus */
+/** 获取 SKU 列表 GET /api/v1/skus */
 export async function getSkus(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getSkusParams,

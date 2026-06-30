@@ -5,8 +5,18 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
-import React, { useRef, useState } from 'react';
+import {
+  Button,
+  Divider,
+  Drawer,
+  Input,
+  message,
+  Popconfirm,
+  Select,
+  Space,
+  Tag,
+} from 'antd';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
 import LinkText from '@/components/LinkText';
@@ -96,6 +106,12 @@ const handleRemove = async (selectedRows: API.SPU[]) => {
   }
 };
 
+/** 搜索过滤条件 */
+interface SearchFilters {
+  name?: string;
+  category_id?: number;
+}
+
 const ProductList: React.FC = () => {
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
@@ -106,6 +122,112 @@ const ProductList: React.FC = () => {
   const [selectedRowsState, setSelectedRows] = useState<API.SPU[]>([]);
 
   const categories = useCategoryOptions(true);
+
+  // 游标分页状态
+  const [dataSource, setDataSource] = useState<API.SPU[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [hasMore, setHasMore] = useState(true);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
+
+  /** 防重复请求锁 */
+  const loadingRef = useRef(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const stateRef = useRef({
+    hasMore: true,
+    cursor: undefined as string | undefined,
+    searchFilters: {} as SearchFilters,
+  });
+
+  useEffect(() => {
+    stateRef.current = { hasMore, cursor, searchFilters };
+  }, [hasMore, cursor, searchFilters]);
+
+  const fetchData = useCallback(
+    async (
+      cursorVal: string | undefined,
+      filters: SearchFilters,
+      replace: boolean,
+    ) => {
+      if (!replace) {
+        if (loadingRef.current) return;
+        loadingRef.current = true;
+      }
+      if (replace) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      try {
+        const res = await getProducts({
+          cursor: cursorVal,
+          size: 20,
+          ...filters,
+        });
+        const result: API.SPUListResult = (res as any).data || {};
+        const list = result.list || [];
+        if (replace) {
+          setDataSource(list);
+        } else {
+          setDataSource((prev) => [...prev, ...list]);
+        }
+        setCursor(result.cursor || undefined);
+        setHasMore(result.has_more || false);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        loadingRef.current = false;
+      }
+    },
+    [],
+  );
+  const fetchDataRef = useRef(fetchData);
+  fetchDataRef.current = fetchData;
+
+  /** 挂载时给 wrapper 加 capture 阶段 scroll 监听 */
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const onScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      const s = stateRef.current;
+      if (!s.hasMore || loadingRef.current) return;
+      if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
+        fetchDataRef.current(s.cursor, s.searchFilters, false);
+      }
+    };
+
+    wrapper.addEventListener('scroll', onScroll, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      wrapper.removeEventListener('scroll', onScroll, { capture: true });
+    };
+  }, []);
+
+  /** 初始加载 & 搜索触发重新加载 */
+  useEffect(() => {
+    fetchData(undefined, searchFilters, true);
+  }, [searchFilters, fetchData]);
+
+  /** 搜索 */
+  const handleSearch = (val: any, key: keyof SearchFilters) => {
+    setSearchFilters((prev) => ({ ...prev, [key]: val || undefined }));
+  };
+
+  /** 刷新（重置到第一页） */
+  const handleRefresh = (resetSelected = true) => {
+    setCursor(undefined);
+    setHasMore(true);
+    if (resetSelected) {
+      setSelectedRows([]);
+    }
+    fetchData(undefined, searchFilters, true);
+  };
 
   const columns: ProColumns<API.SPU>[] = [
     {
@@ -124,8 +246,8 @@ const ProductList: React.FC = () => {
       render: (_, record) => (
         <LinkText
           value={record.name}
-          path="/inventory/inventory"
-          state={{ product_name: record.name }}
+          path="/product/sku"
+          state={{ product_id: record.id, product_name: record.name }}
         />
       ),
       formItemProps: {
@@ -136,7 +258,7 @@ const ProductList: React.FC = () => {
       title: '价格区间',
       dataIndex: 'min_price',
       hideInSearch: true,
-      width: 150,
+      width: 250,
       render: (_, record) => {
         if (record.min_price === record.max_price) {
           return formatPrice(record.min_price);
@@ -155,16 +277,6 @@ const ProductList: React.FC = () => {
         const cat = categories.find((c) => c.value === record.category_id);
         return cat ? <Tag>{cat.label}</Tag> : <Tag color="default">未分类</Tag>;
       },
-    },
-    {
-      title: '分类',
-      dataIndex: 'category_id',
-      valueType: 'select',
-      valueEnum: categories.reduce((acc, category) => {
-        acc[category.value] = category.label;
-        return acc;
-      }, {} as Record<number, string>),
-      hideInTable: true,
     },
     {
       title: '描述',
@@ -216,7 +328,7 @@ const ProductList: React.FC = () => {
               onConfirm={async () => {
                 const success = await handleRemove([record]);
                 if (success) {
-                  actionRef.current?.reloadAndRest?.();
+                  handleRefresh();
                   setSelectedRows([]);
                 }
               }}
@@ -238,49 +350,62 @@ const ProductList: React.FC = () => {
         },
       }}
     >
-      <ProTable<API.SPU>
-        headerTitle="商品列表"
-        actionRef={actionRef}
-        rowKey="id"
-        scroll={{ x: 1300 }}
-        search={{
-          labelWidth: 100,
-          defaultCollapsed: false,
-        }}
-        toolBarRender={() => [
-          <Auth key="create" permission="canCreateProduct">
-            <Button type="primary" onClick={() => handleModalVisible(true)}>
-              新建商品
-            </Button>
-          </Auth>,
-        ]}
-        request={async (params) => {
-          const { current, pageSize, name, ...rest } = params;
-          const res = await getProducts({
-            page: current || 1,
-            size: pageSize || 10,
-            name,
-            ...rest,
-          });
-          const data = (res as any).data || {};
-          return {
-            data: data.list || [],
-            total: data.total || 0,
-            success: true,
-          };
-        }}
-        columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-        }}
-        pagination={{
-          defaultPageSize: 10,
-          showSizeChanger: true,
-          showQuickJumper: true,
-          pageSizeOptions: ['10', '20', '50'],
-          showTotal: (total) => `共 ${total} 条`,
-        }}
-      />
+      <div ref={wrapperRef}>
+        <ProTable<API.SPU>
+          headerTitle={
+            <Space wrap>
+              <Input.Search
+                placeholder="商品名称"
+                allowClear
+                onSearch={(val) => handleSearch(val || undefined, 'name')}
+                style={{ width: 200 }}
+              />
+              <Select
+                placeholder="分类筛选"
+                allowClear
+                style={{ width: 150 }}
+                options={categories}
+                onChange={(val) => handleSearch(val, 'category_id')}
+              />
+            </Space>
+          }
+          actionRef={actionRef}
+          rowKey="id"
+          dataSource={dataSource}
+          loading={loading}
+          virtual
+          scroll={{ x: 1300, y: 500 }}
+          search={false}
+          options={false}
+          toolBarRender={() => [
+            <Auth key="create" permission="canCreateProduct">
+              <Button type="primary" onClick={() => handleModalVisible(true)}>
+                新建商品
+              </Button>
+            </Auth>,
+          ]}
+          columns={columns}
+          rowSelection={{
+            columnWidth: 40,
+            onChange: (_, selectedRows) => setSelectedRows(selectedRows),
+          }}
+          pagination={false}
+          footer={() => (
+            <div style={{ textAlign: 'center' }}>
+              {loadingMore && (
+                <span style={{ color: '#999', fontSize: 13 }}>
+                  正在加载更多数据...
+                </span>
+              )}
+              {!hasMore && dataSource.length > 0 && (
+                <span style={{ color: '#999', fontSize: 13 }}>
+                  已加载全部 {dataSource.length} 条数据
+                </span>
+              )}
+            </div>
+          )}
+        />
+      </div>
 
       {selectedRowsState?.length > 0 && (
         <Auth permission="canDeleteProduct">
@@ -300,7 +425,7 @@ const ProductList: React.FC = () => {
                 const success = await handleRemove(selectedRowsState);
                 if (success) {
                   setSelectedRows([]);
-                  actionRef.current?.reloadAndRest?.();
+                  handleRefresh(true);
                 }
               }}
             >
@@ -318,7 +443,7 @@ const ProductList: React.FC = () => {
           const success = await handleAdd(value);
           if (success) {
             handleModalVisible(false);
-            actionRef.current?.reload();
+            handleRefresh();
           }
           return success;
         }}
@@ -335,7 +460,7 @@ const ProductList: React.FC = () => {
             if (success) {
               handleUpdateModalVisible(false);
               setStepFormValues({});
-              actionRef.current?.reload();
+              handleRefresh();
             }
           }}
           onCancel={() => {

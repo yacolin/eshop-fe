@@ -563,10 +563,10 @@ declare namespace API {
   };
 
   type getProductsParams = {
-    /** 页码 */
-    page?: number;
     /** 每页条数 */
     size?: number;
+    /** 游标（首次请求不传，后续使用上次返回的 cursor） */
+    cursor?: string;
     /** 商品名称模糊搜索 */
     name?: string;
     /** 类目ID */
@@ -624,7 +624,9 @@ declare namespace API {
 
   type getSkusParams = {
     /** 产品 ID */
-    product_id: number;
+    product_id?: number;
+    /** SKU 编码 */
+    sku_code?: string;
   };
 
   type getWsParams = {
@@ -1120,8 +1122,9 @@ declare namespace API {
   };
 
   type SPUListResult = {
+    cursor?: string;
+    has_more?: boolean;
     list?: SPU[];
-    total?: number;
   };
 
   type StatusDistDTO = {

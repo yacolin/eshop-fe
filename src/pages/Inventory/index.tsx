@@ -13,7 +13,9 @@ import {
   Table,
   Tag,
 } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { useLocation } from '@umijs/max';
 
 import {
   getInventoriesLogs,
@@ -36,17 +38,10 @@ const InventoryPage: React.FC = () => {
   const [restockQty, setRestockQty] = useState(0);
   const [restockNote, setRestockNote] = useState('');
 
-  const handleSearch = async () => {
-    if (!searchText.trim()) {
-      message.warning('请输入 SKU ID');
-      return;
-    }
-    const skuId = parseInt(searchText.trim(), 10);
-    if (isNaN(skuId)) {
-      message.warning('请输入有效的 SKU ID');
-      return;
-    }
+  const location = useLocation() as any;
+  const routeStateRef = useRef(location.state);
 
+  const fetchStock = async (skuId: number) => {
     setLoading(true);
     try {
       const [stockRes, logsRes] = await Promise.all([
@@ -61,6 +56,29 @@ const InventoryPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 从路由 state 自动查询（从 SKU 列表跳转过来时）
+  useEffect(() => {
+    const state = routeStateRef.current;
+    if (state?.sku_id) {
+      setSearchText(String(state.sku_id));
+      fetchStock(Number(state.sku_id));
+    }
+  }, []);
+
+  const handleSearch = async () => {
+    if (!searchText.trim()) {
+      message.warning('请输入 SKU ID');
+      return;
+    }
+    const skuId = parseInt(searchText.trim(), 10);
+    if (isNaN(skuId)) {
+      message.warning('请输入有效的 SKU ID');
+      return;
+    }
+
+    await fetchStock(skuId);
   };
 
   const handleRestock = async () => {

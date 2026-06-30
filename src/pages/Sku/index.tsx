@@ -1,23 +1,25 @@
-import type { ProColumns } from '@ant-design/pro-components';
-import { PageContainer, ProTable } from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
-  Button,
-  Divider,
-  Drawer,
-  Input,
-  message,
-  Popconfirm,
-  Select,
-  Space,
-  Tag,
-  Typography,
-} from 'antd';
-import React, { useEffect, useState } from 'react';
+  FooterToolbar,
+  PageContainer,
+  ProDescriptions,
+  ProTable,
+} from '@ant-design/pro-components';
+import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { useLocation } from '@umijs/max';
 
 import Auth from '@/components/Auth';
+import LinkText from '@/components/LinkText';
 
 import { getProducts } from '@/services/api/products';
-import { deleteSkusId, getSkus, postSkus } from '@/services/api/skus';
+import {
+  deleteSkusId,
+  getSkus,
+  postSkus,
+  putSkusId,
+} from '@/services/api/skus';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
 
@@ -53,106 +55,143 @@ const handleAdd = async (fields: API.CreateSKUReq): Promise<boolean> => {
   }
 };
 
+/**
+ * 更新 SKU
+ */
+const handleUpdate = async (fields: FormValueType): Promise<boolean> => {
+  const hide = message.loading('正在更新');
+  try {
+    await putSkusId({ id: fields.id || 0 }, fields);
+    hide();
+    message.success('更新成功');
+    return true;
+  } catch {
+    hide();
+    message.error('更新失败，请重试');
+    return false;
+  }
+};
+
+/**
+ * 删除 SKU
+ */
+const handleRemove = async (selectedRows: API.SKU[]): Promise<boolean> => {
+  const hide = message.loading('正在删除');
+  if (!selectedRows.length) return true;
+  try {
+    await Promise.all(
+      selectedRows.map((row) => deleteSkusId({ id: row.id || 0 })),
+    );
+    hide();
+    message.success('删除成功');
+    return true;
+  } catch {
+    hide();
+    message.error('删除失败，请重试');
+    return false;
+  }
+};
+
 const SkuList: React.FC = () => {
   const [createModalVisible, handleCreateModalVisible] =
     useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
   const [stepFormValues, setStepFormValues] = useState<FormValueType>({});
+  const actionRef = useRef<ActionType>();
+  const formRef = useRef<any>();
   const [row, setRow] = useState<API.SKU>();
-  const [dataSource, setDataSource] = useState<API.SKU[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<number | undefined>();
-  const [searchCode, setSearchCode] = useState('');
+  const [selectedRowsState, setSelectedRows] = useState<API.SKU[]>([]);
+
+  const location = useLocation() as any;
+  const routeProductId = (location.state as any)?.product_id;
+  const routeProductName = (location.state as any)?.product_name;
+
+  const [createProductId, setCreateProductId] = useState<number | undefined>();
   const [productOptions, setProductOptions] = useState<
     { label: string; value: number }[]
-  >([]);
-
-  const fetchSkus = async (productId: number) => {
-    setLoading(true);
-    try {
-      const res = await getSkus({ product_id: productId });
-      const list = (res as any).data || [];
-      setDataSource(list);
-    } catch {
-      message.error('获取 SKU 列表失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedProduct) {
-      fetchSkus(selectedProduct);
-    } else {
-      setDataSource([]);
-    }
-  }, [selectedProduct]);
+  >(
+    routeProductId && routeProductName
+      ? [
+          {
+            label: `[${routeProductId}] ${routeProductName}`,
+            value: routeProductId,
+          },
+        ]
+      : [],
+  );
 
   const fetchProducts = async (name?: string) => {
     try {
-      const res = await getProducts({ page: 1, size: 100, name });
+      const res = await getProducts({ size: 100, name });
       const data = (res as any).data || {};
       const list = data.list || [];
-      setProductOptions(
-        list.map((p: API.SPU) => ({
-          label: `[${p.id}] ${p.name}`,
-          value: p.id || 0,
-        })),
-      );
+      setProductOptions((prev) => {
+        const merged = new Map(prev.map((p) => [p.value, p]));
+        list.forEach((p: API.SPU) => {
+          if (!merged.has(p.id)) {
+            merged.set(p.id, {
+              label: `[${p.id}] ${p.name}`,
+              value: p.id || 0,
+            });
+          }
+        });
+        return Array.from(merged.values());
+      });
     } catch {
       // 静默
     }
   };
 
+  // 加载产品下拉 + 预设路由产品搜索条件
   useEffect(() => {
     fetchProducts();
+    if (routeProductId) {
+      const timer = setTimeout(() => {
+        formRef.current?.setFieldsValue({ product_id: routeProductId });
+        formRef.current?.submit();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
-  const handleSearchCode = async () => {
-    if (!searchCode.trim()) return;
-    try {
-      const { getSkusCodeCode } = await import('@/services/api/skus');
-      const res = await getSkusCodeCode({ code: searchCode.trim() });
-      const sku = (res as any).data;
-      if (sku) {
-        setDataSource([sku]);
-        setSelectedProduct(undefined);
-      } else {
-        message.warning('未找到该 SKU');
-      }
-    } catch {
-      message.error('查询失败');
+  const handleOpenCreate = () => {
+    const productId = formRef.current?.getFieldValue?.('product_id');
+    if (!productId) {
+      message.warning('请先在搜索条件中选择产品');
+      return;
     }
-  };
-
-  /**
-   * 删除 SKU
-   */
-  const handleRemove = async (selectedRows: API.SKU[]) => {
-    const hide = message.loading('正在删除');
-    if (!selectedRows.length) return true;
-    try {
-      await Promise.all(
-        selectedRows.map((row) => deleteSkusId({ id: row.id || 0 })),
-      );
-      hide();
-      message.success('删除成功');
-      if (selectedProduct) fetchSkus(selectedProduct);
-      return true;
-    } catch {
-      hide();
-      message.error('删除失败，请重试');
-      return false;
-    }
+    setCreateProductId(productId);
+    handleCreateModalVisible(true);
   };
 
   const columns: ProColumns<API.SKU>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
+      hideInForm: true,
       hideInSearch: true,
       width: 60,
+      render: (_, record) => (
+        <LinkText
+          value={record.id}
+          path="/inventory/inventory"
+          state={{ sku_id: record.id }}
+          copyable={false}
+        />
+      ),
+    },
+    {
+      title: '产品',
+      dataIndex: 'product_id',
+      hideInTable: true,
+      valueType: 'select',
+      fieldProps: {
+        showSearch: true,
+        options: productOptions,
+        filterOption: (input: string, option: any) =>
+          (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+      },
     },
     {
       title: 'SKU 编码',
@@ -165,23 +204,27 @@ const SkuList: React.FC = () => {
       dataIndex: 'barcode',
       width: 140,
       copyable: true,
+      hideInSearch: true,
     },
     {
       title: '售价',
       dataIndex: 'price',
       width: 100,
+      hideInSearch: true,
       render: (_, record) => formatPrice(record.price),
     },
     {
       title: '成本价',
       dataIndex: 'cost_price',
       width: 100,
+      hideInSearch: true,
       render: (_, record) => formatPrice(record.cost_price),
     },
     {
       title: '市场价',
       dataIndex: 'market_price',
       width: 100,
+      hideInSearch: true,
       render: (_, record) => formatPrice(record.market_price),
     },
     {
@@ -189,6 +232,7 @@ const SkuList: React.FC = () => {
       dataIndex: 'spec',
       width: 200,
       ellipsis: true,
+      hideInSearch: true,
       render: (_, record) => {
         if (!record.spec) return '-';
         try {
@@ -210,6 +254,7 @@ const SkuList: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       width: 80,
+      hideInSearch: true,
       render: (_, record) => {
         const cfg = statusMap[record.status ?? -1];
         return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
@@ -218,8 +263,8 @@ const SkuList: React.FC = () => {
     {
       title: '创建时间',
       dataIndex: 'created_at',
-      hideInSearch: true,
       hideInForm: true,
+      hideInSearch: true,
       valueType: 'dateTime',
       width: 160,
     },
@@ -250,7 +295,10 @@ const SkuList: React.FC = () => {
               description={`确定要删除 SKU「${record.sku_code}」吗？`}
               onConfirm={async () => {
                 const success = await handleRemove([record]);
-                if (success && selectedProduct) fetchSkus(selectedProduct);
+                if (success) {
+                  actionRef.current?.reloadAndRest?.();
+                  setSelectedRows([]);
+                }
               }}
             >
               <a style={{ color: '#ff4d4f' }}>删除</a>
@@ -265,75 +313,87 @@ const SkuList: React.FC = () => {
     <PageContainer
       header={{
         title: 'SKU 管理',
-        breadcrumb: {
-          items: [{ title: '首页' }, { title: 'SKU 管理' }],
-        },
+        breadcrumb: { items: [{ title: '首页' }, { title: 'SKU 管理' }] },
       }}
     >
       <ProTable<API.SKU>
-        headerTitle={
-          <Space wrap>
-            <Select
-              placeholder="选择产品查看 SKU"
-              allowClear
-              showSearch
-              style={{ width: 300 }}
-              value={selectedProduct}
-              onChange={(val) => setSelectedProduct(val)}
-              options={productOptions}
-              onSearch={(val) => fetchProducts(val || undefined)}
-              filterOption={false}
-              notFoundContent={null}
-            />
-            <Typography.Text type="secondary" style={{ lineHeight: '32px' }}>
-              或
-            </Typography.Text>
-            <Input.Search
-              placeholder="按 SKU 编码搜索"
-              allowClear
-              style={{ width: 220 }}
-              value={searchCode}
-              onChange={(e) => setSearchCode(e.target.value)}
-              onSearch={handleSearchCode}
-            />
-          </Space>
-        }
+        headerTitle="SKU 列表"
+        formRef={formRef}
+        actionRef={actionRef}
         rowKey="id"
-        dataSource={dataSource}
-        loading={loading}
-        scroll={{ x: 1200 }}
-        search={false}
+        scroll={{ x: 1300 }}
+        search={{
+          labelWidth: 100,
+          defaultCollapsed: false,
+        }}
         options={false}
+        request={async (params) => {
+          const { product_id, sku_code } = params as any;
+          if (product_id || sku_code) {
+            const res = await getSkus({ product_id, sku_code });
+            const list = (res as any).data || [];
+            return { data: list, total: list.length, success: true };
+          }
+          return { data: [], total: 0, success: true };
+        }}
         toolBarRender={() => [
           <Auth key="create" permission="canCreateSku">
-            <Button
-              type="primary"
-              onClick={() => handleCreateModalVisible(true)}
-              disabled={!selectedProduct}
-            >
+            <Button type="primary" onClick={handleOpenCreate}>
               新建 SKU
             </Button>
           </Auth>,
         ]}
         columns={columns}
+        rowSelection={{
+          onChange: (_, selectedRows) => setSelectedRows(selectedRows),
+        }}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
+          showQuickJumper: true,
           pageSizeOptions: ['10', '20', '50'],
           showTotal: (total) => `共 ${total} 条`,
         }}
       />
 
+      {selectedRowsState?.length > 0 && (
+        <Auth permission="canDeleteSku">
+          <FooterToolbar
+            extra={
+              <div>
+                已选择{' '}
+                <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
+                项&nbsp;&nbsp;
+              </div>
+            }
+          >
+            <Popconfirm
+              title="确认批量删除"
+              description={`确定要删除选中的 ${selectedRowsState.length} 个 SKU 吗？`}
+              onConfirm={async () => {
+                const success = await handleRemove(selectedRowsState);
+                if (success) {
+                  setSelectedRows([]);
+                  actionRef.current?.reloadAndRest?.();
+                }
+              }}
+            >
+              <Button danger>批量删除</Button>
+            </Popconfirm>
+          </FooterToolbar>
+        </Auth>
+      )}
+
       {/* 新建弹窗 */}
       <CreateForm
         modalVisible={createModalVisible}
         onCancel={() => handleCreateModalVisible(false)}
-        productId={selectedProduct}
+        productId={createProductId}
         onSubmit={async (value) => {
           const success = await handleAdd(value);
           if (success) {
             handleCreateModalVisible(false);
-            if (selectedProduct) fetchSkus(selectedProduct);
+            actionRef.current?.reload();
           }
           return success;
         }}
@@ -343,18 +403,14 @@ const SkuList: React.FC = () => {
       {stepFormValues && Object.keys(stepFormValues).length ? (
         <UpdateForm
           onSubmit={async (value) => {
-            const hide = message.loading('正在更新');
-            try {
-              const { putSkusId } = await import('@/services/api/skus');
-              await putSkusId({ id: stepFormValues.id || 0 }, value);
-              hide();
-              message.success('更新成功');
+            const success = await handleUpdate({
+              ...value,
+              id: stepFormValues.id,
+            });
+            if (success) {
               handleUpdateModalVisible(false);
               setStepFormValues({});
-              if (selectedProduct) fetchSkus(selectedProduct);
-            } catch {
-              hide();
-              message.error('更新失败，请重试');
+              actionRef.current?.reload();
             }
           }}
           onCancel={() => {
@@ -374,50 +430,56 @@ const SkuList: React.FC = () => {
         closable
         title={row?.sku_code ? `SKU #${row.sku_code}` : 'SKU 详情'}
       >
-        {row && (
-          <div>
-            <Typography.Text strong>产品 ID: </Typography.Text>
-            <Typography.Text>{row.product_id}</Typography.Text>
-            <br />
-            <Typography.Text strong>SKU 编码: </Typography.Text>
-            <Typography.Text copyable>{row.sku_code}</Typography.Text>
-            <br />
-            <Typography.Text strong>条码: </Typography.Text>
-            <Typography.Text copyable>{row.barcode || '-'}</Typography.Text>
-            <br />
-            <Typography.Text strong>售价: </Typography.Text>
-            <Typography.Text>{formatPrice(row.price)}</Typography.Text>
-            <br />
-            <Typography.Text strong>成本价: </Typography.Text>
-            <Typography.Text>{formatPrice(row.cost_price)}</Typography.Text>
-            <br />
-            <Typography.Text strong>市场价: </Typography.Text>
-            <Typography.Text>{formatPrice(row.market_price)}</Typography.Text>
-            <br />
-            <Typography.Text strong>重量: </Typography.Text>
-            <Typography.Text>
-              {row.weight ? `${row.weight}g` : '-'}
-            </Typography.Text>
-            <br />
-            <Typography.Text strong>体积: </Typography.Text>
-            <Typography.Text>
-              {[row.length, row.width, row.height].filter(Boolean).length === 3
-                ? `${row.length}×${row.width}×${row.height}`
-                : '-'}
-            </Typography.Text>
-            <br />
-            <Typography.Text strong>最小购买量: </Typography.Text>
-            <Typography.Text>{row.min_purchase_qty ?? '-'}</Typography.Text>
-            <br />
-            <Typography.Text strong>最大购买量: </Typography.Text>
-            <Typography.Text>{row.max_purchase_qty ?? '-'}</Typography.Text>
-            <br />
-            <Typography.Text strong>状态: </Typography.Text>
-            {(() => {
-              const cfg = statusMap[row.status ?? -1];
-              return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
-            })()}
-          </div>
+        {row?.sku_code && (
+          <ProDescriptions<API.SKU>
+            column={2}
+            title={row.sku_code}
+            request={async () => ({ data: row || {} })}
+            params={{ id: row.sku_code }}
+            columns={[
+              { title: '产品 ID', dataIndex: 'product_id' },
+              { title: 'SKU 编码', dataIndex: 'sku_code', copyable: true },
+              { title: '条码', dataIndex: 'barcode', copyable: true },
+              {
+                title: '售价',
+                dataIndex: 'price',
+                render: (_, r) => formatPrice(r.price),
+              },
+              {
+                title: '成本价',
+                dataIndex: 'cost_price',
+                render: (_, r) => formatPrice(r.cost_price),
+              },
+              {
+                title: '市场价',
+                dataIndex: 'market_price',
+                render: (_, r) => formatPrice(r.market_price),
+              },
+              {
+                title: '重量',
+                dataIndex: 'weight',
+                render: (_, r) => (r.weight ? `${r.weight}g` : '-'),
+              },
+              {
+                title: '体积',
+                dataIndex: 'length',
+                render: (_, r) =>
+                  [r.length, r.width, r.height].filter(Boolean).length === 3
+                    ? `${r.length}×${r.width}×${r.height}`
+                    : '-',
+              },
+              { title: '最小购买量', dataIndex: 'min_purchase_qty' },
+              { title: '最大购买量', dataIndex: 'max_purchase_qty' },
+              {
+                title: '状态',
+                dataIndex: 'status',
+                render: (_, r) => {
+                  const cfg = statusMap[r.status ?? -1];
+                  return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
+                },
+              },
+            ]}
+          />
         )}
       </Drawer>
     </PageContainer>
