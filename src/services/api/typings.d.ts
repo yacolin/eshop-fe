@@ -1138,6 +1138,13 @@ declare namespace API {
     video_url?: string;
   };
 
+  type SkuDetailItem = {
+    id?: number;
+    sku_code?: string;
+    spec?: Record<string, string>;
+    price?: number;
+  };
+
   type SPUDetailResponse = {
     attributes?: ProductAttrResponse[];
     brand_id?: number;
@@ -1155,6 +1162,7 @@ declare namespace API {
     rating_average?: number;
     rating_count?: number;
     sales_count?: number;
+    skus?: SkuDetailItem[];
     sort_order?: number;
     status?: number;
     subtitle?: string;

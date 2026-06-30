@@ -84,8 +84,75 @@ const DetailForm: React.FC<DetailFormProps> = (props) => {
                 size="small"
                 columns={[
                   { title: '属性', dataIndex: 'attribute_name', width: 120 },
-                  { title: '值', dataIndex: 'value' },
+                  {
+                    title: '值',
+                    dataIndex: 'values',
+                    width: 200,
+                    render: (val: any) =>
+                      Array.isArray(val) ? val.join('，') : val || '-',
+                  },
                 ]}
+              />
+            </>
+          )}
+
+          {/* SKU 列表 */}
+          {data.skus && data.skus.length > 0 && (
+            <>
+              <Typography.Title level={5}>SKU 列表</Typography.Title>
+              <Table
+                dataSource={data.skus}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+                columns={(() => {
+                  const parseSpec = (s: any): Record<string, string> => {
+                    if (typeof s === 'string') {
+                      try {
+                        return JSON.parse(s);
+                      } catch {
+                        return {};
+                      }
+                    }
+                    return s || {};
+                  };
+                  const specKeys: string[] = [];
+                  data.skus!.forEach((sku) => {
+                    Object.keys(parseSpec(sku.spec)).forEach((k) => {
+                      if (!specKeys.includes(k)) specKeys.push(k);
+                    });
+                  });
+                  return [
+                    {
+                      title: 'SKU ID',
+                      key: 'id',
+                      width: 70,
+                      render: (_: any, r: API.SkuDetailItem) => r.id ?? '-',
+                    },
+                    {
+                      title: '编码',
+                      key: 'sku_code',
+                      width: 130,
+                      render: (_: any, r: API.SkuDetailItem) =>
+                        r.sku_code || '-',
+                    },
+                    ...specKeys.map((k) => ({
+                      key: k,
+                      title: k,
+                      width: 100,
+                      render: (_: any, r: API.SkuDetailItem) =>
+                        parseSpec(r.spec)[k] || '-',
+                    })),
+                    {
+                      title: '价格',
+                      key: 'price',
+                      width: 100,
+                      render: (_: any, r: API.SkuDetailItem) =>
+                        formatPrice(r.price),
+                    },
+                  ];
+                })()}
               />
             </>
           )}
