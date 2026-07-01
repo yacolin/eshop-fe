@@ -38,7 +38,7 @@ export const layout = () => {
     window.dispatchEvent(new Event('app:logout'));
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    history.push('/login');
+    history.replace('/login');
   };
 
   return {
