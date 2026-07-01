@@ -116,6 +116,12 @@ export default [
         hideInMenu: true,
       },
       {
+        name: '用户管理',
+        path: '/user/user',
+        component: './User',
+        access: 'canManageUsers',
+      },
+      {
         name: '地址管理',
         path: '/user/address',
         component: './Address',
@@ -132,6 +138,7 @@ export default [
         path: '/user/user-info',
         component: './UserInfo',
         access: 'isLoggedIn',
+        hideInMenu: true,
       },
       {
         name: '我的评论',

@@ -1,12 +1,6 @@
 import { ProDescriptions } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Select, Space, Tag } from 'antd';
-import React, { useEffect, useState } from 'react';
-
-import { getRoles } from '@/services/api/roles';
-import {
-  deleteUsersUserIdRolesRoleId,
-  postUsersUserIdRoles,
-} from '@/services/api/users';
+import { Divider, Drawer, Tag } from 'antd';
+import React from 'react';
 
 const statusMap: Record<number, { text: string; color: string }> = {
   1: { text: '正常', color: '#52c41a' },
@@ -15,57 +9,12 @@ const statusMap: Record<number, { text: string; color: string }> = {
 };
 
 interface DetailDrawerProps {
-  row?: API.User;
+  row?: API.UserListItem;
   onClose: () => void;
 }
 
 const DetailDrawer: React.FC<DetailDrawerProps> = ({ row, onClose }) => {
-  const [userRoles, setUserRoles] = useState<API.Role[]>([]);
-  const [allRoles, setAllRoles] = useState<API.Role[]>([]);
-  const [selectedRoleId, setSelectedRoleId] = useState<number>();
-
-  // 加载全部角色供选择
-  useEffect(() => {
-    if (row?.id) {
-      getRoles({ page: 1, size: 100 }).then((res) => {
-        setAllRoles((res as any).data?.list || []);
-      });
-    }
-  }, [row?.id]);
-
-  const availableRoles = allRoles.filter(
-    (r) => !userRoles.some((ur) => ur.id === r.id),
-  );
-
-  const handleAssign = async () => {
-    if (!row?.id || !selectedRoleId) return;
-    try {
-      await postUsersUserIdRoles(
-        { user_id: row.id },
-        { role_id: selectedRoleId },
-      );
-      const role = allRoles.find((r) => r.id === selectedRoleId);
-      if (role) setUserRoles((prev) => [...prev, role]);
-      setSelectedRoleId(undefined);
-      message.success('角色分配成功');
-    } catch {
-      message.error('角色分配失败');
-    }
-  };
-
-  const handleRemove = async (roleId: number) => {
-    if (!row?.id) return;
-    try {
-      await deleteUsersUserIdRolesRoleId({
-        user_id: row.id,
-        role_id: roleId,
-      });
-      setUserRoles((prev) => prev.filter((r) => r.id !== roleId));
-      message.success('角色移除成功');
-    } catch {
-      message.error('角色移除失败');
-    }
-  };
+  const roles = row?.roles || [];
 
   return (
     <Drawer
@@ -117,10 +66,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ row, onClose }) => {
               },
               { title: '注册 IP', dataIndex: 'register_ip' },
               { title: '注册来源', dataIndex: 'register_source' },
-              {
-                title: '最后登录 IP',
-                dataIndex: 'last_login_ip',
-              },
+              { title: '最后登录 IP', dataIndex: 'last_login_ip' },
               {
                 title: '最后登录',
                 dataIndex: 'last_login_at',
@@ -139,59 +85,19 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ row, onClose }) => {
             ]}
           />
 
-          <Divider />
-          <ProDescriptions column={1} title="角色" />
-
-          <div style={{ padding: '0 0 24px 24px' }}>
-            {userRoles.length > 0 ? (
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 8,
-                  marginBottom: 12,
-                }}
-              >
-                {userRoles.map((role) => (
-                  <Tag
-                    key={role.id}
-                    color="blue"
-                    closable
-                    onClose={() => handleRemove(role.id!)}
-                  >
+          {roles.length > 0 && (
+            <>
+              <Divider />
+              <ProDescriptions column={1} title="角色" />
+              <div style={{ padding: '0 0 24px 24px' }}>
+                {roles.map((role) => (
+                  <Tag key={role.id} color="blue" style={{ marginBottom: 4 }}>
                     {role.display_name || role.name}
                   </Tag>
                 ))}
               </div>
-            ) : (
-              <div style={{ color: '#999', marginBottom: 12, fontSize: 13 }}>
-                暂未分配角色
-              </div>
-            )}
-
-            {availableRoles.length > 0 && (
-              <Space>
-                <Select
-                  placeholder="选择角色"
-                  style={{ width: 200 }}
-                  value={selectedRoleId}
-                  onChange={setSelectedRoleId}
-                  options={availableRoles.map((r) => ({
-                    label: r.display_name || r.name,
-                    value: r.id!,
-                  }))}
-                />
-                <Button
-                  type="primary"
-                  size="small"
-                  disabled={!selectedRoleId}
-                  onClick={handleAssign}
-                >
-                  添加角色
-                </Button>
-              </Space>
-            )}
-          </div>
+            </>
+          )}
         </>
       )}
     </Drawer>

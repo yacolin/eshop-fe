@@ -4,12 +4,26 @@ import {
   PageContainer,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, message, Popconfirm, Tag } from 'antd';
+import {
+  Button,
+  Checkbox,
+  Divider,
+  message,
+  Modal,
+  Popconfirm,
+  Spin,
+  Tag,
+} from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
 
-import { getUsers } from '@/services/api/users';
+import { getRoles } from '@/services/api/roles';
+import {
+  deleteUsersUserIdRolesRoleId,
+  getUsers,
+  postUsersUserIdRoles,
+} from '@/services/api/users';
 import DetailDrawer from './components/DetailDrawer';
 
 const statusMap: Record<number, { text: string; color: string }> = {
@@ -18,11 +32,12 @@ const statusMap: Record<number, { text: string; color: string }> = {
   3: { text: '冻结', color: '#faad14' },
 };
 
-const handleRemove = async (selectedRows: API.User[]): Promise<boolean> => {
+const handleRemove = async (
+  selectedRows: API.UserListItem[],
+): Promise<boolean> => {
   const hide = message.loading('正在删除');
   if (!selectedRows.length) return true;
   try {
-    // TODO: 后端实现 DELETE /api/v1/users/:id 后替换
     await Promise.all(
       selectedRows.map(() => Promise.reject(new Error('删除接口未就绪'))),
     );
@@ -38,10 +53,71 @@ const handleRemove = async (selectedRows: API.User[]): Promise<boolean> => {
 
 const UserList: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<API.User>();
-  const [selectedRowsState, setSelectedRows] = useState<API.User[]>([]);
+  const [row, setRow] = useState<API.UserListItem>();
+  const [selectedRowsState, setSelectedRows] = useState<API.UserListItem[]>([]);
 
-  const columns: ProColumns<API.User>[] = [
+  // 分配角色弹窗
+  const [assignRoleUser, setAssignRoleUser] = useState<API.UserListItem>();
+  const [allRoles, setAllRoles] = useState<API.Role[]>([]);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>([]);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [savingRoles, setSavingRoles] = useState(false);
+  const [loadingRoles, setLoadingRoles] = useState(false);
+
+  const openRoleModal = async (user: API.UserListItem) => {
+    setAssignRoleUser(user);
+    const ids = (user.roles || []).map((r) => r.id!).filter(Boolean);
+    setSelectedRoleIds(ids);
+    setRoleModalOpen(true);
+    if (allRoles.length === 0) {
+      setLoadingRoles(true);
+      try {
+        const res = await getRoles({ page: 1, size: 100 });
+        setAllRoles((res as any).data?.list || []);
+      } finally {
+        setLoadingRoles(false);
+      }
+    }
+  };
+
+  const handleSaveRoles = async () => {
+    if (!assignRoleUser?.id) return;
+    setSavingRoles(true);
+    try {
+      const currentIds = (assignRoleUser.roles || [])
+        .map((r) => r.id!)
+        .filter(Boolean);
+      const toAdd = selectedRoleIds.filter((id) => !currentIds.includes(id));
+      const toRemove = currentIds.filter((id) => !selectedRoleIds.includes(id));
+
+      await Promise.all([
+        ...toAdd.map((rid) =>
+          postUsersUserIdRoles(
+            { user_id: assignRoleUser.id! },
+            { role_id: rid },
+          ),
+        ),
+        ...toRemove.map((rid) =>
+          deleteUsersUserIdRolesRoleId({
+            user_id: assignRoleUser.id!,
+            role_id: rid,
+          }),
+        ),
+      ]);
+
+      assignRoleUser.roles = allRoles.filter((r) =>
+        selectedRoleIds.includes(r.id!),
+      );
+      setRoleModalOpen(false);
+      message.success('角色分配已更新');
+    } catch {
+      message.error('角色分配失败');
+    } finally {
+      setSavingRoles(false);
+    }
+  };
+
+  const columns: ProColumns<API.UserListItem>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -107,11 +183,13 @@ const UserList: React.FC = () => {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
-      width: 120,
+      width: 200,
       fixed: 'right',
       render: (_, record) => (
         <div style={{ paddingLeft: 8, whiteSpace: 'nowrap' }}>
           <a onClick={() => setRow(record)}>查看</a>
+          <Divider type="vertical" />
+          <a onClick={() => openRoleModal(record)}>分配角色</a>
           <Auth permission="canDeleteUser">
             <Divider type="vertical" />
             <Popconfirm
@@ -142,7 +220,7 @@ const UserList: React.FC = () => {
         breadcrumb: { items: [{ title: '首页' }, { title: '用户管理' }] },
       }}
     >
-      <ProTable<API.User>
+      <ProTable<API.UserListItem>
         headerTitle="用户列表"
         actionRef={actionRef}
         rowKey="id"
@@ -209,6 +287,44 @@ const UserList: React.FC = () => {
       )}
 
       <DetailDrawer row={row} onClose={() => setRow(undefined)} />
+
+      <Modal
+        title={
+          assignRoleUser
+            ? `分配角色 — ${assignRoleUser.username || assignRoleUser.nickname}`
+            : '分配角色'
+        }
+        width={400}
+        open={roleModalOpen}
+        onCancel={() => setRoleModalOpen(false)}
+        onOk={handleSaveRoles}
+        confirmLoading={savingRoles}
+        destroyOnClose
+      >
+        <Spin spinning={loadingRoles}>
+          <Checkbox.Group
+            value={selectedRoleIds}
+            onChange={(values) => setSelectedRoleIds(values as number[])}
+            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+          >
+            {allRoles.map((role) => (
+              <Checkbox key={role.id} value={role.id!}>
+                <span>
+                  {role.display_name || role.name}
+                  <span style={{ color: '#999', marginLeft: 6, fontSize: 12 }}>
+                    {role.name}
+                  </span>
+                </span>
+              </Checkbox>
+            ))}
+          </Checkbox.Group>
+          {allRoles.length === 0 && !loadingRoles && (
+            <div style={{ textAlign: 'center', color: '#999', padding: 24 }}>
+              暂无可用角色
+            </div>
+          )}
+        </Spin>
+      </Modal>
     </PageContainer>
   );
 };

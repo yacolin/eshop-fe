@@ -1504,24 +1504,6 @@ declare namespace API {
     user_promotion_id: number;
   };
 
-  type User = {
-    avatar?: string;
-    created_at?: string;
-    email?: string;
-    email_verified?: boolean;
-    id?: number;
-    last_login_at?: string;
-    last_login_ip?: string;
-    nickname?: string;
-    phone?: string;
-    phone_verified?: boolean;
-    register_ip?: string;
-    register_source?: string;
-    status?: number;
-    updated_at?: string;
-    username?: string;
-  };
-
   type UserInfoResponse = {
     bio?: string;
     birthday?: string;
@@ -1534,8 +1516,27 @@ declare namespace API {
     zip_code?: string;
   };
 
+  type UserListItem = {
+    avatar?: string;
+    created_at?: string;
+    email?: string;
+    email_verified?: boolean;
+    id?: number;
+    last_login_at?: string;
+    last_login_ip?: string;
+    nickname?: string;
+    phone?: string;
+    phone_verified?: boolean;
+    register_ip?: string;
+    register_source?: string;
+    roles?: UserRoleBrief[];
+    status?: number;
+    updated_at?: string;
+    username?: string;
+  };
+
   type UserListResult = {
-    list?: User[];
+    list?: UserListItem[];
     total?: number;
   };
 
@@ -1571,5 +1572,11 @@ declare namespace API {
   type UserPromotionListResult = {
     list?: UserPromotion[];
     total?: number;
+  };
+
+  type UserRoleBrief = {
+    display_name?: string;
+    id?: number;
+    name?: string;
   };
 }

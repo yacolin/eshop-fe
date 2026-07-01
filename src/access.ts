@@ -70,8 +70,11 @@ export default (initialState: {
       roles.includes('admin') || permissions.includes('review:delete'),
 
     // ── User ──
+    canManageUsers: roles.includes('admin'),
     canUpdateUser:
       roles.includes('admin') || permissions.includes('user:update'),
+    canDeleteUser:
+      roles.includes('admin') || permissions.includes('user:delete'),
 
     // ── SKU ──
     canCreateSku: roles.includes('admin') || permissions.includes('sku:create'),
