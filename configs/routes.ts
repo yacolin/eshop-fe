@@ -17,19 +17,7 @@ export default [
     component: './Home',
   },
   {
-    name: '库存管理',
-    icon: 'DatabaseOutlined',
-    path: '/inventory',
-    routes: [
-      {
-        name: '库存',
-        path: '/inventory/inventory',
-        component: './Inventory',
-      },
-    ],
-  },
-  {
-    name: '商品管理',
+    name: '商品中心',
     icon: 'ShopOutlined',
     path: '/product',
     routes: [
@@ -62,20 +50,19 @@ export default [
     ],
   },
   {
-    name: '评论管理',
-    icon: 'StarOutlined',
-    path: '/review',
-    access: 'canManageReviews',
+    name: '库存中心',
+    icon: 'DatabaseOutlined',
+    path: '/inventory',
     routes: [
       {
-        name: '评论审核',
-        path: '/review/manage',
-        component: './Review',
+        name: '库存',
+        path: '/inventory/inventory',
+        component: './Inventory',
       },
     ],
   },
   {
-    name: '运营管理',
+    name: '交易中心',
     icon: 'BarChartOutlined',
     path: '/market',
     routes: [
@@ -97,34 +84,24 @@ export default [
     ],
   },
   {
+    name: '评论中心',
+    icon: 'StarOutlined',
+    path: '/review',
+    access: 'canManageReviews',
+    routes: [
+      {
+        name: '评论审核',
+        path: '/review/manage',
+        component: './Review',
+      },
+    ],
+  },
+
+  {
     name: '用户中心',
     icon: 'TeamOutlined',
     path: '/user',
     routes: [
-      {
-        name: '地址管理',
-        path: '/user/address',
-        component: './Address',
-        access: 'isLoggedIn',
-      },
-      {
-        name: '通知管理',
-        path: '/user/notification',
-        component: './Notification',
-        access: 'isLoggedIn',
-      },
-      {
-        name: '用户信息',
-        path: '/user/user-info',
-        component: './UserInfo',
-        access: 'isLoggedIn',
-      },
-      {
-        name: '我的评论',
-        path: '/user/my-reviews',
-        component: './MyReviews',
-        access: 'isLoggedIn',
-      },
       {
         name: '角色管理',
         path: '/user/role',
@@ -139,10 +116,40 @@ export default [
         hideInMenu: true,
       },
       {
+        name: '地址管理',
+        path: '/user/address',
+        component: './Address',
+        access: 'isLoggedIn',
+      },
+      {
         name: '权限管理',
         path: '/user/permission',
         component: './Permission',
         access: 'canManagePermissions',
+      },
+      {
+        name: '用户信息',
+        path: '/user/user-info',
+        component: './UserInfo',
+        access: 'isLoggedIn',
+      },
+      {
+        name: '我的评论',
+        path: '/user/my-reviews',
+        component: './MyReviews',
+        access: 'isLoggedIn',
+      },
+    ],
+  },
+  {
+    name: '基础中心',
+    icon: 'SettingOutlined',
+    routes: [
+      {
+        name: '通知管理',
+        path: '/user/notification',
+        component: './Notification',
+        access: 'isLoggedIn',
       },
     ],
   },

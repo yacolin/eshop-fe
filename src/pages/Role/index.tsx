@@ -127,7 +127,7 @@ const RoleList: React.FC = () => {
     },
     {
       title: '排序',
-      dataIndex: 'sort',
+      dataIndex: 'sort_order',
       hideInSearch: true,
       width: 60,
     },
@@ -143,7 +143,7 @@ const RoleList: React.FC = () => {
       hideInForm: true,
       hideInSearch: true,
       valueType: 'dateTime',
-      width: 160,
+      width: 200,
     },
     {
       title: '操作',

@@ -153,7 +153,7 @@ const PermissionList: React.FC = () => {
       hideInForm: true,
       hideInSearch: true,
       valueType: 'dateTime',
-      width: 160,
+      width: 200,
     },
     {
       title: '操作',
