@@ -132,6 +132,13 @@ export default [
         access: 'canManageRoles',
       },
       {
+        name: '分配权限',
+        path: '/user/role/assign-permission',
+        component: './Role/AssignPermission',
+        access: 'canManageRoles',
+        hideInMenu: true,
+      },
+      {
         name: '权限管理',
         path: '/user/permission',
         component: './Permission',

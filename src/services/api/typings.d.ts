@@ -36,6 +36,10 @@ declare namespace API {
     total?: number;
   };
 
+  type AssignPermissionsReq = {
+    permission_ids: number[];
+  };
+
   type Attribute = {
     category_id?: number;
     created_at?: string;
@@ -362,6 +366,11 @@ declare namespace API {
     id: number;
   };
 
+  type deletePermissionsRolesRoleIdParams = {
+    /** 角色ID */
+    role_id: number;
+  };
+
   type deleteProductsIdParams = {
     /** 商品ID */
     id: number;
@@ -551,6 +560,11 @@ declare namespace API {
     role_id?: number;
     /** 每页条数，范围 1..1000 */
     size?: number;
+  };
+
+  type getPermissionsRolesRoleIdParams = {
+    /** 角色ID */
+    role_id: number;
   };
 
   type getProductsIdParams = {
@@ -913,6 +927,11 @@ declare namespace API {
     session_id?: string;
   };
 
+  type postPermissionsRolesRoleIdParams = {
+    /** 角色ID */
+    role_id: number;
+  };
+
   type ProductAttrResponse = {
     attribute_id?: number;
     attribute_name?: string;
@@ -967,9 +986,15 @@ declare namespace API {
     category_id?: number;
     id?: number;
     main_image?: string;
+    max_price?: number;
+    min_price?: number;
     product_id?: number;
     product_type?: number;
+    sales_count?: number;
     spu_name?: string;
+    spu_status?: number;
+    subtitle?: string;
+    unit?: string;
   };
 
   type PromotionRule = {
