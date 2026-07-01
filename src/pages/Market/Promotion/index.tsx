@@ -2,18 +2,9 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
   FooterToolbar,
   PageContainer,
-  ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import {
-  Button,
-  Divider,
-  Drawer,
-  message,
-  Popconfirm,
-  Select,
-  Tag,
-} from 'antd';
+import { Button, Divider, message, Popconfirm, Select, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
 import Auth from '@/components/Auth';
@@ -25,6 +16,7 @@ import {
   putPromotionsId,
 } from '@/services/api/promotions';
 import CreateForm from './components/CreateForm';
+import DetailDrawer from './components/DetailDrawer';
 import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
@@ -365,23 +357,7 @@ const PromotionList: React.FC = () => {
           values={stepFormValues as API.Promotion}
         />
       ) : null}
-      <Drawer
-        width={600}
-        open={!!row}
-        onClose={() => setRow(undefined)}
-        closable
-        title={row?.promo_name || '活动详情'}
-      >
-        {row?.promo_name && (
-          <ProDescriptions<API.Promotion>
-            column={2}
-            title={row?.promo_name}
-            request={async () => ({ data: row || {} })}
-            params={{ id: row?.id }}
-            columns={columns as any}
-          />
-        )}
-      </Drawer>
+      <DetailDrawer row={row} onClose={() => setRow(undefined)} />
     </PageContainer>
   );
 };

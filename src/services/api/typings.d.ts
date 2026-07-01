@@ -591,6 +591,11 @@ declare namespace API {
     price_max?: number;
   };
 
+  type getPromotionsIdDetailParams = {
+    /** 促销ID */
+    id: number;
+  };
+
   type getPromotionsIdParams = {
     /** 促销ID */
     id: number;
@@ -933,9 +938,54 @@ declare namespace API {
     used_quantity?: number;
   };
 
+  type PromotionDetailResponse = {
+    created_at?: string;
+    created_by?: number;
+    end_time?: string;
+    id?: number;
+    per_user_limit?: number;
+    products?: PromotionProductItem[];
+    promo_code?: string;
+    promo_name?: string;
+    promo_type?: number;
+    rule?: PromotionRule;
+    rule_id?: number;
+    start_time?: string;
+    status?: number;
+    total_quantity?: number;
+    updated_at?: string;
+    updated_by?: number;
+    used_quantity?: number;
+  };
+
   type PromotionListResult = {
     list?: Promotion[];
     total?: number;
+  };
+
+  type PromotionProductItem = {
+    category_id?: number;
+    id?: number;
+    main_image?: string;
+    product_id?: number;
+    product_type?: number;
+    spu_name?: string;
+  };
+
+  type PromotionRule = {
+    benefit_type?: number;
+    benefit_value?: number;
+    condition_type?: number;
+    condition_value?: number;
+    created_at?: string;
+    created_by?: number;
+    id?: number;
+    is_stackable?: number;
+    promotion_id?: number;
+    rule_name?: string;
+    stack_priority?: number;
+    updated_at?: string;
+    updated_by?: number;
   };
 
   type putAddressesIdParams = {
@@ -1144,12 +1194,14 @@ declare namespace API {
   };
 
   type SKU = {
+    available_quantity?: number;
     barcode?: string;
     cost_price?: number;
     created_at?: string;
     height?: number;
     id?: number;
     image?: string;
+    inventory_status?: string;
     length?: number;
     market_price?: number;
     max_purchase_qty?: number;

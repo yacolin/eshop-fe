@@ -42,7 +42,7 @@ export async function postPromotions(
   );
 }
 
-/** 获取促销详情 GET /api/v1/promotions/${param0} */
+/** 获取促销 GET /api/v1/promotions/${param0} */
 export async function getPromotionsId(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getPromotionsIdParams,
@@ -93,4 +93,21 @@ export async function deletePromotionsId(
     params: { ...queryParams },
     ...(options || {}),
   });
+}
+
+/** 获取促销详情（含规则、商品范围） GET /api/v1/promotions/${param0}/detail */
+export async function getPromotionsIdDetail(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getPromotionsIdDetailParams,
+  options?: { [key: string]: any },
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.Response & { data?: API.PromotionDetailResponse }>(
+    `/api/v1/promotions/${param0}/detail`,
+    {
+      method: 'GET',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
 }
