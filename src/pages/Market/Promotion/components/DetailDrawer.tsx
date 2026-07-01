@@ -63,7 +63,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ row, onClose }) => {
 
   return (
     <Drawer
-      width={600}
+      width={680}
       open={!!row}
       onClose={onClose}
       closable

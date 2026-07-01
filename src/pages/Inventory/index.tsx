@@ -23,11 +23,7 @@ import {
   postInventoriesRestock,
 } from '@/services/api/inventories';
 
-const statusMap: Record<string, { text: string; color: string }> = {
-  instock: { text: '有货', color: '#52c41a' },
-  lowstock: { text: '低库存', color: '#faad14' },
-  outofstock: { text: '缺货', color: '#ff4d4f' },
-};
+import { INVENTORY_STATUS_MAP } from '@/constants';
 
 const InventoryPage: React.FC = () => {
   const [searchText, setSearchText] = useState('');
@@ -162,7 +158,7 @@ const InventoryPage: React.FC = () => {
                   </Descriptions.Item>
                   <Descriptions.Item label="库存状态">
                     {(() => {
-                      const s = statusMap[inventory.status || ''];
+                      const s = INVENTORY_STATUS_MAP[inventory.status || ''];
                       return s ? (
                         <Tag color={s.color}>{s.text}</Tag>
                       ) : (

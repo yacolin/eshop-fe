@@ -6,6 +6,15 @@ export const PAYMENT_METHOD_MAP: Record<string, string> = {
   wallet: '余额',
 };
 
+export const INVENTORY_STATUS_MAP: Record<
+  string,
+  { color: string; text: string }
+> = {
+  instock: { color: '#52c41a', text: '有货' },
+  lowstock: { color: '#faad14', text: '低库存' },
+  outofstock: { color: '#ff4d4f', text: '缺货' },
+};
+
 export const ORDER_STATUS_MAP: Record<string, { color: string; text: string }> =
   {
     pending: { color: 'gold', text: '待支付' },

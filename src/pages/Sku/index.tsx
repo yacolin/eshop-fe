@@ -2,10 +2,9 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
   FooterToolbar,
   PageContainer,
-  ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message, Popconfirm, Tag } from 'antd';
+import { Button, Divider, message, Popconfirm, Tag } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { useLocation } from '@umijs/max';
@@ -21,6 +20,7 @@ import {
   putSkusId,
 } from '@/services/api/skus';
 import CreateForm from './components/CreateForm';
+import DetailDrawer from './components/DetailDrawer';
 import UpdateForm from './components/UpdateForm';
 
 import type { FormValueType } from './components/UpdateForm';
@@ -230,8 +230,7 @@ const SkuList: React.FC = () => {
     {
       title: '规格',
       dataIndex: 'spec',
-      width: 200,
-      ellipsis: true,
+      width: 400,
       hideInSearch: true,
       render: (_, record) => {
         if (!record.spec) return '-';
@@ -422,66 +421,7 @@ const SkuList: React.FC = () => {
         />
       ) : null}
 
-      {/* 查看详情抽屉 */}
-      <Drawer
-        width={600}
-        open={!!row}
-        onClose={() => setRow(undefined)}
-        closable
-        title={row?.sku_code ? `SKU #${row.sku_code}` : 'SKU 详情'}
-      >
-        {row?.sku_code && (
-          <ProDescriptions<API.SKU>
-            column={2}
-            title={row.sku_code}
-            request={async () => ({ data: row || {} })}
-            params={{ id: row.sku_code }}
-            columns={[
-              { title: '产品 ID', dataIndex: 'product_id' },
-              { title: 'SKU 编码', dataIndex: 'sku_code', copyable: true },
-              { title: '条码', dataIndex: 'barcode', copyable: true },
-              {
-                title: '售价',
-                dataIndex: 'price',
-                render: (_, r) => formatPrice(r.price),
-              },
-              {
-                title: '成本价',
-                dataIndex: 'cost_price',
-                render: (_, r) => formatPrice(r.cost_price),
-              },
-              {
-                title: '市场价',
-                dataIndex: 'market_price',
-                render: (_, r) => formatPrice(r.market_price),
-              },
-              {
-                title: '重量',
-                dataIndex: 'weight',
-                render: (_, r) => (r.weight ? `${r.weight}g` : '-'),
-              },
-              {
-                title: '体积',
-                dataIndex: 'length',
-                render: (_, r) =>
-                  [r.length, r.width, r.height].filter(Boolean).length === 3
-                    ? `${r.length}×${r.width}×${r.height}`
-                    : '-',
-              },
-              { title: '最小购买量', dataIndex: 'min_purchase_qty' },
-              { title: '最大购买量', dataIndex: 'max_purchase_qty' },
-              {
-                title: '状态',
-                dataIndex: 'status',
-                render: (_, r) => {
-                  const cfg = statusMap[r.status ?? -1];
-                  return cfg ? <Tag color={cfg.color}>{cfg.text}</Tag> : '-';
-                },
-              },
-            ]}
-          />
-        )}
-      </Drawer>
+      <DetailDrawer row={row} onClose={() => setRow(undefined)} />
     </PageContainer>
   );
 };

@@ -28,7 +28,7 @@ import {
   putProductsId,
 } from '@/services/api/products';
 import CreateForm from './components/CreateForm';
-import DetailForm from './components/DetailForm';
+import DetailDrawer from './components/DetailDrawer';
 import UpdateForm from './components/UpdateForm';
 
 import useCategoryOptions from '../Category/hooks/useCategoryOptions';
@@ -532,7 +532,7 @@ const ProductList: React.FC = () => {
       ) : null}
 
       {/* 查看详情抽屉 */}
-      <DetailForm
+      <DetailDrawer
         open={!!row}
         data={detailData}
         onClose={() => setRow(undefined)}

@@ -20,12 +20,12 @@ const formatPrice = (price?: number) => {
   return `¥${(price / 100).toFixed(2)}`;
 };
 
-const DetailForm: React.FC<DetailFormProps> = (props) => {
+const DetailDrawer: React.FC<DetailFormProps> = (props) => {
   const { open, data, onClose } = props;
 
   return (
     <Drawer
-      width={640}
+      width={680}
       open={open}
       onClose={onClose}
       closable
@@ -189,4 +189,4 @@ const DetailForm: React.FC<DetailFormProps> = (props) => {
   );
 };
 
-export default DetailForm;
+export default DetailDrawer;
