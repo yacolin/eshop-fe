@@ -40,6 +40,10 @@ declare namespace API {
     permission_ids: number[];
   };
 
+  type AssignRoleReq = {
+    role_id: number;
+  };
+
   type Attribute = {
     category_id?: number;
     created_at?: string;
@@ -396,6 +400,13 @@ declare namespace API {
     id: number;
   };
 
+  type deleteUsersUserIdRolesRoleIdParams = {
+    /** 用户ID */
+    user_id: number;
+    /** 角色ID */
+    role_id: number;
+  };
+
   type Description = {
     created_at?: string;
     description?: string;
@@ -656,6 +667,17 @@ declare namespace API {
     product_id?: number;
     /** SKU 编码 */
     sku_code?: string;
+  };
+
+  type getUsersParams = {
+    /** 页码 */
+    page?: number;
+    /** 每页条数 */
+    size?: number;
+    /** 状态 */
+    status?: number;
+    /** 关键字（用户名/邮箱/手机号/昵称） */
+    keyword?: string;
   };
 
   type getWsParams = {
@@ -930,6 +952,11 @@ declare namespace API {
   type postPermissionsRolesRoleIdParams = {
     /** 角色ID */
     role_id: number;
+  };
+
+  type postUsersUserIdRolesParams = {
+    /** 用户ID */
+    user_id: number;
   };
 
   type ProductAttrResponse = {
@@ -1477,6 +1504,24 @@ declare namespace API {
     user_promotion_id: number;
   };
 
+  type User = {
+    avatar?: string;
+    created_at?: string;
+    email?: string;
+    email_verified?: boolean;
+    id?: number;
+    last_login_at?: string;
+    last_login_ip?: string;
+    nickname?: string;
+    phone?: string;
+    phone_verified?: boolean;
+    register_ip?: string;
+    register_source?: string;
+    status?: number;
+    updated_at?: string;
+    username?: string;
+  };
+
   type UserInfoResponse = {
     bio?: string;
     birthday?: string;
@@ -1487,6 +1532,11 @@ declare namespace API {
     province?: string;
     timezone?: string;
     zip_code?: string;
+  };
+
+  type UserListResult = {
+    list?: User[];
+    total?: number;
   };
 
   type UserProfileResponse = {
